@@ -16,7 +16,7 @@ memakai kunci jawaban dari HC, lalu hasil dikategorikan sesuai ketentuan HC.
 
 ## Progres hari ini
 - [x] Diskusi dengan HC selesai: soal, aturan, durasi, dan hasil yang diharapkan sudah diterima
-- [ ] Analisis kebutuhan per tes (aturan, durasi, cara skoring)
+- [X] Analisis kebutuhan per tes (aturan, durasi, cara skoring)
 - [ ] Rancangan alur peserta dan admin
 - [ ] Rancangan database
 - [ ] Pemilihan teknologi (belum diputuskan)
@@ -27,7 +27,6 @@ memakai kunci jawaban dari HC, lalu hasil dikategorikan sesuai ketentuan HC.
 3. Menyusun aturan koreksi dan kategori skor bersama HC
 
 ## Pertanyaan terbuka
-- Siapa yang menjadi peserta (pelamar, karyawan, atau keduanya)?
 - Bagaimana cara peserta masuk (kode akses, akun, atau tautan)?
 - Berapa lama hasil tes boleh disimpan?
 - Domain dan server yang akan dipakai?
