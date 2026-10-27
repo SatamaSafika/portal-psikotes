@@ -1,0 +1,19 @@
+# Materi rahasia: soal, kunci jawaban, data peserta
+materi_rahasia/*
+!materi_rahasia/.gitkeep
+
+# Rahasia dan konfigurasi lokal
+.env
+.env.*
+!.env.example
+
+# Dependensi dan hasil build
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Lain-lain
+*.log
+.DS_Store
+Thumbs.db
