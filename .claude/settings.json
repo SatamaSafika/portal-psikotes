@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "defaultMode": "manual",
+    "deny": [
+      "Read(./.env)", "Read(./**/.env)", "Read(./**/.env.*)",
+      "Read(./materi_rahasia/**)", "Read(./backend/bank/**)"
+    ]
+  }
+}
