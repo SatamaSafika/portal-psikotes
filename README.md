@@ -12,7 +12,7 @@ Selesai:
 - Diskusi dan analisis kebutuhan bersama HC.
 - Dokumen acuan kebutuhan platform.
 - Prototipe UI lo-fi 12 layar (9 layar portal peserta, 3 layar dashboard HC).
-- Pemilihan stack mengikuti sistem perusahaan.
+- Pemilihan stack: Angular + TypeScript, Express + TypeScript, SQL Server 2024 perusahaan.
 
 Berikutnya:
 - Konfirmasi aturan skoring, durasi, dan jumlah soal ke HC.
@@ -25,7 +25,7 @@ Berikutnya:
 | --- | --- |
 | Frontend | Angular, TypeScript (Ionic hanya bila diwajibkan tim IT) |
 | Backend | Express, TypeScript |
-| Database (pengembangan) | SQL Server edisi gratis (Developer atau Express) lewat Docker |
+| Database | SQL Server 2024 milik perusahaan (database khusus, skema `psikotes`). Kredensial hanya di `backend/.env` |
 | Login admin | Username dan password dari daftar admin terdaftar |
 | Login peserta | Token sekali pakai |
 

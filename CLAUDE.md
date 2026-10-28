@@ -5,7 +5,7 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 ## Stack
 - Frontend: Angular + TypeScript (versi stabil terbaru). Ionic hanya bila diwajibkan.
 - Backend: Express + TypeScript (Node LTS aktif).
-- Database pengembangan: SQL Server gratis lewat Docker. Akses lewat ORM agar mudah dipindah.
+- Database: SQL Server 2024 milik perusahaan (diizinkan dipakai). Host, port, username, dan password hanya ada di `backend/.env` (tidak di-commit, tidak dibaca AI). Pakai database khusus dengan skema `psikotes`. Akses lewat driver `mssql` dengan query berparameter. ORM diputuskan setelah ada jawaban tim IT.
 - Bahasa antarmuka dan komentar: Indonesia.
 
 ## Aturan keras
@@ -17,7 +17,7 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 6. Password admin disimpan sebagai hash (argon2 atau bcrypt). Tidak ada pendaftaran mandiri admin. Batasi percobaan login.
 7. Token peserta: sekali pakai, terikat sesi dan email, ada masa berlaku.
 8. Jangan mengarang sumber, angka, atau aturan HC. Bila ragu, tulis "perlu verifikasi".
-9. Jangan menyentuh database produksi perusahaan.
+9. Database perusahaan dipakai hanya di database khusus proyek ini, skema `psikotes`. Jangan membaca, mengubah, atau menghapus database, skema, atau tabel lain. Jangan menjalankan DDL, DROP, atau TRUNCATE tanpa persetujuan eksplisit pemilik proyek. Jangan menulis kredensial di kode, log, atau chat.
 
 ## Aturan tes (ringkas)
 - TIU 5 dan TIU 6: peserta boleh melewati soal, mengosongkan jawaban, dan mengubah jawaban sebelum kirim.
