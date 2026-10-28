@@ -1,0 +1,9 @@
+{
+  "_catatan": "KERANGKA KOSONG. Isi hanya setelah HC mengonfirmasi rumus kategori dan skor akhir. Skor mentah = jumlah benar, tanpa penalti (dikonfirmasi HC 28 Oktober 2026).",
+  "versi": "kosong",
+  "dikonfirmasi_hc": null,
+  "TIU5": { "kategori_dan_skor": [] },
+  "TIU6": { "kategori_dan_skor": [] },
+  "KORAN": { "pembagi": null, "kategori_dan_skor": [] },
+  "_bentuk_baris": { "nilai_min": 0, "nilai_maks": 0, "kategori": "[nama kategori]", "skor_akhir": 0 }
+}

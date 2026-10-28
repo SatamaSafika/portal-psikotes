@@ -1,0 +1,24 @@
+{
+  "_catatan": "Konfigurasi tes, tidak rahasia. Durasi dan jumlah soal dikonfirmasi HC 28 Oktober 2026 (lewat pemilik proyek). Kunci jawaban TIDAK di sini, melainkan di backend/bank/<versi>/soal.json.",
+  "versi": "2026-10-28",
+  "tes": {
+    "TIU5": {
+      "durasi_detik": 600,
+      "jumlah_soal": 30,
+      "jumlah_latihan": 2
+    },
+    "TIU6": {
+      "durasi_detik": 600,
+      "jumlah_soal": 40,
+      "jumlah_latihan": 2
+    },
+    "KORAN": {
+      "durasi_detik": 600,
+      "jumlah_angka": 1000,
+      "angka_per_lajur": 20,
+      "lajur_per_halaman": 4,
+      "jumlah_latihan": 2,
+      "_perlu_verifikasi": "1000 angka dengan 20 angka per lajur = 50 lajur x 19 kotak jawaban = 950 jawaban. Perlu verifikasi HC: yang 1000 itu angka atau kotak jawaban. Nilai angka_per_lajur 20 diambil dari soal.contoh.json, juga perlu verifikasi."
+    }
+  }
+}
