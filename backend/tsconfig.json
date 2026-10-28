@@ -8,8 +8,15 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "allowJs": true,
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["src", "scripts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "scripts/**/*.ts",
+    "scripts/**/*.js"
+  ],
+  "exclude": ["dist"]
 }
