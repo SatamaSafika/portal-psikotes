@@ -1,40 +1,70 @@
-@'
-# Portal Tes Psikotes
+# Portal Psikotes
 
-Portal web resmi perusahaan untuk tes psikotes: TIU 5, TIU 6, dan Tes Koran (Kraepelin).
-Fungsi: peserta mengerjakan tes, sistem menyimpan jawaban dan mengoreksi otomatis
-memakai kunci jawaban dari HC, lalu hasil dikategorikan sesuai ketentuan HC.
+Portal web tes psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin) untuk kebutuhan HC PT Bakrie Autoparts. Peserta mengerjakan tes, sistem menyimpan jawaban mentah, lalu menilai otomatis memakai kunci jawaban dan aturan kategori dari HC.
 
-**Status: ON PROGRESS (laporan 23 Oktober 2026)**
+Pemilik proyek: Satama Safika, BA Intern. Permintaan dari departemen HC.
 
-## Ruang lingkup
-| Tes | Status |
-|---|---|
-| TIU 5 | Belum dimulai |
-| TIU 6 | Belum dimulai |
-| Tes Koran / Kraepelin | Belum dimulai |
+## Status (27 Oktober 2026)
 
-## Progres hari ini
-- [x] Diskusi dengan HC selesai: soal, aturan, durasi, dan hasil yang diharapkan sudah diterima
-- [X] Analisis kebutuhan per tes (aturan, durasi, cara skoring)
-- [ ] Rancangan alur peserta dan admin
-- [ ] Rancangan database
-- [ ] Pemilihan teknologi (belum diputuskan)
+On Progress.
 
-## Rencana berikutnya
-1. Memetakan aturan dan durasi tiap tes
-2. Merancang struktur data (peserta, sesi, soal, jawaban, hasil)
-3. Menyusun aturan koreksi dan kategori skor bersama HC
+Selesai:
+- Diskusi dan analisis kebutuhan bersama HC.
+- Dokumen acuan kebutuhan platform.
+- Prototipe UI lo-fi 12 layar (9 layar portal peserta, 3 layar dashboard HC).
+- Pemilihan stack: Angular + TypeScript, Express + TypeScript, SQL Server 2024 perusahaan.
+
+Berikutnya:
+- Konfirmasi aturan skoring, durasi, dan jumlah soal ke HC.
+- Rancangan database.
+- Pengembangan backend dan frontend.
+
+## Stack
+
+| Bagian | Teknologi |
+| --- | --- |
+| Frontend | Angular, TypeScript (Ionic hanya bila diwajibkan tim IT) |
+| Backend | Express, TypeScript |
+| Database | SQL Server 2024 milik perusahaan (database khusus, skema `psikotes`). Kredensial hanya di `backend/.env` |
+| Login admin | Username dan password dari daftar admin terdaftar |
+| Login peserta | Token sekali pakai |
+
+Versi yang dipakai adalah versi stabil terbaru. Untuk Node, pakai rilis LTS aktif. Catat nomor versi terpasang di `docs/VERSI.md` setelah instalasi, lalu samakan dengan tim IT.
+
+## Struktur folder
+
+```
+frontend/            aplikasi Angular
+backend/             API Express + TypeScript
+  src/modules/       token, tes, skoring, hasil, admin
+docs/                catatan teknis dan pertanyaan ke IT
+materi_rahasia/      lokal saja, diabaikan git (soal, kunci, data peserta)
+```
+
+## Menjalankan backend
+
+```
+cd backend
+npm install express
+npm install -D typescript tsx @types/node @types/express
+copy .env.example .env
+npm run dev
+```
+
+Cek di browser: http://localhost:3000/api/health
+
+## Menjalankan frontend
+
+Lihat `frontend/README.md`.
+
+## Keamanan dan data
+
+- Repositori harus Private.
+- Soal, kunci jawaban, dan data peserta tidak disimpan di repositori. Taruh di `materi_rahasia/` lokal.
+- Selama pengembangan hanya data dummy. Data asli menunggu server dan persetujuan IT dan HC.
+- Kunci jawaban dan timer dikerjakan di server, tidak dikirim ke browser.
+- Rumus skoring disimpan sebagai konfigurasi, tidak ditulis keras di kode, karena menunggu konfirmasi HC.
 
 ## Pertanyaan terbuka
-- Bagaimana cara peserta masuk (kode akses, akun, atau tautan)?
-- Berapa lama hasil tes boleh disimpan?
-- Domain dan server yang akan dipakai?
 
-## Keamanan
-Repo ini private. Soal, kunci jawaban, dan data peserta tidak disimpan di repo.
-Letakkan di folder lokal `materi_rahasia/` (diabaikan git).
-
-## Penanggung jawab
-Satama Safika, BA Intern, PT Bakrie Autoparts
-'@ | Set-Content -Encoding utf8 README.md
+Lihat `docs/PERTANYAAN_IT.md` dan daftar konfirmasi HC di CLAUDE.md.
