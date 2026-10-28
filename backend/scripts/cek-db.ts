@@ -1,4 +1,5 @@
 // Cek koneksi ke database proyek. Hanya membaca (SELECT), tidak mengubah apa pun.
+// Database BA dipakai bersama, jadi hanya tabel berprefix HCIS_Psikotes_ yang dilihat.
 // Jalankan: npm run db:cek
 import 'dotenv/config';
 import sql from 'mssql';
@@ -7,21 +8,19 @@ import { konfigurasiDb } from '../src/config/env.js';
 async function main(): Promise<void> {
   const pool = await sql.connect(konfigurasiDb());
   try {
-    const info = await pool.request().query<{ db: string; skema: number | null }>(
-      "SELECT DB_NAME() AS db, SCHEMA_ID('psikotes') AS skema",
-    );
-    const { db, skema } = info.recordset[0];
-    console.log(`Terhubung ke database: ${db}`);
-    console.log(`Skema psikotes: ${skema === null ? 'BELUM ADA' : 'ada'}`);
+    const info = await pool.request().query<{ db: string }>('SELECT DB_NAME() AS db');
+    console.log(`Terhubung ke database: ${info.recordset[0].db}`);
 
+    // Garis bawah di LIKE harus di-escape dengan [_] supaya tidak dianggap wildcard.
     const tabel = await pool
       .request()
-      .input('skema', sql.NVarChar, 'psikotes')
+      .input('skema', sql.NVarChar, 'dbo')
+      .input('pola', sql.NVarChar, 'HCIS[_]Psikotes[_]%')
       .query<{ nama: string }>(
-        'SELECT TABLE_NAME AS nama FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @skema ORDER BY TABLE_NAME',
+        'SELECT TABLE_NAME AS nama FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @skema AND TABLE_NAME LIKE @pola ORDER BY TABLE_NAME',
       );
     const daftar = tabel.recordset.map((t) => t.nama);
-    console.log(`Tabel di skema psikotes (${daftar.length}): ${daftar.join(', ') || '-'}`);
+    console.log(`Tabel HCIS_Psikotes_ (${daftar.length}): ${daftar.join(', ') || '-'}`);
   } finally {
     await pool.close();
   }

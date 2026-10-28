@@ -27,7 +27,7 @@ Berikutnya:
 | --- | --- |
 | Frontend | Angular, TypeScript (Ionic hanya bila diwajibkan tim IT) |
 | Backend | Express, TypeScript |
-| Database | SQL Server 2024 milik perusahaan (database khusus, skema `psikotes`). Kredensial hanya di `backend/.env` |
+| Database | SQL Server 2024 milik perusahaan (database `BA` bersama, tabel `dbo.HCIS_Psikotes_*`). Kredensial hanya di `backend/.env` |
 | Login admin | Username dan password dari daftar admin terdaftar |
 | Login peserta | Token sekali pakai |
 
@@ -39,7 +39,7 @@ Versi yang dipakai adalah versi stabil terbaru. Untuk Node, pakai rilis LTS akti
 frontend/            aplikasi Angular
 backend/             API Express + TypeScript
   src/modules/       token, tes, skoring, hasil, admin
-  db/                skrip SQL skema psikotes
+  db/                skrip SQL tabel HCIS_Psikotes_*
   config/            konfigurasi tes dan skoring
   bank/              bank soal dan kunci, diabaikan git
 docs/                catatan teknis dan pertanyaan ke IT
