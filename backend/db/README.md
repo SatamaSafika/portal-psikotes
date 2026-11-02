@@ -6,7 +6,7 @@ Database `BA` dipakai bersama proyek lain. Tabel proyek ini ada di skema `dbo` d
 | --- | --- |
 | `dbo.HCIS_Psikotes_Ujian` | sesi, peserta, token (hash), waktu, hasil |
 | `dbo.HCIS_Psikotes_Jawaban` | jawaban mentah per nomor soal |
-| `dbo.HCIS_Psikotes_Admin` | akun admin HC (hash password) |
+| `dbo.HCIS_Psikotes_Admin` | akun admin HC (hash password, hash sesi login) |
 
 Constraint dan index juga berprefix `HCIS_Psikotes_` supaya tidak bentrok dengan objek lain. Kolom memakai huruf kecil dengan garis bawah (snake_case).
 
@@ -15,8 +15,9 @@ Skrip dijalankan **manual oleh pemilik proyek** lewat SSMS. AI dan aplikasi tida
 Urutan:
 1. `02_buat_tabel_ujian_jawaban.sql`
 2. `03_buat_tabel_admin.sql`
+3. `04_tambah_kolom_sesi_admin.sql` (Part 1: kolom `sesi_hash`, `sesi_dibuat`, `sesi_aktif_terakhir` dan indeks unik terfilter `UX_HCIS_Psikotes_Admin_SesiHash`)
 
-Kedua skrip diawali `USE BA;`, aman dijalankan ulang, dan tidak memuat DROP atau TRUNCATE.
+Semua skrip diawali `USE BA;`, aman dijalankan ulang, dan tidak memuat DROP atau TRUNCATE.
 
 Setelah menjalankan, cek dari folder `backend`:
 ```

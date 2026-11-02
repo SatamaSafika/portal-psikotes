@@ -34,5 +34,46 @@ export function konfigurasiDb(): KonfigurasiMssql {
       encrypt: bacaBoolean('DB_ENCRYPT', true),
       trustServerCertificate: bacaBoolean('DB_TRUST_CERT', false),
     },
+    pool: { max: 10, min: 0, idleTimeoutMillis: 30_000 },
+  };
+}
+
+function bacaBulatPositif(nama: string, bawaan: number): number {
+  const nilai = process.env[nama];
+  if (nilai === undefined || nilai === '') return bawaan;
+  const angka = Number(nilai);
+  if (!Number.isInteger(angka) || angka <= 0) {
+    throw new Error(`${nama} harus berupa angka bulat positif`);
+  }
+  return angka;
+}
+
+export interface KonfigurasiAplikasi {
+  produksi: boolean;
+  corsOrigin: string[];
+  /** Nilai untuk app.set('trust proxy'): false, true, atau jumlah proxy. */
+  trustProxy: boolean | number;
+  loginMaksGagal: number;
+  loginKunciMenit: number;
+}
+
+/** Konfigurasi aplikasi selain database. Semua punya nilai bawaan. */
+export function konfigurasiAplikasi(): KonfigurasiAplikasi {
+  const corsOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:4200')
+    .split(',')
+    .map((o) => o.trim())
+    .filter((o) => o !== '');
+
+  const proxy = process.env.TRUST_PROXY ?? '';
+  let trustProxy: boolean | number = false;
+  if (proxy.toLowerCase() === 'true') trustProxy = true;
+  else if (proxy !== '' && proxy.toLowerCase() !== 'false') trustProxy = bacaBulatPositif('TRUST_PROXY', 1);
+
+  return {
+    produksi: process.env.NODE_ENV === 'production',
+    corsOrigin,
+    trustProxy,
+    loginMaksGagal: bacaBulatPositif('LOGIN_MAKS_GAGAL', 5),
+    loginKunciMenit: bacaBulatPositif('LOGIN_KUNCI_MENIT', 15),
   };
 }
