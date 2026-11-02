@@ -55,6 +55,8 @@ export interface KonfigurasiAplikasi {
   trustProxy: boolean | number;
   loginMaksGagal: number;
   loginKunciMenit: number;
+  /** Alamat portal peserta, dipakai di undangan email. */
+  portalUrl: string;
 }
 
 /** Konfigurasi aplikasi selain database. Semua punya nilai bawaan. */
@@ -75,5 +77,20 @@ export function konfigurasiAplikasi(): KonfigurasiAplikasi {
     trustProxy,
     loginMaksGagal: bacaBulatPositif('LOGIN_MAKS_GAGAL', 5),
     loginKunciMenit: bacaBulatPositif('LOGIN_KUNCI_MENIT', 15),
+    portalUrl: bacaPortalUrl(),
   };
+}
+
+function bacaPortalUrl(): string {
+  const nilai = (process.env.PORTAL_URL ?? 'http://localhost:4200').replace(/\/+$/, '');
+  let url: URL;
+  try {
+    url = new URL(nilai);
+  } catch {
+    throw new Error('PORTAL_URL harus berupa alamat lengkap, contoh https://psikotes.contoh.id');
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new Error('PORTAL_URL harus diawali http:// atau https://');
+  }
+  return nilai;
 }

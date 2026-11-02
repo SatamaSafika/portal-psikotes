@@ -21,6 +21,9 @@ export function penanganGalat(galat: unknown, _req: Request, res: Response, next
     return;
   }
 
-  console.error('Galat server:', galat instanceof Error ? galat.message : 'galat tidak dikenal');
+  // Pesan galat SQL Server bisa memuat nilai data (mis. email pada pelanggaran UNIQUE), jadi hanya nomornya dicetak.
+  const nomorSql = (galat as { number?: unknown })?.number;
+  if (typeof nomorSql === 'number') console.error(`Galat database nomor ${nomorSql}`);
+  else console.error('Galat server:', galat instanceof Error ? galat.message : 'galat tidak dikenal');
   res.status(500).json({ pesan: 'Terjadi galat di server' });
 }

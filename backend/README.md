@@ -20,6 +20,7 @@ Variabel yang dibaca kode:
 | `TRUST_PROXY` | `true` atau jumlah proxy bila API di belakang reverse proxy, bawaan `false` |
 | `LOGIN_MAKS_GAGAL` | Jumlah salah kata sandi sebelum akun dikunci, bawaan 5 |
 | `LOGIN_KUNCI_MENIT` | Lama akun dikunci, bawaan 15 menit |
+| `PORTAL_URL` | Alamat portal peserta untuk tautan di undangan email, bawaan `http://localhost:4200` |
 
 ## Perintah
 - `npm run dev`: jalankan API dengan muat ulang otomatis. Cek di http://localhost:3000/api/health
@@ -32,6 +33,32 @@ Variabel yang dibaca kode:
 - `npm test`: tes otomatis (data dummy saja).
 
 Semua skrip bank hanya mencetak nama berkas, nomor, jumlah, dan sidik jari. Kunci, penjelasan, instruksi, dan angka Koran tidak pernah dicetak.
+
+## Sesi, token, dan undangan
+Rute admin (wajib login admin):
+
+| Rute | Hasil |
+| --- | --- |
+| `POST /api/admin/sesi` | Buat sesi: `nama_sesi`, `tanggal` (YYYY-MM-DD), `waktu_buka`, `waktu_tutup` (HH:MM), `tes` (`TIU5`, `TIU6`, `KORAN`), `peserta` (`email`, `nama` opsional), `template` opsional. Respons berisi token dan undangan siap kirim per peserta (subjek, isi, tautan `mailto`). **Token mentah hanya tampil di respons ini.** |
+| `GET /api/admin/sesi`, `GET /api/admin/sesi/:id` | Daftar sesi dan status token per peserta. Tanpa token. |
+| `PUT /api/admin/sesi/:id/template` | Simpan template undangan untuk sesi itu (`subjek`, `isi`). |
+| `POST /api/admin/sesi/:id/peserta` | Tambah peserta ke sesi. Respons berisi token dan undangan. |
+| `POST /api/admin/sesi/:id/token-baru` | Body `{ "email" }`. Ganti semua token yang belum dipakai milik email itu; token lama langsung tidak berlaku. |
+| `POST /api/admin/ujian/:id/cabut` | Cabut token yang belum selesai. |
+
+Rute peserta:
+
+| Rute | Hasil |
+| --- | --- |
+| `POST /api/peserta/masuk` | Body `{ "email", "token" }`. Token sekali pakai, harus di dalam jam sesi. Berhasil: cookie `psikotes_peserta`. |
+| `GET /api/peserta/saya` | Jenis tes, status, durasi, sisa waktu menurut jam server. |
+| `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
+
+- Satu token per tes. Satu email undangan per peserta memuat semua tokennya.
+- Template bawaan ada di `config/undangan.json` (netral). Suntingan HC disimpan per sesi; wajib memuat `{daftar_token}`. Penanda: `{nama}`, `{tanggal}`, `{jam_buka}`, `{jam_tutup}`, `{tautan}`, `{daftar_token}`.
+- Pengiriman lewat tautan `mailto` (membuka aplikasi email bawaan Windows). HC memakai Outlook desktop: atur MAILTO ke Outlook di Pengaturan > Aplikasi > Aplikasi default, kalau tidak tautan bisa terbuka di browser. Pengiriman otomatis lewat SMTP menyusul bila IT menyediakan akun.
+- Jam sesi dibandingkan dengan jam server database. Peserta harus mulai sebelum jam tutup; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
+- Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
 
 ## Bank soal
 Bahan di `materi_rahasia/mentah/`:

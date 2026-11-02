@@ -18,7 +18,7 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 7. Token peserta: sekali pakai, terikat sesi dan email, ada masa berlaku.
 8. Jangan mengarang sumber, angka, atau aturan HC. Bila ragu, tulis "perlu verifikasi".
 9. Database perusahaan dipakai hanya untuk tabel proyek ini: `dbo.HCIS_Psikotes_*` di database `BA` (dipakai bersama proyek lain). Jangan membaca, mengubah, atau menghapus database, skema, atau tabel lain. Jangan menjalankan DDL, DROP, atau TRUNCATE tanpa persetujuan eksplisit pemilik proyek. Jangan menulis kredensial di kode, log, atau chat.
-10. UI dan semua teks yang tampil ke peserta atau admin tidak memuat nama "Bakrie Autoparts" atau variasinya, dan tidak memakai logo perusahaan (permintaan HC, 2 November 2026). Berlaku untuk judul halaman dan tab browser, header, footer, teks instruksi, pesan galat, dan email undangan. Pakai teks netral, misalnya "Portal Psikotes". Pengecualian hanya dokumen internal repo (README, CLAUDE.md, WORKFLOW).
+10. UI dan semua teks yang tampil ke peserta atau admin tidak memuat nama "Bakrie Autoparts" atau variasinya, dan tidak memakai logo perusahaan (permintaan HC, 2 November 2026). Berlaku untuk judul halaman dan tab browser, header, footer, teks instruksi, pesan galat, dan template email undangan bawaan. Pakai teks netral, misalnya "Portal Psikotes". Suntingan template email oleh HC tidak dibatasi isinya (keputusan pemilik proyek). Pengecualian hanya dokumen internal repo (README, CLAUDE.md, WORKFLOW).
 
 ## Aturan tes (ringkas)
 - TIU 5 dan TIU 6: peserta boleh melewati soal, mengosongkan jawaban, dan mengubah jawaban sebelum kirim.

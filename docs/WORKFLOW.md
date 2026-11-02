@@ -13,7 +13,7 @@ Aturan kerja di setiap part:
 3. Jalankan sendiri hasilnya. Kode belum dianggap jadi sebelum dijalankan dan lolos "selesai kalau".
 4. Jangan mengaktifkan persetujuan otomatis untuk perintah terminal. Sesi VS Code bisa mulai dalam auto mode: pastikan mode Manual lewat `Shift+Tab` atau `/permissions`.
 5. Soal asli, kunci, `.env` tidak pernah dikirim ke chat atau dibaca AI.
-6. [REVISI 2 Nov 2026] UI dan semua teks yang tampil ke peserta tidak memuat nama "Bakrie Autoparts" atau variasinya (permintaan HC). Berlaku untuk judul halaman dan tab browser, header, footer, teks instruksi, pesan galat, dan isi email undangan. Logo juga tidak dipakai. Pengecualian hanya untuk dokumen internal repo (README, CLAUDE.md, WORKFLOW).
+6. [REVISI 2 Nov 2026] UI dan semua teks yang tampil ke peserta tidak memuat nama "Bakrie Autoparts" atau variasinya (permintaan HC). Berlaku untuk judul halaman dan tab browser, header, footer, teks instruksi, pesan galat, dan template email undangan bawaan. Logo juga tidak dipakai. Suntingan template email oleh HC tidak dibatasi isinya (keputusan pemilik proyek). Pengecualian hanya untuk dokumen internal repo (README, CLAUDE.md, WORKFLOW).
 7. [REVISI 2 Nov 2026] Perubahan skema database (DDL) tetap hanya boleh dijalankan dengan persetujuan eksplisit pemilik proyek, dan hanya pada tabel `dbo.HCIS_Psikotes_*` di database `BA`.
 
 ## Aturan tes yang sudah dikonfirmasi (rujukan semua part)
@@ -92,17 +92,25 @@ Selesai kalau: login admin berhasil, salah password dibatasi, kata sandi tidak m
 
 Selesai kalau: skrip menyatakan bank valid, jumlah soal sesuai ekspektasi per tes, dan angka Koran sudah dibuat dan terbaca.
 
-## Part 3. Sesi dan token (M)
-- Admin membuat sesi dan daftar email, sistem membuat token acak panjang, simpan hash saja.
-- Verifikasi token peserta: sekali pakai, belum kedaluwarsa, dalam jam sesi, terikat email.
-- Sesi peserta setelah token diverifikasi (cookie atau token pendek terikat `ujian_id`), supaya refresh halaman tidak mengunci peserta.
-- Mulai ujian: `mulai_pada` dan `batas_selesai` ditulis di server, dari `durasi_detik` tiap tes.
-- [REVISI] Isi email undangan dan teks halaman token tanpa nama perusahaan. Tanyakan ke HC dan IT apa nama pengirim dan domain pengirim email yang dipakai, karena domain bisa memuat nama perusahaan.
+## Part 3. Sesi, token, dan undangan email (L)
+Keputusan pemilik proyek (2 November 2026): undangan lewat email saja (bukan WA). Satu token per tes; satu email per peserta memuat semua tokennya. Template bawaan netral, bisa diedit HC, suntingan disimpan per sesi. Pengiriman sementara lewat tombol yang membuka aplikasi email (`mailto`), SMTP menyusul.
+- [X] Skrip `db/05_buat_tabel_sesi.sql`: tabel `HCIS_Psikotes_Sesi` (data sesi dan template, tanpa data pribadi) dan kolom `sesi_id`, `sesi_peserta_hash`, `sesi_peserta_aktif` di tabel ujian. DDL, dijalankan pemilik proyek.
+- [X] Admin membuat sesi dan daftar email, sistem membuat token acak panjang (20 karakter, sekitar 100 bit), simpan hash saja. Token mentah hanya tampil sekali; "token baru" mengganti token yang belum dipakai.
+- [X] Template undangan: bawaan di `config/undangan.json`, wajib memuat `{daftar_token}`, penanda salah ketik ditolak. Respons berisi subjek, isi, dan tautan `mailto` per peserta.
+- [X] Verifikasi token peserta: sekali pakai, belum kedaluwarsa, dalam jam sesi, terikat email. Pesan gagal selalu sama. Batas percobaan gagal per IP.
+- [X] Sesi peserta setelah token diverifikasi (cookie terikat `ujian_id`), supaya refresh halaman tidak mengunci peserta.
+- [X] Mulai ujian: `mulai_pada` dan `batas_selesai` ditulis di server, dari `durasi_detik` tiap tes. Harus mulai sebelum jam tutup; durasi tidak dipotong jam tutup (keputusan sementara, **perlu verifikasi HC**).
+- [X] `npm run db:cek` menampilkan jam dan zona waktu server database.
+- [X] Uji oleh pemilik proyek: jalankan `db/05`, pastikan zona waktu server database WIB, uji alur sesi dan token.
+- HC mengirim dari Outlook desktop. Di komputer HC, atur aplikasi email bawaan Windows ke Outlook (Pengaturan > Aplikasi > Aplikasi default > pilih default menurut jenis tautan > MAILTO), supaya tombol kirim membuka Outlook, bukan browser.
+- [REVISI] Template bawaan dan teks halaman token tanpa nama perusahaan. Tanyakan ke HC dan IT apa nama pengirim dan domain pengirim email yang dipakai bila nanti memakai SMTP, karena domain bisa memuat nama perusahaan.
+- Tombol `mailto` membuka satu email per klik. Kirim massal sekaligus butuh SMTP dari IT (tambah dependensi `nodemailer` saat itu).
+- Belum ada: admin mengatur ulang peserta yang tokennya sudah terpakai tapi berganti perangkat sebelum mulai. Bahas bila dibutuhkan HC.
 
-Selesai kalau: token tidak bisa dipakai dua kali dan tidak bisa dipakai di luar jam sesi.
+Selesai kalau: token tidak bisa dipakai dua kali, tidak bisa dipakai di luar jam sesi, dan email undangan berisi token terbentuk dari template.
 
 ## Part 4. API pengerjaan (L)
-- [ ] [REVISI] Skrip `db/05_tambah_waktu_jawaban.sql`: tambah satu kolom waktu relatif (milidetik sejak mulai tes) pada `dbo.HCIS_Psikotes_Jawaban`, boleh kosong untuk TIU 5 dan TIU 6. Ini DDL, jalankan hanya setelah disetujui pemilik proyek. Lakukan sebelum endpoint simpan jawaban Koran.
+- [ ] [REVISI] Skrip `db/06_tambah_waktu_jawaban.sql` (nomor 05 sudah dipakai Part 3): tambah satu kolom waktu relatif (milidetik sejak mulai tes) pada `dbo.HCIS_Psikotes_Jawaban`, boleh kosong untuk TIU 5 dan TIU 6. Ini DDL, jalankan hanya setelah disetujui pemilik proyek. Lakukan sebelum endpoint simpan jawaban Koran.
 - Ambil soal tanpa kunci. Gambar lewat endpoint yang memeriksa token dan percobaan berjalan.
 - Simpan jawaban (boleh kosong, boleh diubah sebelum kirim). Tolak setelah `batas_selesai`. TIU 6 disimpan per butir dengan nomor datar `(soal - 1) x 5 + butir`.
 - Kirim jawaban dan penanganan waktu habis. Untuk Koran, simpan bertahap dan terima sisa jawaban saat waktu habis.
@@ -182,7 +190,7 @@ Selesai kalau: seluruh daftar uji lolos dan gladi berjalan tanpa campur tangan m
 - [ ] Kata sandi dan token tidak muncul di log.
 - [ ] Semua kueri berparameter, tidak ada penggabungan string SQL.
 - [ ] `.env`, `materi_rahasia/`, `backend/bank/` tidak ada di `git ls-files`.
-- [ ] [REVISI] Tidak ada teks "Bakrie" atau "Autoparts" di kode frontend yang tampil ke pengguna, aset, judul halaman, dan template email (cari dengan grep tanpa membaca isi bank soal). Instruksi dan gambar bank soal diperiksa manual oleh pemilik proyek (Part 2).
+- [ ] [REVISI] Tidak ada teks "Bakrie" atau "Autoparts" di kode frontend yang tampil ke pengguna, aset, judul halaman, dan template email bawaan (cari dengan grep tanpa membaca isi bank soal). Instruksi dan gambar bank soal diperiksa manual oleh pemilik proyek (Part 2).
 - [ ] [REVISI] Peserta tidak bisa mengambil data waktu jawaban atau ringkasan interval lewat API.
 - [ ] [REVISI] Waktu jawaban Koran yang tidak masuk akal (negatif, mundur, melewati 440 detik) ditolak atau ditandai.
 - [ ] [REVISI] Jawaban Koran yang mengubah kotak yang sudah dijawab, melompat nomor, atau kosong ditolak lewat API (tidak hanya dikunci di layar).

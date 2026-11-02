@@ -4,6 +4,8 @@ import { FOLDER_CONFIG } from './jalur.js';
 
 export interface KonfigurasiTes {
   versi: string;
+  /** Versi bank soal yang dipakai untuk sesi baru, contoh "v1". */
+  bank_aktif: string;
   tes: {
     TIU5: { jumlah_soal: number; jumlah_latihan: number; jumlah_pilihan: number };
     TIU6: { jumlah_soal: number; butir_per_soal: number; jumlah_latihan: number };
@@ -22,6 +24,9 @@ export function validasiTes(data: unknown): string[] {
   const galat: string[] = [];
   const d = data as Partial<KonfigurasiTes> | null;
   if (typeof d?.versi !== 'string' || d.versi === '') galat.push('tes.json: versi wajib diisi');
+  if (typeof d?.bank_aktif !== 'string' || !/^v[1-9]\d*$/.test(d.bank_aktif)) {
+    galat.push('tes.json: bank_aktif harus berbentuk v1, v2, dan seterusnya');
+  }
   for (const [tes, kolom] of Object.entries(KOLOM)) {
     const bagian = (d?.tes as Record<string, Record<string, unknown>> | undefined)?.[tes];
     for (const k of kolom as string[]) {

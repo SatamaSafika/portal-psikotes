@@ -11,6 +11,14 @@ async function main(): Promise<void> {
     const info = await pool.request().query<{ db: string }>('SELECT DB_NAME() AS db');
     console.log(`Terhubung ke database: ${info.recordset[0].db}`);
 
+    // Jam sesi tes dibandingkan dengan jam server database, jadi zona waktunya perlu diketahui.
+    const jam = await pool
+      .request()
+      .query<{ sekarang: string; zona: string }>(
+        "SELECT CONVERT(VARCHAR(19), SYSDATETIME(), 120) AS sekarang, DATENAME(TZOFFSET, SYSDATETIMEOFFSET()) AS zona",
+      );
+    console.log(`Jam server database: ${jam.recordset[0].sekarang} (UTC${jam.recordset[0].zona})`);
+
     // Garis bawah di LIKE harus di-escape dengan [_] supaya tidak dianggap wildcard.
     const tabel = await pool
       .request()

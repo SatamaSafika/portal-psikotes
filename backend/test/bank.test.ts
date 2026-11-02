@@ -16,6 +16,7 @@ import {
 // Susunan kecil supaya tes mudah dibaca.
 const KONFIG: KonfigurasiTes = {
   versi: 'uji',
+  bank_aktif: 'v1',
   tes: {
     TIU5: { jumlah_soal: 3, jumlah_latihan: 2, jumlah_pilihan: 5 },
     TIU6: { jumlah_soal: 2, butir_per_soal: 5, jumlah_latihan: 2 },
