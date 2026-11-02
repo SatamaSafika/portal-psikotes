@@ -3,8 +3,8 @@
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
 ## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), semua di cabang `fika`.
-- Berikutnya: Part 3.
+- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`), semua di cabang `fika`.
+- Berikutnya: Part 4.
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
 
 Aturan kerja di setiap part:
