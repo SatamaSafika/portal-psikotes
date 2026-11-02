@@ -5,7 +5,7 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 ## Stack
 - Frontend: Angular + TypeScript (versi stabil terbaru). Ionic hanya bila diwajibkan.
 - Backend: Express + TypeScript (Node LTS aktif).
-- Database: SQL Server 2024 milik perusahaan (diizinkan dipakai). Host, port, username, dan password hanya ada di `backend/.env` (tidak di-commit, tidak dibaca AI). Pakai database `BA` (dipakai bersama proyek lain), skema `dbo`, semua tabel berprefix `HCIS_Psikotes_` (contoh `HCIS_Psikotes_Ujian`). Constraint dan index juga berprefix `HCIS_Psikotes_`. Kolom snake_case. Akses lewat driver `mssql` dengan query berparameter. ORM diputuskan setelah ada jawaban tim IT.
+- Database: SQL Server 2024 milik perusahaan (diizinkan dipakai). Host, port, username, dan password hanya ada di `backend/.env` (tidak di-commit, tidak dibaca AI). Pakai database khusus dengan skema `psikotes`. Akses lewat driver `mssql` dengan query berparameter. ORM diputuskan setelah ada jawaban tim IT.
 - Bahasa antarmuka dan komentar: Indonesia.
 
 ## Aturan keras
@@ -17,25 +17,26 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 6. Password admin disimpan sebagai hash (argon2 atau bcrypt). Tidak ada pendaftaran mandiri admin. Batasi percobaan login.
 7. Token peserta: sekali pakai, terikat sesi dan email, ada masa berlaku.
 8. Jangan mengarang sumber, angka, atau aturan HC. Bila ragu, tulis "perlu verifikasi".
-9. Database `BA` dipakai bersama. Proyek ini hanya boleh menyentuh tabel berprefix `HCIS_Psikotes_` di skema `dbo`. Jangan membaca, mengubah, atau menghapus tabel lain di `BA`, maupun database lain. Jangan menjalankan DDL, DROP, atau TRUNCATE tanpa persetujuan eksplisit pemilik proyek. Jangan menulis kredensial di kode, log, atau chat.
+9. Database perusahaan dipakai hanya di database khusus proyek ini, skema `psikotes`. Jangan membaca, mengubah, atau menghapus database, skema, atau tabel lain. Jangan menjalankan DDL, DROP, atau TRUNCATE tanpa persetujuan eksplisit pemilik proyek. Jangan menulis kredensial di kode, log, atau chat.
 
 ## Aturan tes (ringkas)
 - TIU 5 dan TIU 6: peserta boleh melewati soal, mengosongkan jawaban, dan mengubah jawaban sebelum kirim.
 - TIU 5: instruksi dan satu gambar soal digabung. Jawaban hanya angka pilihan.
 - TIU 6: satu gambar guntingan 1 sampai 5. Jawaban hanya B atau S per nomor.
-- Koran/Kraepelin: beberapa lajur per halaman (prototipe: 4), total 1000 soal, pindah halaman manual oleh peserta, Enter memindahkan kursor ke kotak berikutnya.
+- Koran/Kraepelin: 13 halaman, 4 lajur per halaman, 20 angka per lajur (1040 angka, 988 penjumlahan jika 19 per lajur), pindah halaman manual oleh peserta, Enter memindahkan kursor ke kotak berikutnya.
 - Setiap tes punya 2 soal latihan dengan kunci langsung.
 
-## Dikonfirmasi HC (28 Oktober 2026, dari pemilik proyek; sumber: HC)
-- Tanpa penalti. Skor mentah = jumlah jawaban benar. Jawaban salah dan kosong tidak mengurangi.
-- Durasi TIU 5, TIU 6, dan Kraepelin: masing-masing 10 menit. Kraepelin: satu timer 10 menit total, peserta mengerjakan sebisanya (tidak harus selesai 1000 angka), tidak ada timer per lajur.
-- Jumlah soal: TIU 5 = 30, TIU 6 = 40, Kraepelin = angka disediakan sampai 1000.
-- Penyimpanan hasil: maksimal 3 bulan, dihitung sejak tanggal tes (kolom `tanggal`). Setelah itu data peserta (ujian dan jawaban) dihapus otomatis.
-- Yang boleh melihat hasil: hanya admin HC, dan semua admin HC berperan sama (tidak ada tingkat hak akses). Peserta tidak punya tampilan hasil, hanya mengerjakan lalu melihat halaman selesai tanpa skor.
+## Dikonfirmasi HC (29 Oktober 2026, disampaikan pemilik proyek; belum ada dokumen tertulis)
+- Tanpa penalti. Skor mentah = jumlah benar. Salah dan kosong tidak mengurangi.
+- Durasi: TIU 5 = 10 menit, TIU 6 = 10 menit, Koran = 7 menit 20 detik (satu timer total, dikerjakan sebisanya).
+- Jumlah soal: TIU 5 = 30, TIU 6 = 40 butir (8 Soal x 5 butir), dinilai per butir. Koran = 13 halaman x 4 lajur x 20 angka.
+- Kategori dan skor akhir: lihat `backend/config/skoring.json` dan `WORKFLOW.md`. Koran: N = total benar / 22, dibulatkan ke bilangan bulat terdekat setengah ke atas (hitung dengan bilangan bulat, tanpa float).
+- Penyimpanan: jawaban mentah dihapus 3 bulan setelah tanggal tes. Seluruh data peserta (identitas, email, token, hasil, ringkasan skor) dihapus 4 bulan setelah tanggal tes.
+- Angka Tes Koran dibuat acak sekali oleh pemilik proyek lewat skrip (`crypto.randomInt`), disimpan di `backend/bank/<versi>/`, sama untuk semua peserta (keputusan HC). Jangan menimpa tanpa konfirmasi, karena kunci bergantung pada angka itu.
+- Hanya admin HC yang dapat melihat hasil dan mencari identitas, satu peran. Peserta tidak melihat hasil.
 
 ## Belum dikonfirmasi HC
-- Rumus kategori dan skor akhir TIU 5, TIU 6, dan Kraepelin (termasuk arti pembagi 20 pada Kraepelin, dan bagaimana jawaban benar dan salah dipakai pada Kraepelin).
-- Apakah ringkasan skor tanpa identitas peserta boleh disimpan lebih lama dari 3 bulan.
+- Belum ada. Catatan: aturan di atas disampaikan lewat pemilik proyek dan belum berupa dokumen tertulis HC.
 
 ## Konvensi kode
 - TypeScript strict. Tipe model dibagi antara frontend dan backend bila memungkinkan.

@@ -1,9 +1,131 @@
 {
-  "_catatan": "KERANGKA KOSONG. Isi hanya setelah HC mengonfirmasi rumus kategori dan skor akhir. Skor mentah = jumlah benar, tanpa penalti (dikonfirmasi HC 28 Oktober 2026).",
-  "versi": "kosong",
-  "dikonfirmasi_hc": null,
-  "TIU5": { "kategori_dan_skor": [] },
-  "TIU6": { "kategori_dan_skor": [] },
-  "KORAN": { "pembagi": null, "kategori_dan_skor": [] },
-  "_bentuk_baris": { "nilai_min": 0, "nilai_maks": 0, "kategori": "[nama kategori]", "skor_akhir": 0 }
+  "_catatan": "Aturan dari HC, disampaikan pemilik proyek pada 29 Oktober 2026 (perlu dokumen tertulis HC). Batas 'min' inklusif, 'maks_eksklusif' tidak termasuk (null = tanpa batas atas). Tanpa penalti: hanya jumlah benar.",
+  "versi": "v1-2026-10-29",
+  "dikonfirmasi_hc": "lisan, via pemilik proyek (29 Oktober 2026). Pembulatan N Koran dan retensi disetujui HC atas usulan pemilik proyek.",
+  "durasi_detik": {
+    "TIU5": 600,
+    "TIU6": 600,
+    "KORAN": 440
+  },
+  "TIU5": {
+    "masukan": "total_benar",
+    "kategori_dan_skor": [
+      {
+        "min": 0,
+        "maks_eksklusif": 6,
+        "kategori": "Kurang Sekali",
+        "skor_akhir": 1
+      },
+      {
+        "min": 6,
+        "maks_eksklusif": 14,
+        "kategori": "Kurang",
+        "skor_akhir": 2
+      },
+      {
+        "min": 14,
+        "maks_eksklusif": 22,
+        "kategori": "Cukup",
+        "skor_akhir": 3
+      },
+      {
+        "min": 22,
+        "maks_eksklusif": 29,
+        "kategori": "Baik",
+        "skor_akhir": 4
+      },
+      {
+        "min": 29,
+        "maks_eksklusif": null,
+        "kategori": "Baik Sekali",
+        "skor_akhir": 5
+      }
+    ]
+  },
+  "TIU6": {
+    "masukan": "total_benar",
+    "kategori_dan_skor": [
+      {
+        "min": 0,
+        "maks_eksklusif": 9,
+        "kategori": "Kurang Sekali",
+        "skor_akhir": 1
+      },
+      {
+        "min": 9,
+        "maks_eksklusif": 17,
+        "kategori": "Kurang",
+        "skor_akhir": 2
+      },
+      {
+        "min": 17,
+        "maks_eksklusif": 25,
+        "kategori": "Rata-Rata",
+        "skor_akhir": 3
+      },
+      {
+        "min": 25,
+        "maks_eksklusif": 33,
+        "kategori": "Baik",
+        "skor_akhir": 4
+      },
+      {
+        "min": 33,
+        "maks_eksklusif": null,
+        "kategori": "Baik Sekali",
+        "skor_akhir": 5
+      }
+    ]
+  },
+  "KORAN": {
+    "masukan": "total_benar",
+    "pembagi": 22,
+    "_catatan": "N = total_benar / pembagi dibulatkan ke bilangan bulat terdekat, setengah ke atas (disetujui HC). Rumus bulat tanpa float: N = floor((total_benar + 11) / 22). Ambang total benar: 121, 231, 341, 451.",
+    "kategori_dan_skor": [
+      {
+        "min": 0,
+        "maks_eksklusif": 6,
+        "kategori": "Kurang Sekali",
+        "skor_akhir": 1
+      },
+      {
+        "min": 6,
+        "maks_eksklusif": 11,
+        "kategori": "Kurang",
+        "skor_akhir": 2
+      },
+      {
+        "min": 11,
+        "maks_eksklusif": 16,
+        "kategori": "Rata-Rata",
+        "skor_akhir": 3
+      },
+      {
+        "min": 16,
+        "maks_eksklusif": 21,
+        "kategori": "Baik",
+        "skor_akhir": 4
+      },
+      {
+        "min": 21,
+        "maks_eksklusif": null,
+        "kategori": "Baik Sekali",
+        "skor_akhir": 5
+      }
+    ],
+    "pembulatan_desimal": 0,
+    "arah_pembulatan": "setengah_ke_atas",
+    "ambang_total_benar": [
+      121,
+      231,
+      341,
+      451
+    ]
+  },
+  "retensi": {
+    "jawaban_bulan": 3,
+    "ujian_bulan": 4,
+    "dihitung_dari": "tanggal tes",
+    "_catatan": "Disetujui HC, 29 Oktober 2026."
+  }
 }
