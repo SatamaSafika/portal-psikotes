@@ -9,7 +9,11 @@
     "build": "tsc",
     "start": "node dist/src/server.js",
     "db:cek": "tsx scripts/cek-db.ts",
-    "admin:buat": "tsx scripts/buat-admin.ts"
+    "admin:buat": "tsx scripts/buat-admin.ts",
+    "bank:impor": "tsx scripts/impor-bank.ts",
+    "bank:periksa": "tsx scripts/periksa-bank.ts",
+    "buat-koran": "tsx scripts/buat-koran.ts",
+    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts"
   },
   "dependencies": {
     "argon2": "^0.45.1",

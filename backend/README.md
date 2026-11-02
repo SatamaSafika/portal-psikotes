@@ -25,6 +25,21 @@ Variabel yang dibaca kode:
 - `npm run dev`: jalankan API dengan muat ulang otomatis. Cek di http://localhost:3000/api/health
 - `npm run db:cek`: uji koneksi database (hanya SELECT). Mencetak nama database dan tabel berprefix `HCIS_Psikotes_`.
 - `npm run admin:buat`: buat akun admin HC. Kata sandi diketik di prompt tersembunyi (minimal 12 karakter), tidak pernah lewat argumen. Username yang sudah ada tidak ditimpa.
+- `npm run bank:impor -- --periksa`: periksa bahan di `materi_rahasia/mentah` tanpa menulis apa pun.
+- `npm run bank:impor`: periksa lalu tulis `bank/v1/` (`soal.json`, `koran.json`, `gambar/`). Menolak bila `bank/v1` sudah ada. Pilihan: `--versi v2`, `--sumber <folder>`.
+- `npm run bank:periksa`: muat bank yang sudah terimpor lewat pembaca server, cetak jumlah dan sidik jari.
+- `npm run buat-koran`: buat angka Tes Koran baru (sekali per versi bank) ke `materi_rahasia/mentah/koran.json`. Susunan dari `config/tes.json`. Tidak menimpa berkas yang ada.
+- `npm test`: tes otomatis (data dummy saja).
+
+Semua skrip bank hanya mencetak nama berkas, nomor, jumlah, dan sidik jari. Kunci, penjelasan, instruksi, dan angka Koran tidak pernah dicetak.
+
+## Bank soal
+Bahan di `materi_rahasia/mentah/`:
+- `kunci.csv` dengan header `tes,jenis,soal,butir,kunci,penjelasan`. `tes` = `TIU5`/`TIU6`, `jenis` = `latihan`/`soal`. TIU 5: `butir` kosong, kunci 1 sampai 5. TIU 6: `butir` 1 sampai 5, kunci `B`/`S`. Penjelasan hanya untuk latihan TIU 5 (wajib di sana). Pada soal TIU 5, latihan TIU 6, dan soal TIU 6 penjelasan diabaikan dengan peringatan.
+- `latihan-tiu5-NN.png`, `tiu5-NN.png`, `latihan-tiu6-NN.png`, `tiu6-NN.png` (NN dua digit, mulai 01).
+- `instruksi_tiu5.txt`, `instruksi_tiu6.txt`, `koran.json`.
+
+Jumlah yang diharapkan diambil dari `config/tes.json`. Durasi dan aturan skor ada di `config/skoring.json`, diperiksa saat server mulai (kategori harus menyambung tanpa celah atau tumpang tindih).
 
 ## Login admin
 | Rute | Hasil |
@@ -42,11 +57,13 @@ Variabel yang dibaca kode:
 ```
 src/app.ts          aplikasi Express dan rute
 src/server.ts       titik masuk
-src/config/         pembacaan konfigurasi .env
+src/config/         pembacaan .env, tes.json, skoring.json
 src/db/             pool koneksi SQL Server bersama
+src/lib/            utilitas kecil (parser CSV)
 src/middleware/     helmet, CORS, batas laju, penanganan galat
-src/modules/        token, tes, skoring, hasil, admin
-scripts/            skrip bantu (cek-db, buat-admin)
+src/modules/        token, tes (pembaca bank soal), skoring, hasil, admin
+scripts/            skrip bantu (cek-db, buat-admin, impor-bank, periksa-bank, buat-koran)
+test/               tes otomatis (node:test, data dummy)
 db/                 skrip SQL tabel HCIS_Psikotes_* (dijalankan manual lewat SSMS)
 config/             konfigurasi tes dan skoring (tidak rahasia)
 bank/               bank soal dan kunci (diabaikan git)

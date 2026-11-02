@@ -1,6 +1,12 @@
 import 'dotenv/config';
 import { app } from './app.js';
+import { muatSkoring } from './config/skoring.js';
+import { muatTes } from './config/tes.js';
 import { tutupPool } from './db/pool.js';
+
+// Konfigurasi tes dan skoring diperiksa saat mulai: server tidak jalan bila tidak valid.
+muatTes();
+muatSkoring();
 
 const port = Number(process.env.PORT ?? 3000);
 

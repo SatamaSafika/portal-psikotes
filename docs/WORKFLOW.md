@@ -68,11 +68,14 @@ Selesai kalau: `GET /api/health` hidup dan satu perintah koneksi ke database ber
 Selesai kalau: login admin berhasil, salah password dibatasi, kata sandi tidak muncul di log.
 
 ## Part 2. Bank soal dan skrip impor (M)
-- Skrip impor: baca `mentah\`, `instruksi_*.txt`, dan `kunci.csv`, tulis `backend/bank/v1/soal.json`, salin gambar.
-- Pemeriksaan: nomor Soal atau butir bolong, gambar tanpa kunci, kunci tidak valid (TIU 5 harus 1 sampai 5, TIU 6 harus B atau S), berkas tidak terpakai, jumlah baris TIU 6 = jumlah Soal x 5.
-- Skrip pembuat angka Koran (`npm run buat-koran`): membuat deretan angka 0 sampai 9 dengan generator acak yang aman (`crypto.randomInt`, bukan `Math.random`), sekali saja per versi bank, disimpan di `backend/bank/v1/`. Skrip menolak menimpa berkas yang sudah ada tanpa konfirmasi, karena mengganti angka berarti mengganti kunci. Susunan (13 halaman, 4 lajur per halaman, 20 angka per lajur) diambil dari konfigurasi, bukan angka tetap di kode. Dijalankan sekali oleh pemilik proyek.
-- Pembaca bank soal di backend (tanpa mengirim kunci ke klien).
-- Muat dan validasi `skoring.json`: batas kategori saling menyambung tanpa celah atau tumpang tindih.
+- [X] Skrip impor: baca `mentah\`, `instruksi_*.txt`, dan `kunci.csv`, tulis `backend/bank/v1/soal.json`, salin gambar. (`npm run bank:impor`, ada mode `--periksa`)
+- [X] Pemeriksaan: nomor Soal atau butir bolong, gambar tanpa kunci, kunci tidak valid (TIU 5 harus 1 sampai 5, TIU 6 harus B atau S), berkas tidak terpakai, jumlah baris TIU 6 = jumlah Soal x 5.
+- [X] Skrip pembuat angka Koran (`npm run buat-koran`): membuat deretan angka 0 sampai 9 dengan generator acak yang aman (`crypto.randomInt`, bukan `Math.random`), sekali saja per versi bank, disimpan di `backend/bank/v1/`. Skrip menolak menimpa berkas yang sudah ada tanpa konfirmasi, karena mengganti angka berarti mengganti kunci. Susunan (13 halaman, 4 lajur per halaman, 20 angka per lajur) diambil dari konfigurasi, bukan angka tetap di kode. Dijalankan sekali oleh pemilik proyek. Angka v1 sudah dibuat di `mentah/koran.json` dan disalin ke `bank/v1/` oleh skrip impor.
+- [X] Pembaca bank soal di backend (tanpa mengirim kunci ke klien).
+- [X] Muat dan validasi `skoring.json`: batas kategori saling menyambung tanpa celah atau tumpang tindih.
+- [X] Uji oleh pemilik proyek: `npm test`, `bank:impor -- --periksa`, `bank:impor`, `bank:periksa`.
+- Penjelasan jawaban hanya untuk latihan TIU 5 (keputusan pemilik proyek). Latihan TIU 6 dan semua soal tanpa penjelasan.
+- Latihan Tes Koran (2 soal latihan) belum punya bahan: dibahas di Part 7.
 Selesai kalau: skrip menyatakan bank valid, jumlah soal sesuai ekspektasi per tes, dan angka Koran sudah dibuat dan terbaca.
 
 ## Part 3. Sesi dan token (M)
