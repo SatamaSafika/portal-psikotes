@@ -3,15 +3,24 @@
 // supaya tidak ada pergeseran zona waktu dari driver.
 import sql from 'mssql';
 import { ambilPool } from '../../db/pool.js';
-import type { Template } from './undangan.js';
-import type { JenisTes } from './undangan.js';
-import type { SesiMasukan } from './sesi.validasi.js';
+import type { JadwalTes } from './sesi.validasi.js';
+import type { JenisTes, Template } from './undangan.js';
 
+/** Satu token: satu peserta, satu tes, dengan jadwal tes itu. */
 export interface BarisUjianBaru {
   email: string;
   nama: string | null;
-  tes: JenisTes;
+  jadwal: JadwalTes;
   tokenHash: string;
+}
+
+/** Data baris sesi. tanggal dan waktu_* hanya ringkasan hari pertama; jadwal sebenarnya per token. */
+export interface SesiBaru {
+  nama_sesi: string;
+  tanggal: string;
+  waktu_buka: string;
+  waktu_tutup: string;
+  daftar_tes: string;
 }
 
 export interface SesiRingkas {
@@ -34,6 +43,9 @@ export interface UjianAdmin {
   email: string;
   nama: string | null;
   jenis_tes: JenisTes;
+  tanggal: string;
+  waktu_buka: string;
+  waktu_tutup: string;
   status: string;
   mulai_pada: string | null;
   selesai_pada: string | null;
@@ -53,9 +65,13 @@ export function galatUnik(galat: unknown): boolean {
 async function sisipkanUjian(tx: sql.Transaction, sesiId: number, baris: BarisUjianBaru[]): Promise<number[]> {
   const id: number[] = [];
   for (const b of baris) {
+    // Jadwal (tanggal, jam) per token; berlaku_sampai = jam tutup tes itu.
     const hasil = await new sql.Request(tx)
       .input('sesiId', sql.Int, sesiId)
-      .input('tes', sql.VarChar(10), b.tes)
+      .input('tes', sql.VarChar(10), b.jadwal.tes)
+      .input('tanggal', sql.VarChar(10), b.jadwal.tanggal)
+      .input('buka', sql.VarChar(5), b.jadwal.waktu_buka)
+      .input('tutup', sql.VarChar(5), b.jadwal.waktu_tutup)
       .input('email', sql.NVarChar(150), b.email)
       .input('nama', sql.NVarChar(100), b.nama)
       .input('hash', sql.Char(64), b.tokenHash)
@@ -63,8 +79,10 @@ async function sisipkanUjian(tx: sql.Transaction, sesiId: number, baris: BarisUj
         `INSERT INTO dbo.HCIS_Psikotes_Ujian
            (nama_sesi, jenis_tes, tanggal, waktu_buka, waktu_tutup, bank_versi, email, nama, token_hash, berlaku_sampai, sesi_id)
          OUTPUT inserted.id
-         SELECT s.nama_sesi, @tes, s.tanggal, s.waktu_buka, s.waktu_tutup, s.bank_versi, @email, @nama, @hash,
-                DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), s.waktu_tutup), CAST(s.tanggal AS DATETIME2(0))),
+         SELECT s.nama_sesi, @tes, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)),
+                s.bank_versi, @email, @nama, @hash,
+                DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), CAST(@tutup AS TIME(0))),
+                        CAST(CAST(@tanggal AS DATE) AS DATETIME2(0))),
                 s.id
            FROM dbo.HCIS_Psikotes_Sesi s
           WHERE s.id = @sesiId`,
@@ -89,10 +107,11 @@ async function dalamTransaksi<T>(kerja: (tx: sql.Transaction) => Promise<T>): Pr
 
 /**
  * Membuat sesi dan seluruh baris ujian dalam satu transaksi.
- * Null bila tanggal sesi sudah lewat menurut jam server database.
+ * Null bila hari pertama sesi sudah lewat menurut jam server database
+ * (tanggal sesi = tanggal tes paling awal, jadi semua tes tidak di masa lalu).
  */
 export function buatSesi(
-  sesi: SesiMasukan,
+  sesi: SesiBaru,
   template: Template,
   bankVersi: string,
   adminId: number,
@@ -104,7 +123,7 @@ export function buatSesi(
       .input('tanggal', sql.VarChar(10), sesi.tanggal)
       .input('buka', sql.VarChar(5), sesi.waktu_buka)
       .input('tutup', sql.VarChar(5), sesi.waktu_tutup)
-      .input('tes', sql.VarChar(20), sesi.tes.join(','))
+      .input('tes', sql.VarChar(20), sesi.daftar_tes)
       .input('bank', sql.VarChar(20), bankVersi)
       .input('subjek', sql.NVarChar(200), template.subjek)
       .input('isi', sql.NVarChar(4000), template.isi)
@@ -159,7 +178,10 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
     .request()
     .input('id', sql.Int, sesiId)
     .query<UjianAdmin>(
-      `SELECT id AS ujian_id, email, nama, jenis_tes, status,
+      `SELECT id AS ujian_id, email, nama, jenis_tes,
+              CONVERT(CHAR(10), tanggal, 23) AS tanggal,
+              CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
+              status,
               CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
               CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada
          FROM dbo.HCIS_Psikotes_Ujian
@@ -180,15 +202,33 @@ export async function simpanTemplate(id: number, t: Template): Promise<boolean> 
   return hasil.rowsAffected[0] === 1;
 }
 
-/** Ujian milik satu email di satu sesi yang tokennya belum dipakai. */
-export async function ujianBelumDipakai(sesiId: number, email: string): Promise<{ id: number; jenis_tes: JenisTes; nama: string | null }[]> {
+const KOLOM_JADWAL = `jenis_tes AS tes, CONVERT(CHAR(10), tanggal, 23) AS tanggal,
+  CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup`;
+
+/**
+ * Jadwal per tes sebuah sesi, dibaca dari token yang sudah ada (semua peserta sesi berjadwal sama).
+ * Null bila jadwal satu tes ternyata tidak seragam.
+ */
+export async function jadwalSesi(sesiId: number): Promise<JadwalTes[] | null> {
+  const pool = await ambilPool();
+  const hasil = await pool
+    .request()
+    .input('sesiId', sql.Int, sesiId)
+    .query<JadwalTes>(`SELECT DISTINCT ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian WHERE sesi_id = @sesiId`);
+  const jadwal = hasil.recordset;
+  if (new Set(jadwal.map((j) => j.tes)).size !== jadwal.length) return null;
+  return jadwal;
+}
+
+/** Ujian milik satu email di satu sesi yang tokennya belum dipakai, beserta jadwalnya. */
+export async function ujianBelumDipakai(sesiId: number, email: string): Promise<(JadwalTes & { id: number; nama: string | null })[]> {
   const pool = await ambilPool();
   const hasil = await pool
     .request()
     .input('sesiId', sql.Int, sesiId)
     .input('email', sql.NVarChar(150), email)
-    .query<{ id: number; jenis_tes: JenisTes; nama: string | null }>(
-      `SELECT id, jenis_tes, nama FROM dbo.HCIS_Psikotes_Ujian
+    .query<JadwalTes & { id: number; nama: string | null }>(
+      `SELECT id, nama, ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian
         WHERE sesi_id = @sesiId AND email = @email AND status = 'BELUM_DIPAKAI'`,
     );
   return hasil.recordset;

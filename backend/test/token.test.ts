@@ -1,7 +1,7 @@
 // Semua data di sini DUMMY (domain contoh.test).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { validasiPeserta, validasiSesi } from '../src/modules/token/sesi.validasi.js';
+import { ringkasJadwal, validasiPeserta, validasiSesi } from '../src/modules/token/sesi.validasi.js';
 import { buatTokenPeserta, hashTokenPeserta, normalisasiToken } from '../src/modules/token/token.js';
 import { formatTanggal, isiUndangan, MAILTO_MAKS, templateBawaan, validasiTemplate } from '../src/modules/token/undangan.js';
 
@@ -56,6 +56,10 @@ test('penanda salah ketik ditolak', () => {
   assert.match(validasiTemplate({ subjek: 'Halo {nma}', isi: '{daftar_token} {tautn}' }).join(), /\{nma\}, \{tautn\}/);
 });
 
+test('penanda jadwal global tidak dipakai lagi (jadwal ada di {daftar_token})', () => {
+  assert.match(validasiTemplate({ subjek: 'Undangan {tanggal}', isi: '{daftar_token} {jam_buka}' }).join(), /\{tanggal\}, \{jam_buka\}/);
+});
+
 test('subjek kosong, berbaris baru, atau terlalu panjang ditolak', () => {
   assert.ok(validasiTemplate({ subjek: ' ', isi: '{daftar_token}' }).length > 0);
   assert.ok(validasiTemplate({ subjek: 'a\nb', isi: '{daftar_token}' }).length > 0);
@@ -69,13 +73,10 @@ test('suntingan HC boleh berisi teks apa pun selain aturan wajib', () => {
 const DATA = {
   email: 'peserta.satu@contoh.test',
   nama: 'Peserta Satu',
-  tanggal: '2026-11-10',
-  jamBuka: '08:00',
-  jamTutup: '12:00',
   portalUrl: 'https://psikotes.contoh.test',
   token: [
-    { tes: 'TIU5' as const, token: 'AAAA-BBBB-CCCC-DDDD-EEEE' },
-    { tes: 'KORAN' as const, token: 'FFFF-GGGG-HHHH-JJJJ-KKKK' },
+    { tes: 'TIU5' as const, token: 'AAAA-BBBB-CCCC-DDDD-EEEE', tanggal: '2026-11-10', waktu_buka: '08:00', waktu_tutup: '09:00' },
+    { tes: 'KORAN' as const, token: 'FFFF-GGGG-HHHH-JJJJ-KKKK', tanggal: '2026-11-11', waktu_buka: '13:00', waktu_tutup: '14:00' },
   ],
 };
 
@@ -83,14 +84,13 @@ test('format tanggal Indonesia', () => {
   assert.equal(formatTanggal('2026-11-10'), 'Selasa, 10 November 2026');
 });
 
-test('undangan terisi semua penanda dan memuat semua token', () => {
+test('undangan memuat setiap token dengan jadwal tesnya sendiri', () => {
   const u = isiUndangan(templateBawaan(), DATA);
-  assert.equal(u.subjek, 'Undangan Psikotes Selasa, 10 November 2026');
+  assert.equal(u.subjek, 'Undangan Psikotes');
   assert.ok(u.isi.includes('Halo Peserta Satu,'));
-  assert.ok(u.isi.includes('pukul 08:00 sampai 12:00'));
   assert.ok(u.isi.includes('https://psikotes.contoh.test/masuk'));
-  assert.ok(u.isi.includes('TIU 5     : AAAA-BBBB-CCCC-DDDD-EEEE'));
-  assert.ok(u.isi.includes('Tes Koran : FFFF-GGGG-HHHH-JJJJ-KKKK'));
+  assert.ok(u.isi.includes('TIU 5 - Selasa, 10 November 2026, pukul 08:00-09:00\r\nToken: AAAA-BBBB-CCCC-DDDD-EEEE'));
+  assert.ok(u.isi.includes('Tes Koran - Rabu, 11 November 2026, pukul 13:00-14:00\r\nToken: FFFF-GGGG-HHHH-JJJJ-KKKK'));
   assert.ok(!/\{[a-z_]+\}/.test(u.subjek + u.isi), 'masih ada penanda yang belum terisi');
 });
 
@@ -120,39 +120,48 @@ test('mailto panjang ditandai', () => {
 
 // ---------- validasi sesi ----------
 
+const KORAN = { tes: 'KORAN', tanggal: '2026-11-11', waktu_buka: '13:00', waktu_tutup: '14:00' };
+const TIU5 = { tes: 'TIU5', tanggal: '2026-11-10', waktu_buka: '08:00', waktu_tutup: '09:00' };
 const SESI = {
   nama_sesi: 'Batch Uji 1',
-  tanggal: '2026-11-10',
-  waktu_buka: '08:00',
-  waktu_tutup: '12:00',
-  tes: ['KORAN', 'TIU5'],
+  jadwal: [KORAN, TIU5],
   peserta: [{ email: ' Peserta.Satu@Contoh.TEST ', nama: 'Peserta Satu' }, { email: 'peserta.dua@contoh.test' }],
 };
 
-test('sesi valid: email jadi huruf kecil, tes urut baku', () => {
+test('sesi valid: jadwal per tes urut baku, email jadi huruf kecil', () => {
   const v = validasiSesi(SESI);
   assert.deepEqual(v.galat, []);
-  assert.deepEqual(v.sesi!.tes, ['TIU5', 'KORAN']);
+  assert.deepEqual(v.sesi!.jadwal, [TIU5, KORAN]);
   assert.deepEqual(v.sesi!.peserta, [
     { email: 'peserta.satu@contoh.test', nama: 'Peserta Satu' },
     { email: 'peserta.dua@contoh.test', nama: null },
   ]);
 });
 
-test('sesi: tanggal, jam, dan tes yang salah ditolak', () => {
-  for (const ubah of [
-    { tanggal: '2026-02-30' },
-    { tanggal: '10-11-2026' },
-    { waktu_buka: '8:00' },
-    { waktu_tutup: '07:00' },
-    { waktu_tutup: '08:00' },
-    { tes: [] },
-    { tes: ['TIU7'] },
-    { tes: ['TIU5', 'TIU5'] },
-    { nama_sesi: '' },
+test('sesi: jadwal yang salah ditolak dengan menyebut tesnya', () => {
+  for (const salah of [
+    { ...TIU5, tanggal: '2026-02-30' },
+    { ...TIU5, tanggal: '10-11-2026' },
+    { ...TIU5, waktu_buka: '8:00' },
+    { ...TIU5, waktu_tutup: '07:00' },
+    { ...TIU5, waktu_tutup: '08:00' },
+    { ...TIU5, tes: 'TIU7' },
   ]) {
-    assert.equal(validasiSesi({ ...SESI, ...ubah }).sesi, null, JSON.stringify(ubah));
+    const v = validasiSesi({ ...SESI, jadwal: [salah, KORAN] });
+    assert.equal(v.sesi, null, JSON.stringify(salah));
   }
+  assert.match(validasiSesi({ ...SESI, jadwal: [TIU5, TIU5] }).galat.join(), /ganda/);
+  assert.equal(validasiSesi({ ...SESI, jadwal: [] }).sesi, null);
+  assert.equal(validasiSesi({ ...SESI, nama_sesi: '' }).sesi, null);
+});
+
+test('ringkasan sesi: hari pertama dan rentang jam di hari itu', () => {
+  const tiu6 = { tes: 'TIU6' as const, tanggal: '2026-11-10', waktu_buka: '09:30', waktu_tutup: '10:30' };
+  assert.deepEqual(ringkasJadwal([TIU5 as never, tiu6, KORAN as never]), {
+    tanggal: '2026-11-10',
+    waktu_buka: '08:00',
+    waktu_tutup: '10:30',
+  });
 });
 
 test('peserta: email tidak valid, ganda, atau terlalu banyak ditolak tanpa menyebut alamat', () => {

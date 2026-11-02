@@ -13,7 +13,8 @@ export const LABEL_TES: Record<JenisTes, string> = {
   KORAN: 'Tes Koran',
 };
 
-export const PENANDA = ['nama', 'tanggal', 'jam_buka', 'jam_tutup', 'tautan', 'daftar_token'] as const;
+/** Jadwal tiap tes berbeda, jadi tanggal dan jam ada di dalam {daftar_token}, bukan penanda sendiri. */
+export const PENANDA = ['nama', 'tautan', 'daftar_token'] as const;
 export const SUBJEK_MAKS = 200;
 export const ISI_MAKS = 4000;
 /** Sebagian aplikasi email memotong tautan mailto yang lebih panjang dari ini. */
@@ -55,16 +56,21 @@ export function templateBawaan(): Template {
   return bawaan;
 }
 
-export interface DataUndangan {
-  email: string;
-  nama: string | null;
+export interface TokenBerjadwal {
+  tes: JenisTes;
+  token: string;
   /** YYYY-MM-DD */
   tanggal: string;
   /** HH:MM */
-  jamBuka: string;
-  jamTutup: string;
+  waktu_buka: string;
+  waktu_tutup: string;
+}
+
+export interface DataUndangan {
+  email: string;
+  nama: string | null;
   portalUrl: string;
-  token: { tes: JenisTes; token: string }[];
+  token: TokenBerjadwal[];
 }
 
 export interface Undangan {
@@ -88,15 +94,21 @@ export function formatTanggal(tanggal: string): string {
   }).format(new Date(Date.UTC(t, b - 1, h)));
 }
 
+/**
+ * Satu blok per tes: nama tes dan jadwal, lalu token di baris sendiri.
+ * Tanpa perataan spasi, karena Outlook merapatkan spasi ganda.
+ */
+export function daftarToken(token: TokenBerjadwal[]): string {
+  return token
+    .map((x) => `${LABEL_TES[x.tes]} - ${formatTanggal(x.tanggal)}, pukul ${x.waktu_buka}-${x.waktu_tutup}\nToken: ${x.token}`)
+    .join('\n\n');
+}
+
 export function isiUndangan(template: Template, data: DataUndangan): Undangan {
-  const lebar = Math.max(...data.token.map((x) => LABEL_TES[x.tes].length));
   const nilai: Record<(typeof PENANDA)[number], string> = {
     nama: data.nama?.trim() || 'Peserta',
-    tanggal: formatTanggal(data.tanggal),
-    jam_buka: data.jamBuka,
-    jam_tutup: data.jamTutup,
     tautan: `${data.portalUrl}/masuk`,
-    daftar_token: data.token.map((x) => `${LABEL_TES[x.tes].padEnd(lebar)} : ${x.token}`).join('\n'),
+    daftar_token: daftarToken(data.token),
   };
   // Satu kali lewat, jadi nilai yang kebetulan berisi "{...}" tidak diganti lagi.
   const ganti = (teks: string): string =>

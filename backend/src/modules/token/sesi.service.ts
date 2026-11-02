@@ -4,7 +4,7 @@ import type { KonfigurasiAplikasi } from '../../config/env.js';
 import { muatTes } from '../../config/tes.js';
 import { muatBank } from '../tes/bank.js';
 import * as repo from './sesi.repo.js';
-import type { PesertaMasukan, SesiMasukan } from './sesi.validasi.js';
+import { DAFTAR_TES, ringkasJadwal, type JadwalTes, type PesertaMasukan, type SesiMasukan } from './sesi.validasi.js';
 import { buatTokenPeserta, hashTokenPeserta, normalisasiToken } from './token.js';
 import { isiUndangan, templateBawaan, type JenisTes, type Template, type Undangan } from './undangan.js';
 
@@ -18,9 +18,9 @@ export class GalatPermintaan extends Error {
   }
 }
 
-export interface TokenPeserta {
+/** Satu token beserta jadwal tesnya. */
+export interface TokenPeserta extends JadwalTes {
   ujian_id: number;
-  tes: JenisTes;
   token: string;
 }
 
@@ -29,41 +29,36 @@ export interface UndanganPeserta extends Undangan {
   token: TokenPeserta[];
 }
 
-interface DataSesiUndangan {
-  tanggal: string;
-  waktu_buka: string;
-  waktu_tutup: string;
-}
-
-/** Membuat token per peserta per tes. */
-function siapkanToken(peserta: PesertaMasukan[], tes: JenisTes[]) {
-  return peserta.map((p) => ({
-    ...p,
-    token: tes.map((t) => ({ tes: t, token: buatTokenPeserta() })),
-  }));
+interface PesertaBertoken {
+  email: string;
+  nama: string | null;
+  token: (JadwalTes & { token: string })[];
 }
 
 const hashDari = (token: string): string => hashTokenPeserta(normalisasiToken(token)!);
 
-function susunUndangan(
-  sesi: DataSesiUndangan,
-  template: Template,
-  konfig: KonfigurasiAplikasi,
-  peserta: { email: string; nama: string | null; token: TokenPeserta[] }[],
-): UndanganPeserta[] {
-  return peserta.map((p) => ({
-    ...isiUndangan(template, {
-      email: p.email,
+/** Satu token per peserta per tes, mengikuti jadwal tes itu. */
+function siapkanToken(peserta: PesertaMasukan[], jadwal: JadwalTes[]): PesertaBertoken[] {
+  return peserta.map((p) => ({ ...p, token: jadwal.map((j) => ({ ...j, token: buatTokenPeserta() })) }));
+}
+
+function barisDari(siap: PesertaBertoken[]): repo.BarisUjianBaru[] {
+  return siap.flatMap((p) =>
+    p.token.map(({ token, ...jadwal }) => ({ email: p.email, nama: p.nama, jadwal, tokenHash: hashDari(token) })),
+  );
+}
+
+/** Menggabungkan id ujian hasil sisip (urutannya sama dengan baris) lalu mengisi template. */
+function susunUndangan(siap: PesertaBertoken[], ujianId: number[], template: Template, konfig: KonfigurasiAplikasi): UndanganPeserta[] {
+  let i = 0;
+  return siap.map((p) => {
+    const token = p.token.map((t) => ({ ...t, ujian_id: ujianId[i++] }));
+    return {
+      ...isiUndangan(template, { email: p.email, nama: p.nama, portalUrl: konfig.portalUrl, token }),
       nama: p.nama,
-      tanggal: sesi.tanggal,
-      jamBuka: sesi.waktu_buka,
-      jamTutup: sesi.waktu_tutup,
-      portalUrl: konfig.portalUrl,
-      token: p.token,
-    }),
-    nama: p.nama,
-    token: p.token,
-  }));
+      token,
+    };
+  });
 }
 
 export async function buatSesi(
@@ -76,27 +71,23 @@ export async function buatSesi(
   // Bank harus valid sebelum sesi dibuat, supaya peserta tidak mendapat token untuk bank rusak.
   await muatBank(bankVersi);
   const tpl = template ?? templateBawaan();
-
-  const siap = siapkanToken(sesi.peserta, sesi.tes);
-  const baris = siap.flatMap((p) => p.token.map((t) => ({ email: p.email, nama: p.nama, tes: t.tes, tokenHash: hashDari(t.token) })));
+  const siap = siapkanToken(sesi.peserta, sesi.jadwal);
 
   let hasil;
   try {
-    hasil = await repo.buatSesi(sesi, tpl, bankVersi, adminId, baris);
+    hasil = await repo.buatSesi(
+      { nama_sesi: sesi.nama_sesi, ...ringkasJadwal(sesi.jadwal), daftar_tes: sesi.jadwal.map((j) => j.tes).join(',') },
+      tpl,
+      bankVersi,
+      adminId,
+      barisDari(siap),
+    );
   } catch (galat) {
     if (repo.galatUnik(galat)) throw new GalatPermintaan(409, 'Sesi dengan nama dan tanggal ini sudah ada');
     throw galat;
   }
-  if (!hasil) throw new GalatPermintaan(400, 'Tanggal sesi sudah lewat');
-
-  // Urutan id ujian sama dengan urutan baris yang disisipkan.
-  let i = 0;
-  const peserta = siap.map((p) => ({
-    email: p.email,
-    nama: p.nama,
-    token: p.token.map((t) => ({ ujian_id: hasil.ujianId[i++], tes: t.tes, token: t.token })),
-  }));
-  return { sesi_id: hasil.sesiId, undangan: susunUndangan(sesi, tpl, konfig, peserta) };
+  if (!hasil) throw new GalatPermintaan(400, 'Jadwal tes paling awal sudah lewat');
+  return { sesi_id: hasil.sesiId, undangan: susunUndangan(siap, hasil.ujianId, tpl, konfig) };
 }
 
 async function sesiAtauGalat(sesiId: number): Promise<repo.SesiDetail> {
@@ -106,48 +97,48 @@ async function sesiAtauGalat(sesiId: number): Promise<repo.SesiDetail> {
 }
 
 const templateSesi = (s: repo.SesiDetail): Template => ({ subjek: s.template_subjek, isi: s.template_isi });
+const urutBaku = (a: { tes: JenisTes }, b: { tes: JenisTes }): number => DAFTAR_TES.indexOf(a.tes) - DAFTAR_TES.indexOf(b.tes);
+
+/** Jadwal per tes yang sudah dipakai sesi ini, supaya peserta tambahan mendapat jadwal yang sama. */
+async function jadwalAtauGalat(sesiId: number): Promise<JadwalTes[]> {
+  const jadwal = await repo.jadwalSesi(sesiId);
+  if (!jadwal || jadwal.length === 0) throw new GalatPermintaan(409, 'Jadwal sesi tidak bisa ditentukan');
+  return jadwal.sort(urutBaku);
+}
 
 export async function tambahPeserta(sesiId: number, peserta: PesertaMasukan[], konfig: KonfigurasiAplikasi): Promise<UndanganPeserta[]> {
   const sesi = await sesiAtauGalat(sesiId);
-  const tes = sesi.daftar_tes.split(',') as JenisTes[];
-  const siap = siapkanToken(peserta, tes);
-  const baris = siap.flatMap((p) => p.token.map((t) => ({ email: p.email, nama: p.nama, tes: t.tes, tokenHash: hashDari(t.token) })));
-
+  const siap = siapkanToken(peserta, await jadwalAtauGalat(sesiId));
   let ujianId: number[];
   try {
-    ujianId = await repo.tambahUjian(sesiId, baris);
+    ujianId = await repo.tambahUjian(sesiId, barisDari(siap));
   } catch (galat) {
     if (repo.galatUnik(galat)) throw new GalatPermintaan(409, 'Sebagian email sudah terdaftar di sesi ini');
     throw galat;
   }
-  let i = 0;
-  const hasil = siap.map((p) => ({
-    email: p.email,
-    nama: p.nama,
-    token: p.token.map((t) => ({ ujian_id: ujianId[i++], tes: t.tes, token: t.token })),
-  }));
-  return susunUndangan(sesi, templateSesi(sesi), konfig, hasil);
+  return susunUndangan(siap, ujianId, templateSesi(sesi), konfig);
 }
 
 /** Token baru untuk satu peserta. Hanya token yang belum dipakai yang diganti; token lama langsung tidak berlaku. */
 export async function tokenBaru(sesiId: number, email: string, konfig: KonfigurasiAplikasi): Promise<UndanganPeserta> {
   const sesi = await sesiAtauGalat(sesiId);
-  const ujian = await repo.ujianBelumDipakai(sesiId, email);
+  const ujian = (await repo.ujianBelumDipakai(sesiId, email)).sort(urutBaku);
   if (ujian.length === 0) throw new GalatPermintaan(404, 'Tidak ada token yang belum dipakai untuk email ini di sesi ini');
 
-  const urutan: JenisTes[] = ['TIU5', 'TIU6', 'KORAN'];
-  const token = ujian
-    .sort((a, b) => urutan.indexOf(a.jenis_tes) - urutan.indexOf(b.jenis_tes))
-    .map((u) => ({ ujian_id: u.id, tes: u.jenis_tes, token: buatTokenPeserta() }));
+  const siap: PesertaBertoken = {
+    email,
+    nama: ujian[0].nama,
+    token: ujian.map(({ tes, tanggal, waktu_buka, waktu_tutup }) => ({ tes, tanggal, waktu_buka, waktu_tutup, token: buatTokenPeserta() })),
+  };
   // Bila ada token yang baru saja dipakai di sela-sela, tidak ada yang diganti.
-  if (!(await repo.gantiToken(token.map((t) => ({ id: t.ujian_id, tokenHash: hashDari(t.token) }))))) {
+  const ganti = siap.token.map((t, i) => ({ id: ujian[i].id, tokenHash: hashDari(t.token) }));
+  if (!(await repo.gantiToken(ganti))) {
     throw new GalatPermintaan(409, 'Status token berubah, muat ulang data sesi lalu coba lagi');
   }
-
-  return susunUndangan(sesi, templateSesi(sesi), konfig, [{ email, nama: ujian[0].nama, token }])[0];
+  return susunUndangan([siap], ujian.map((u) => u.id), templateSesi(sesi), konfig)[0];
 }
 
 export async function detailSesi(sesiId: number) {
   const sesi = await sesiAtauGalat(sesiId);
-  return { ...sesi, ujian: await repo.daftarUjianSesi(sesiId) };
+  return { ...sesi, jadwal: ((await repo.jadwalSesi(sesiId)) ?? []).sort(urutBaku), ujian: await repo.daftarUjianSesi(sesiId) };
 }

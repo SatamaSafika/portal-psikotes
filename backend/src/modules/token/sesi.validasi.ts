@@ -13,12 +13,20 @@ export interface PesertaMasukan {
   nama: string | null;
 }
 
-export interface SesiMasukan {
-  nama_sesi: string;
+/** Jadwal satu tes dalam sesi. Sama untuk semua peserta sesi itu. */
+export interface JadwalTes {
+  tes: JenisTes;
+  /** YYYY-MM-DD */
   tanggal: string;
+  /** HH:MM */
   waktu_buka: string;
   waktu_tutup: string;
-  tes: JenisTes[];
+}
+
+export interface SesiMasukan {
+  nama_sesi: string;
+  /** Urut baku TIU5, TIU6, KORAN. */
+  jadwal: JadwalTes[];
   peserta: PesertaMasukan[];
 }
 
@@ -62,6 +70,52 @@ export function validasiPeserta(data: unknown): { peserta: PesertaMasukan[]; gal
   return { peserta, galat };
 }
 
+export function validasiJadwal(data: unknown): { jadwal: JadwalTes[]; galat: string[] } {
+  const galat: string[] = [];
+  if (!Array.isArray(data) || data.length === 0) {
+    return { jadwal: [], galat: [`jadwal wajib berisi satu atau lebih tes (${DAFTAR_TES.join(', ')})`] };
+  }
+  const jadwal: JadwalTes[] = [];
+  const terlihat = new Set<string>();
+  data.forEach((j: Record<string, unknown> | null, i) => {
+    const label = `jadwal ke-${i + 1}`;
+    const tes = j?.tes as JenisTes;
+    if (!DAFTAR_TES.includes(tes)) {
+      galat.push(`${label}: tes harus salah satu dari ${DAFTAR_TES.join(', ')}`);
+      return;
+    }
+    if (terlihat.has(tes)) {
+      galat.push(`${label}: tes ${tes} ganda`);
+      return;
+    }
+    terlihat.add(tes);
+    const tanggal = typeof j?.tanggal === 'string' ? j.tanggal : '';
+    const buka = typeof j?.waktu_buka === 'string' ? j.waktu_buka : '';
+    const tutup = typeof j?.waktu_tutup === 'string' ? j.waktu_tutup : '';
+    if (!tanggalSah(tanggal)) galat.push(`${label} (${tes}): tanggal harus berbentuk YYYY-MM-DD`);
+    else if (!POLA_JAM.test(buka) || !POLA_JAM.test(tutup)) galat.push(`${label} (${tes}): waktu_buka dan waktu_tutup harus berbentuk HH:MM`);
+    else if (tutup <= buka) galat.push(`${label} (${tes}): waktu_tutup harus setelah waktu_buka`);
+    else jadwal.push({ tes, tanggal, waktu_buka: buka, waktu_tutup: tutup });
+  });
+  // Urutan mengikuti urutan baku, bukan urutan kiriman.
+  jadwal.sort((a, b) => DAFTAR_TES.indexOf(a.tes) - DAFTAR_TES.indexOf(b.tes));
+  return { jadwal, galat };
+}
+
+/**
+ * Ringkasan untuk kolom wajib di tabel sesi: hari pertama dan rentang jam tes di hari itu.
+ * Jadwal sebenarnya tersimpan per token di tabel ujian.
+ */
+export function ringkasJadwal(jadwal: JadwalTes[]): { tanggal: string; waktu_buka: string; waktu_tutup: string } {
+  const tanggal = jadwal.map((j) => j.tanggal).sort()[0];
+  const hariPertama = jadwal.filter((j) => j.tanggal === tanggal);
+  return {
+    tanggal,
+    waktu_buka: hariPertama.map((j) => j.waktu_buka).sort()[0],
+    waktu_tutup: hariPertama.map((j) => j.waktu_tutup).sort().at(-1)!,
+  };
+}
+
 export function validasiSesi(data: unknown): { sesi: SesiMasukan | null; galat: string[] } {
   const galat: string[] = [];
   const d = (data ?? {}) as Record<string, unknown>;
@@ -69,33 +123,11 @@ export function validasiSesi(data: unknown): { sesi: SesiMasukan | null; galat: 
   const nama = typeof d.nama_sesi === 'string' ? d.nama_sesi.trim() : '';
   if (nama === '' || nama.length > 100) galat.push('nama_sesi wajib diisi, maksimal 100 karakter');
 
-  const tanggal = typeof d.tanggal === 'string' ? d.tanggal : '';
-  if (!tanggalSah(tanggal)) galat.push('tanggal harus berbentuk YYYY-MM-DD');
-
-  const buka = typeof d.waktu_buka === 'string' ? d.waktu_buka : '';
-  const tutup = typeof d.waktu_tutup === 'string' ? d.waktu_tutup : '';
-  if (!POLA_JAM.test(buka) || !POLA_JAM.test(tutup)) galat.push('waktu_buka dan waktu_tutup harus berbentuk HH:MM');
-  else if (tutup <= buka) galat.push('waktu_tutup harus setelah waktu_buka');
-
-  const tes = Array.isArray(d.tes) ? d.tes : [];
-  if (tes.length === 0 || !tes.every((t) => DAFTAR_TES.includes(t as JenisTes)) || new Set(tes).size !== tes.length) {
-    galat.push(`tes wajib berisi satu atau lebih dari ${DAFTAR_TES.join(', ')}, tanpa ganda`);
-  }
-
+  const j = validasiJadwal(d.jadwal);
+  galat.push(...j.galat);
   const p = validasiPeserta(d.peserta);
   galat.push(...p.galat);
 
   if (galat.length > 0) return { sesi: null, galat };
-  return {
-    // Urutan tes mengikuti urutan baku, bukan urutan kiriman.
-    sesi: {
-      nama_sesi: nama,
-      tanggal,
-      waktu_buka: buka,
-      waktu_tutup: tutup,
-      tes: DAFTAR_TES.filter((t) => tes.includes(t)),
-      peserta: p.peserta,
-    },
-    galat,
-  };
+  return { sesi: { nama_sesi: nama, jadwal: j.jadwal, peserta: p.peserta }, galat };
 }

@@ -39,7 +39,7 @@ Rute admin (wajib login admin):
 
 | Rute | Hasil |
 | --- | --- |
-| `POST /api/admin/sesi` | Buat sesi: `nama_sesi`, `tanggal` (YYYY-MM-DD), `waktu_buka`, `waktu_tutup` (HH:MM), `tes` (`TIU5`, `TIU6`, `KORAN`), `peserta` (`email`, `nama` opsional), `template` opsional. Respons berisi token dan undangan siap kirim per peserta (subjek, isi, tautan `mailto`). **Token mentah hanya tampil di respons ini.** |
+| `POST /api/admin/sesi` | Buat sesi: `nama_sesi`, `jadwal` (daftar `{ tes, tanggal, waktu_buka, waktu_tutup }`, satu per tes, `tes` = `TIU5`/`TIU6`/`KORAN`, tanggal YYYY-MM-DD, jam HH:MM), `peserta` (`email`, `nama` opsional), `template` opsional. Respons berisi token dan undangan siap kirim per peserta (subjek, isi, tautan `mailto`). **Token mentah hanya tampil di respons ini.** |
 | `GET /api/admin/sesi`, `GET /api/admin/sesi/:id` | Daftar sesi dan status token per peserta. Tanpa token. |
 | `PUT /api/admin/sesi/:id/template` | Simpan template undangan untuk sesi itu (`subjek`, `isi`). |
 | `POST /api/admin/sesi/:id/peserta` | Tambah peserta ke sesi. Respons berisi token dan undangan. |
@@ -54,10 +54,11 @@ Rute peserta:
 | `GET /api/peserta/saya` | Jenis tes, status, durasi, sisa waktu menurut jam server. |
 | `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
 
-- Satu token per tes. Satu email undangan per peserta memuat semua tokennya.
-- Template bawaan ada di `config/undangan.json` (netral). Suntingan HC disimpan per sesi; wajib memuat `{daftar_token}`. Penanda: `{nama}`, `{tanggal}`, `{jam_buka}`, `{jam_tutup}`, `{tautan}`, `{daftar_token}`.
+- Satu token per tes, dan setiap tes punya jadwal (tanggal, jam buka, jam tutup) sendiri, sama untuk semua peserta sesi itu. Jadwal disimpan per token di tabel ujian; kolom tanggal dan jam di tabel sesi hanya ringkasan hari pertama. Peserta tambahan mengikuti jadwal yang sudah ada.
+- Satu email undangan per peserta memuat semua tokennya, masing-masing dengan jadwal tesnya.
+- Template bawaan ada di `config/undangan.json` (netral). Suntingan HC disimpan per sesi; wajib memuat `{daftar_token}`. Penanda: `{nama}`, `{tautan}`, `{daftar_token}` (berisi nama tes, jadwal, dan token tiap tes).
 - Pengiriman lewat tautan `mailto` (membuka aplikasi email bawaan Windows). HC memakai Outlook desktop: atur MAILTO ke Outlook di Pengaturan > Aplikasi > Aplikasi default, kalau tidak tautan bisa terbuka di browser. Pengiriman otomatis lewat SMTP menyusul bila IT menyediakan akun.
-- Jam sesi dibandingkan dengan jam server database. Peserta harus mulai sebelum jam tutup; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
+- Jadwal dibandingkan dengan jam server database. Peserta harus masuk dan mulai di dalam jadwal tesnya; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
 - Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
 
 ## Bank soal

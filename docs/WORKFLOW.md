@@ -93,10 +93,12 @@ Selesai kalau: login admin berhasil, salah password dibatasi, kata sandi tidak m
 Selesai kalau: skrip menyatakan bank valid, jumlah soal sesuai ekspektasi per tes, dan angka Koran sudah dibuat dan terbaca.
 
 ## Part 3. Sesi, token, dan undangan email (L)
-Keputusan pemilik proyek (2 November 2026): undangan lewat email saja (bukan WA). Satu token per tes; satu email per peserta memuat semua tokennya. Template bawaan netral, bisa diedit HC, suntingan disimpan per sesi. Pengiriman sementara lewat tombol yang membuka aplikasi email (`mailto`), SMTP menyusul.
+Keputusan pemilik proyek (2 November 2026): undangan lewat email saja (bukan WA). Satu token per tes, dan setiap tes punya jadwal sendiri (tanggal, jam buka, jam tutup) yang sama untuk semua peserta sesi itu; satu email per peserta memuat semua tokennya beserta jadwal tiap tes. Template bawaan netral, bisa diedit HC, suntingan disimpan per sesi. Pengiriman sementara lewat tombol yang membuka aplikasi email (`mailto`), SMTP menyusul.
 - [X] Skrip `db/05_buat_tabel_sesi.sql`: tabel `HCIS_Psikotes_Sesi` (data sesi dan template, tanpa data pribadi) dan kolom `sesi_id`, `sesi_peserta_hash`, `sesi_peserta_aktif` di tabel ujian. DDL, dijalankan pemilik proyek.
 - [X] Admin membuat sesi dan daftar email, sistem membuat token acak panjang (20 karakter, sekitar 100 bit), simpan hash saja. Token mentah hanya tampil sekali; "token baru" mengganti token yang belum dipakai.
 - [X] Template undangan: bawaan di `config/undangan.json`, wajib memuat `{daftar_token}`, penanda salah ketik ditolak. Respons berisi subjek, isi, dan tautan `mailto` per peserta.
+- [X] [REVISI 2 Nov 2026] Jadwal per tes: admin mengirim `jadwal` (satu per tes), disimpan per token di tabel ujian. `{daftar_token}` memuat nama tes, jadwal, dan token. Penanda `{tanggal}`, `{jam_buka}`, `{jam_tutup}` dihapus. Tanpa DDL.
+- [X] Uji ulang oleh pemilik proyek setelah revisi jadwal per tes (email 3 tes dengan jadwal berbeda tampil benar di Outlook).
 - [X] Verifikasi token peserta: sekali pakai, belum kedaluwarsa, dalam jam sesi, terikat email. Pesan gagal selalu sama. Batas percobaan gagal per IP.
 - [X] Sesi peserta setelah token diverifikasi (cookie terikat `ujian_id`), supaya refresh halaman tidak mengunci peserta.
 - [X] Mulai ujian: `mulai_pada` dan `batas_selesai` ditulis di server, dari `durasi_detik` tiap tes. Harus mulai sebelum jam tutup; durasi tidak dipotong jam tutup (keputusan sementara, **perlu verifikasi HC**).
