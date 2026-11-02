@@ -1,6 +1,8 @@
 # Materi rahasia: soal, kunci jawaban, data peserta
 materi_rahasia/*
 !materi_rahasia/.gitkeep
+backend/bank/*
+!backend/bank/.gitkeep
 
 # Rahasia dan konfigurasi lokal
 .env

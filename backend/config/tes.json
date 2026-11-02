@@ -1,0 +1,23 @@
+{
+  "_catatan": "Konfigurasi susunan tes, tidak rahasia. Dikonfirmasi HC 29 Oktober 2026 (lewat pemilik proyek). Durasi ada di skoring.json, bukan di sini. Kunci jawaban TIDAK di sini, melainkan di backend/bank/<versi>/soal.json.",
+  "versi": "2026-10-29",
+  "bank_aktif": "v1",
+  "tes": {
+    "TIU5": {
+      "jumlah_soal": 30,
+      "jumlah_latihan": 2,
+      "jumlah_pilihan": 5
+    },
+    "TIU6": {
+      "jumlah_soal": 8,
+      "butir_per_soal": 5,
+      "jumlah_latihan": 2
+    },
+    "KORAN": {
+      "halaman": 13,
+      "lajur_per_halaman": 4,
+      "angka_per_lajur": 20,
+      "jumlah_latihan": 2
+    }
+  }
+}

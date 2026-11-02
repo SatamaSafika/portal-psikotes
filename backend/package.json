@@ -1,0 +1,35 @@
+{
+  "name": "portal-psikotes-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API Portal Psikotes (Express + TypeScript)",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/src/server.js",
+    "db:cek": "tsx scripts/cek-db.ts",
+    "admin:buat": "tsx scripts/buat-admin.ts",
+    "bank:impor": "tsx scripts/impor-bank.ts",
+    "bank:periksa": "tsx scripts/periksa-bank.ts",
+    "buat-koran": "tsx scripts/buat-koran.ts",
+    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts test/token.test.ts"
+  },
+  "dependencies": {
+    "argon2": "^0.45.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "mssql": "^12.7.13"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/mssql": "^12.3.0",
+    "@types/node": "^20.19.43",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
