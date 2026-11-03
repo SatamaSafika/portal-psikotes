@@ -18,6 +18,8 @@ Urutan:
 2. `03_buat_tabel_admin.sql`
 3. `04_tambah_kolom_sesi_admin.sql` (Part 1: kolom `sesi_hash`, `sesi_dibuat`, `sesi_aktif_terakhir` dan indeks unik terfilter `UX_HCIS_Psikotes_Admin_SesiHash`)
 4. `05_buat_tabel_sesi.sql` (Part 3: tabel `HCIS_Psikotes_Sesi` berisi data sesi dan template undangan, tanpa data pribadi; kolom `sesi_id`, `sesi_peserta_hash`, `sesi_peserta_aktif` di tabel ujian). Bila hak akun aplikasi diberikan per tabel, minta IT memberi SELECT, INSERT, UPDATE pada tabel baru ini.
+5. `06_tambah_waktu_jawaban.sql` (Part 4: kolom `waktu_ms` di tabel jawaban, milidetik sejak tes dimulai, hanya untuk Koran)
+6. `07_tambah_kolom_hasil.sql` (Part 5: kolom `n_koran` dan `ringkasan_interval` (JSON 22 interval) di tabel ujian; tanpa tabel baru, ikut retensi 4 bulan)
 
 Semua skrip diawali `USE BA;`, aman dijalankan ulang, dan tidak memuat DROP atau TRUNCATE.
 

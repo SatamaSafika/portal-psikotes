@@ -3,10 +3,13 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import type { KonfigurasiAplikasi } from '../../config/env.js';
-import { muatSkoring } from '../../config/skoring.js';
+import { durasiDetik } from '../../config/durasi.js';
 import { buatTokenSesi, hashTokenSesi, tulisCookieSesi } from '../../lib/cookie.js';
 import { infoUjian, masuk, mulai } from './peserta.repo.js';
-import { validasiPeserta } from './sesi.validasi.js';
+import { muatTes } from '../../config/tes.js';
+import { jumlahNomor } from '../tes/pengerjaan.validasi.js';
+import { validasiMasuk } from './sesi.validasi.js';
+import type { JenisTes } from './undangan.js';
 import { hashTokenPeserta, normalisasiToken } from './token.js';
 import { COOKIE_PESERTA, COOKIE_PESERTA_MAKS_MS, ujianAktif, wajibPeserta } from './wajib-peserta.js';
 
@@ -23,6 +26,26 @@ const batasMasuk = rateLimit({
 
 const GAGAL_MASUK = 'Email atau token salah, sudah dipakai, atau di luar jam sesi';
 
+/**
+ * Jumlah soal untuk layar instruksi: TIU 5 = 30 soal, TIU 6 = 8 Soal (40 butir), Koran = 988 kotak dalam 13 halaman.
+ * Semua dari tes.json, jadi susunan yang berubah cukup diubah di konfigurasi dan bank.
+ */
+function jumlahSoal(jenis: JenisTes): { jumlah_soal: number; jumlah_nomor: number; jumlah_halaman: number | null } {
+  const k = muatTes();
+  return {
+    jumlah_soal: jenis === 'TIU6' ? k.tes.TIU6.jumlah_soal : jumlahNomor(jenis, k),
+    jumlah_nomor: jumlahNomor(jenis, k),
+    jumlah_halaman: jenis === 'KORAN' ? k.tes.KORAN.halaman : null,
+  };
+}
+
+/** Info ujian beserta durasi dan jumlah soal. sisa_detik tidak melebihi durasi (mulai_pada tersimpan dibulatkan ke detik). */
+async function infoDenganDurasi(id: number, jenis: JenisTes, durasi: number) {
+  const info = await infoUjian(id);
+  const sisa = info?.sisa_detik ?? null;
+  return { ...info, sisa_detik: sisa === null ? null : Math.min(sisa, durasi), durasi_detik: durasi, ...jumlahSoal(jenis) };
+}
+
 export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
   const rute = Router();
 
@@ -31,16 +54,14 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
       res.status(415).json({ pesan: 'Gunakan application/json' });
       return;
     }
-    const body = (req.body ?? {}) as Record<string, unknown>;
-    const email = validasiPeserta([{ email: body.email }]).peserta[0]?.email;
-    const token = typeof body.token === 'string' && body.token.length <= 64 ? normalisasiToken(body.token) : null;
-    // Pesan sama untuk semua alasan gagal, supaya tidak membocorkan token mana yang ada.
-    if (!email || !token) {
+    const m = validasiMasuk(req.body, normalisasiToken);
+    // Pesan sama untuk semua alasan gagal (termasuk token untuk tes lain), supaya tidak membocorkan token mana yang ada.
+    if (!m) {
       res.status(401).json({ pesan: GAGAL_MASUK });
       return;
     }
     const sesi = buatTokenSesi();
-    const ujian = await masuk(email, hashTokenPeserta(token), hashTokenSesi(sesi));
+    const ujian = await masuk(m.email, hashTokenPeserta(m.token), hashTokenSesi(sesi), m.jenis_tes, m.nama);
     if (!ujian) {
       res.status(401).json({ pesan: GAGAL_MASUK });
       return;
@@ -51,21 +72,20 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
 
   rute.get('/saya', wajibPeserta, async (_req, res) => {
     const ujian = ujianAktif(res);
-    const info = await infoUjian(ujian.id);
-    res.json({ ...info, durasi_detik: muatSkoring().durasi_detik[ujian.jenis_tes] });
+    res.json(await infoDenganDurasi(ujian.id, ujian.jenis_tes, durasiDetik(ujian.jenis_tes)));
   });
 
   // Aman diulang: bila sudah mulai, mengembalikan waktu yang sudah tercatat.
   rute.post('/mulai', wajibPeserta, async (_req, res) => {
     const ujian = ujianAktif(res);
-    const durasi = muatSkoring().durasi_detik[ujian.jenis_tes];
+    const durasi = durasiDetik(ujian.jenis_tes);
     await mulai(ujian.id, durasi);
-    const info = await infoUjian(ujian.id);
-    if (!info?.mulai_pada) {
+    const info = await infoDenganDurasi(ujian.id, ujian.jenis_tes, durasi);
+    if (!info.mulai_pada) {
       res.status(409).json({ pesan: 'Ujian tidak bisa dimulai: jam sesi sudah lewat' });
       return;
     }
-    res.json({ ...info, durasi_detik: durasi });
+    res.json(info);
   });
 
   return rute;

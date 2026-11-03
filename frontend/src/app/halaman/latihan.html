@@ -1,0 +1,100 @@
+<div class="halaman">
+  <app-kepala-portal [langkah]="4" />
+  <main class="isi-halaman">
+    @if (jenis() === 'KORAN') {
+      <div class="wadah"><app-latihan-koran /></div>
+    } @else {
+    <div class="wadah wadah-sedang">
+      <div class="judul-baris">
+        <div>
+          <span class="label-tes">{{ labelTes() }} · Latihan</span>
+          <h1 class="judul">Soal latihan {{ indeks() + 1 }} dari {{ daftar().length }}</h1>
+        </div>
+        <span class="pil">Latihan tidak dinilai dan tidak disimpan</span>
+      </div>
+
+      @if (galat()) {
+        <div class="kotak-galat" role="alert">{{ galat() }}</div>
+      }
+
+      @if (item(); as l) {
+        <div class="kartu">
+          @if (instruksi()) {
+            <p class="instruksi" [class.kotak-info]="jenis() === 'TIU6'">{{ instruksi() }}</p>
+          }
+          <div class="gambar-soal">
+            <img [src]="gambar(l.gambar)" alt="Gambar soal latihan {{ l.nomor }}" />
+          </div>
+
+          @if (jenis() === 'TIU5') {
+            <div role="radiogroup" [attr.aria-label]="'Jawaban latihan ' + l.nomor">
+              @for (p of pilihan5; track p) {
+                @let h = hasil5(l.nomor);
+                <button type="button" class="pilihan" role="radio"
+                        [attr.aria-checked]="isian(l.nomor)[0] === p"
+                        [class.benar]="h && p === h.kunci"
+                        [class.salah]="h && !h.benar && isian(l.nomor)[0] === p"
+                        (click)="pilih5(l.nomor, p)">
+                  <span class="bulat"></span>{{ p }}
+                </button>
+              }
+            </div>
+            @if (hasil5(l.nomor); as h) {
+              <div [class]="h.benar ? 'kotak-benar' : 'kotak-galat'" role="status">
+                <strong>{{ h.benar ? 'Benar.' : 'Belum tepat.' }}</strong> Jawaban yang benar: {{ h.kunci }}.
+                @if (h.penjelasan) {
+                  <p class="instruksi" style="margin: 8px 0 0">{{ h.penjelasan }}</p>
+                }
+              </div>
+            }
+          } @else if (jenis() === 'TIU6') {
+            <table class="tabel-butir">
+              <thead>
+                <tr><th>Butir</th><th>B</th><th>S</th><th>Kunci</th></tr>
+              </thead>
+              <tbody>
+                @for (b of butir; track b) {
+                  @let h = hasil6(l.nomor, b);
+                  <tr>
+                    <td>{{ b }}</td>
+                    @for (nilai of ['B', 'S']; track nilai) {
+                      <td>
+                        <button type="button" class="tombol-bs" role="radio"
+                                [attr.aria-checked]="isian(l.nomor)[b - 1] === nilai"
+                                [attr.aria-label]="'Butir ' + b + ' ' + nilai"
+                                (click)="pilih6(l.nomor, b, $any(nilai))">{{ nilai }}</button>
+                      </td>
+                    }
+                    <td>
+                      @if (h) {
+                        <span [style.color]="h.benar ? 'var(--benar)' : 'var(--salah)'">{{ h.kunci }} {{ h.benar ? '✓' : '✗' }}</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <p class="teks-redup teks-kecil">Kunci tampil setelah kelima butir terisi.</p>
+          }
+
+          <div class="baris-tombol">
+            @if (indeks() > 0) {
+              <button type="button" class="tombol tombol-garis" (click)="sebelumnya()">Latihan sebelumnya</button>
+            }
+            @if (!terakhir()) {
+              <button type="button" class="tombol tombol-navy" (click)="berikutnya()">Latihan berikutnya</button>
+            } @else {
+              <button type="button" class="tombol tombol-utama" [disabled]="memulai()" (click)="mulaiTes()">Mulai tes</button>
+            }
+            <a class="tombol-tautan" routerLink="/tes/instruksi">Kembali ke instruksi</a>
+          </div>
+          @if (terakhir()) {
+            <p class="teks-redup teks-kecil">Waktu tes mulai berjalan setelah tombol "Mulai tes" ditekan dan tidak dapat dihentikan.</p>
+          }
+        </div>
+      }
+    </div>
+    }
+  </main>
+  <app-kaki-portal />
+</div>

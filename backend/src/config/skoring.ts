@@ -21,6 +21,8 @@ export interface KonfigurasiSkoring {
   KORAN: {
     masukan: 'total_benar';
     pembagi: number;
+    /** Panjang interval tracking Koran (detik). Jumlah interval = durasi / interval. */
+    interval_detik: number;
     arah_pembulatan: 'setengah_ke_atas';
     ambang_total_benar?: number[];
     kategori_dan_skor: KategoriSkor[];
@@ -78,6 +80,11 @@ export function validasiSkoring(data: unknown): string[] {
   if (koran) {
     if (!bulatPositif(koran.pembagi)) galat.push('KORAN: pembagi harus bilangan bulat positif');
     if (koran.arah_pembulatan !== 'setengah_ke_atas') galat.push('KORAN: arah_pembulatan harus "setengah_ke_atas"');
+    if (!bulatPositif(koran.interval_detik)) {
+      galat.push('KORAN: interval_detik harus bilangan bulat positif');
+    } else if (bulatPositif(d?.durasi_detik?.KORAN) && d.durasi_detik!.KORAN % koran.interval_detik !== 0) {
+      galat.push('KORAN: durasi_detik.KORAN harus habis dibagi interval_detik');
+    }
     // Ambang total benar opsional, tapi bila ada harus cocok dengan pembagi dan batas kategori.
     // N >= m  <=>  total >= ceil(p*m - p/2), karena N dibulatkan setengah ke atas.
     if (koran.ambang_total_benar !== undefined && bulatPositif(koran.pembagi) && Array.isArray(koran.kategori_dan_skor)) {

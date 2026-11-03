@@ -1,0 +1,110 @@
+@switch (langkah()) {
+  @case (1) {
+    <div class="judul-baris">
+      <div>
+        <span class="label-tes">Tes Koran / Kraepelin · Contoh 1 dari 2</span>
+        <h1 class="judul">Contoh 1: hasil penjumlahan 9 atau kurang</h1>
+      </div>
+      <span class="pil">Hanya contoh, tidak perlu mengisi</span>
+    </div>
+    <div class="dua-kolom">
+      <div class="kartu">
+        <app-lajur-koran judul="Contoh lajur" [angka]="contoh1" [isi]="isiContoh1" [keterangan]="ketContoh1" />
+      </div>
+      <div class="kartu">
+        <strong>Cara mengerjakan</strong>
+        <ol>
+          <li>Lihat dua angka yang mengapit sebuah kotak, misalnya {{ contoh1[0] }} dan {{ contoh1[1] }}.</li>
+          <li>Jumlahkan keduanya: {{ ketContoh1[0].split(',')[0] }}.</li>
+          <li>Tulis hasilnya di kotak di antara kedua angka itu.</li>
+          <li>Lanjutkan ke bawah, pasangan berikutnya adalah {{ contoh1[1] }} dan {{ contoh1[2] }}.</li>
+        </ol>
+        <p class="kotak-info teks-kecil">
+          Kerjakan soal dengan cepat, teliti, dan akurat. Jawablah sebanyak mungkin soal dalam batasan waktu yang tersedia.
+          Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal.
+        </p>
+      </div>
+    </div>
+    <div class="baris-tombol">
+      <button type="button" class="tombol tombol-utama" (click)="langkah.set(2)">Lanjut ke contoh 2</button>
+      <a class="tombol-tautan" routerLink="/tes/instruksi">Kembali</a>
+    </div>
+  }
+
+  @case (2) {
+    <div class="judul-baris">
+      <div>
+        <span class="label-tes">Tes Koran / Kraepelin · Contoh 2 dari 2</span>
+        <h1 class="judul">Contoh 2: hasil penjumlahan lebih dari 9</h1>
+      </div>
+      <span class="pil">Hanya contoh, tidak perlu mengisi</span>
+    </div>
+    <div class="dua-kolom">
+      <div class="kartu">
+        <app-lajur-koran judul="Contoh lajur" [angka]="contoh2" [isi]="isiContoh2" [keterangan]="ketContoh2" />
+      </div>
+      <div class="kartu">
+        <strong>Cara mengerjakan</strong>
+        <ol>
+          <li>Jumlahkan dua angka yang mengapit kotak: {{ ketContoh2[0].split(',')[0] }}.</li>
+          <li>Jika hasilnya dua digit, tulis angka terakhirnya saja (satuan). Maka tulis {{ isiContoh2[0] }}.</li>
+          <li>Isi satu angka saja pada setiap kotak.</li>
+          <li>Lanjutkan ke bawah. Pasangan berikutnya adalah {{ contoh2[1] }} dan {{ contoh2[2] }}: {{ ketContoh2[1] }}.</li>
+        </ol>
+        <p class="kotak-peringatan"><strong>Penting:</strong> jangan menulis 1 lalu 2 untuk hasil 12. Cukup tulis 2.</p>
+      </div>
+    </div>
+    <div class="baris-tombol">
+      <button type="button" class="tombol tombol-utama" (click)="langkah.set(3)">Lanjut ke uji coba</button>
+      <button type="button" class="tombol-tautan" (click)="langkah.set(1)">Kembali</button>
+    </div>
+  }
+
+  @case (3) {
+    <div class="judul-baris">
+      <div>
+        <span class="label-tes">Tes Koran / Kraepelin · Uji coba</span>
+        <h1 class="judul">Uji coba: isi sendiri satu lajur</h1>
+      </div>
+      <div>
+        <span class="pil">Tidak dinilai dan tidak disimpan</span>
+        <span class="pil" style="background: #fff; border: 1px solid var(--garis); color: var(--teks-redup); margin-left: 6px">Tanpa batas waktu</span>
+      </div>
+    </div>
+    <div class="dua-kolom">
+      <div class="kartu">
+        <app-lajur-koran judul="Lajur uji coba" [angka]="ujiCoba" [isi]="isiUji()" [aktif]="aktifUji()"
+                         [isiAktif]="isiAktif()" [tanda]="tandaUji()" (ketik)="ketik($event)" (enter)="kunci()" />
+      </div>
+      <div class="kartu">
+        <strong>Kerjakan seperti pada contoh</strong>
+        <p>
+          Jumlahkan dua angka yang mengapit kotak. Jika hasilnya dua digit, tulis angka terakhir saja. Tekan tombol
+          <strong>Enter</strong> untuk pindah ke kotak berikutnya. Hasil uji coba muncul setelah Anda menekan tombol selesai.
+        </p>
+        @if (ujiSelesai()) {
+          <div [class]="jumlahBenar() === isiUji().length ? 'kotak-benar' : 'kotak-peringatan'" role="status">
+            Benar {{ jumlahBenar() }} dari {{ isiUji().length }}. Kunci: {{ kunciTampil }}.
+          </div>
+        } @else {
+          <p class="kotak-info teks-kecil">
+            Kerjakan soal dengan cepat, teliti, dan akurat. Jawablah sebanyak mungkin soal dalam batasan waktu yang tersedia.
+            Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal.
+          </p>
+        }
+      </div>
+    </div>
+    <div class="baris-tombol">
+      @if (!ujiSelesai()) {
+        <button type="button" class="tombol tombol-navy" (click)="selesaiUji()">Selesai uji coba</button>
+      } @else {
+        <button type="button" class="tombol tombol-utama" (click)="mulaiTes()">Mulai tes</button>
+        <button type="button" class="tombol tombol-garis" (click)="ulangiUji()">Ulangi uji coba</button>
+      }
+      <button type="button" class="tombol-tautan" (click)="langkah.set(2)">Kembali ke contoh</button>
+    </div>
+    @if (ujiSelesai()) {
+      <p class="teks-redup teks-kecil">Waktu tes mulai berjalan setelah tombol "Mulai tes" ditekan dan tidak dapat dihentikan.</p>
+    }
+  }
+}

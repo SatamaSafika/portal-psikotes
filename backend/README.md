@@ -21,6 +21,7 @@ Variabel yang dibaca kode:
 | `LOGIN_MAKS_GAGAL` | Jumlah salah kata sandi sebelum akun dikunci, bawaan 5 |
 | `LOGIN_KUNCI_MENIT` | Lama akun dikunci, bawaan 15 menit |
 | `PORTAL_URL` | Alamat portal peserta untuk tautan di undangan email, bawaan `http://localhost:4200` |
+| `DURASI_UJI_DETIK` | Hanya untuk pengujian: memperpendek durasi semua tes (detik). Diabaikan bila `NODE_ENV=production`. Kosongkan setelah uji. |
 
 ## Perintah
 - `npm run dev`: jalankan API dengan muat ulang otomatis. Cek di http://localhost:3000/api/health
@@ -50,8 +51,8 @@ Rute peserta:
 
 | Rute | Hasil |
 | --- | --- |
-| `POST /api/peserta/masuk` | Body `{ "email", "token" }`. Token sekali pakai, harus di dalam jam sesi. Berhasil: cookie `psikotes_peserta`. |
-| `GET /api/peserta/saya` | Jenis tes, status, durasi, sisa waktu menurut jam server. |
+| `POST /api/peserta/masuk` | Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
+| `GET /api/peserta/saya` | Jenis tes, nama (atau email bila kosong), status, durasi, jumlah soal (`jumlah_soal`, `jumlah_nomor`, `jumlah_halaman` untuk Koran), sisa waktu dan `berjalan_ms` menurut jam server. |
 | `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
 
 - Satu token per tes, dan setiap tes punya jadwal (tanggal, jam buka, jam tutup) sendiri, sama untuk semua peserta sesi itu. Jadwal disimpan per token di tabel ujian; kolom tanggal dan jam di tabel sesi hanya ringkasan hari pertama. Peserta tambahan mengikuti jadwal yang sudah ada.
@@ -60,6 +61,32 @@ Rute peserta:
 - Pengiriman lewat tautan `mailto` (membuka aplikasi email bawaan Windows). HC memakai Outlook desktop: atur MAILTO ke Outlook di Pengaturan > Aplikasi > Aplikasi default, kalau tidak tautan bisa terbuka di browser. Pengiriman otomatis lewat SMTP menyusul bila IT menyediakan akun.
 - Jadwal dibandingkan dengan jam server database. Peserta harus masuk dan mulai di dalam jadwal tesnya; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
 - Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
+
+## Pengerjaan
+Rute peserta (wajib sesi peserta):
+
+| Rute | Kapan | Hasil |
+| --- | --- | --- |
+| `GET /api/peserta/latihan` | selama sesi | Instruksi dan latihan, tanpa kunci |
+| `POST /api/peserta/latihan/periksa` | selama sesi | Body `{ nomor, jawaban }` (TIU 5: `"1"`-`"5"`; TIU 6: daftar 5 `"B"`/`"S"`). Balasan: benar/salah dan kunci; penjelasan hanya TIU 5. Jawaban kosong ditolak. |
+| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur |
+| `GET /api/peserta/gambar/:nama` | latihan selama sesi; soal setelah mulai | Hanya gambar milik jenis tes peserta |
+| `GET /api/peserta/jawaban` | setelah mulai | Jawaban tersimpan (tanpa waktu) |
+| `PUT /api/peserta/jawaban` | setelah mulai, sebelum waktu habis | TIU 5/6: `{ jawaban: [{ nomor, jawaban }] }`, `jawaban` null = kosong. TIU 6 nomor datar `(soal - 1) x 5 + butir`. |
+| `POST /api/peserta/koran` | setelah mulai, sebelum waktu habis | `{ jawaban: [{ nomor, jawaban, waktu_ms }] }` |
+| `POST /api/peserta/kirim` | setelah mulai | Selesai (`DIKIRIM`), sesi peserta ditutup |
+
+- Koran ketat satu per satu: kiriman harus melanjutkan tepat dari nomor terakhir (nomor datar `(lajur - 1) x 19 + kotak`, 1 sampai 988), satu digit per kotak, `waktu_ms` tidak mundur, di bawah durasi, dan tidak lebih besar dari waktu berjalan menurut server (`berjalan_ms` di `/saya`) ditambah `toleransi_waktu_ms`. Satu pelanggaran menolak seluruh kiriman.
+- Jawaban diterima sampai `batas_selesai` + `toleransi_kirim_detik` (5 detik, di `config/tes.json`).
+- Setiap 15 detik server menutup otomatis: ujian yang lewat batas menjadi `WAKTU_HABIS` (terkirim otomatis, jawaban tersimpan tetap dinilai); token yang jadwalnya lewat tanpa pernah mulai menjadi `KEDALUWARSA`.
+- Rute peserta dibatasi 600 permintaan per 15 menit per peserta (bukan per IP, karena peserta kantor berbagi IP).
+
+## Koreksi dan hasil
+- Hasil dihitung otomatis saat ujian dikirim, dan setiap 15 detik untuk ujian `DIKIRIM`/`WAKTU_HABIS` yang belum punya hasil. Peserta tidak bisa melihat hasil.
+- Skor mentah = jumlah benar, tanpa penalti. TIU 6 per butir. Koran: kunci = digit terakhir dari jumlah dua angka bersebelahan; N = benar / 22 dibulatkan setengah ke atas (bilangan bulat); kategori Koran memakai N.
+- Koran: ringkasan `interval_detik` (20 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah 440 detik tidak dihitung di skor maupun interval.
+- Admin melihat hasil per token di `GET /api/admin/sesi/:id` (benar, salah, dijawab, N, kategori, skor akhir, ringkasan interval, versi aturan).
+- `npm run hasil:hitung-ulang` (atau `-- --sesi <id>`): hitung ulang dari jawaban mentah dengan `skoring.json` terbaru. Ujian yang jawaban mentahnya sudah terhapus (retensi 3 bulan) dilewati, hasil lama tetap.
 
 ## Bank soal
 Bahan di `materi_rahasia/mentah/`:
@@ -90,7 +117,7 @@ src/db/             pool koneksi SQL Server bersama
 src/lib/            utilitas kecil (parser CSV)
 src/middleware/     helmet, CORS, batas laju, penanganan galat
 src/modules/        token, tes (pembaca bank soal), skoring, hasil, admin
-scripts/            skrip bantu (cek-db, buat-admin, impor-bank, periksa-bank, buat-koran)
+scripts/            skrip bantu (cek-db, buat-admin, impor-bank, periksa-bank, buat-koran, hitung-ulang)
 test/               tes otomatis (node:test, data dummy)
 db/                 skrip SQL tabel HCIS_Psikotes_* (dijalankan manual lewat SSMS)
 config/             konfigurasi tes dan skoring (tidak rahasia)

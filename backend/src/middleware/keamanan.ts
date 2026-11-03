@@ -1,6 +1,7 @@
 import cors from 'cors';
-import express, { type Express } from 'express';
-import { rateLimit } from 'express-rate-limit';
+import { createHash } from 'node:crypto';
+import express, { type Express, type Request } from 'express';
+import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import type { KonfigurasiAplikasi } from '../config/env.js';
 
@@ -26,6 +27,21 @@ export function pasangKeamanan(app: Express, konfig: KonfigurasiAplikasi): void 
       limit: 300,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
+      // Peserta di kantor bisa berbagi satu IP, jadi rute pengerjaan dibatasi per peserta (di bawah).
+      // /peserta/masuk tetap dibatasi per IP di sini dan punya batas percobaan gagal sendiri.
+      skip: (req) => req.path.startsWith('/peserta/') && req.path !== '/peserta/masuk',
+      message: { pesan: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+    }),
+  );
+  app.use(
+    '/api/peserta',
+    rateLimit({
+      windowMs: LIMA_BELAS_MENIT,
+      limit: 600,
+      standardHeaders: 'draft-8',
+      legacyHeaders: false,
+      keyGenerator: kunciPeserta,
+      skip: (req) => req.path === '/masuk',
       message: { pesan: 'Terlalu banyak permintaan. Coba lagi nanti.' },
     }),
   );
@@ -38,6 +54,16 @@ export function pasangKeamanan(app: Express, konfig: KonfigurasiAplikasi): void 
   // parser umum; body yang sudah diurai tidak diurai lagi.
   app.use('/api/admin/sesi', express.json({ limit: '200kb' }));
   app.use(express.json({ limit: '10kb' }));
+}
+
+/**
+ * Kunci batas laju peserta: hash cookie sesi peserta (cookie mentah tidak disimpan di memori),
+ * atau IP bila tidak ada cookie.
+ */
+function kunciPeserta(req: Request): string {
+  const cocok = /(?:^|;\s*)psikotes_peserta=([A-Za-z0-9_-]{43})/.exec(req.headers.cookie ?? '');
+  if (cocok) return `p:${createHash('sha256').update(cocok[1]).digest('hex')}`;
+  return `ip:${ipKeyGenerator(req.ip ?? '')}`;
 }
 
 /** Batas laju khusus login per IP, di samping penguncian akun di database. */

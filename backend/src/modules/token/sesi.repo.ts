@@ -49,6 +49,16 @@ export interface UjianAdmin {
   status: string;
   mulai_pada: string | null;
   selesai_pada: string | null;
+  // Hasil (hanya untuk admin). Null sampai dihitung.
+  jumlah_benar: number | null;
+  jumlah_salah: number | null;
+  jumlah_dijawab: number | null;
+  n_koran: number | null;
+  kategori: string | null;
+  skor_akhir: number | null;
+  /** Koran: 22 interval { dikerjakan, benar, salah }. */
+  ringkasan_interval: unknown[] | null;
+  aturan_versi: string | null;
 }
 
 // Kolom sesi sebagai teks: tanggal YYYY-MM-DD, jam HH:MM.
@@ -183,12 +193,17 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
               CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
               status,
               CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
-              CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada
+              CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
+              jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir,
+              ringkasan_interval, aturan_versi
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE sesi_id = @id
         ORDER BY email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
     );
-  return hasil.recordset;
+  return hasil.recordset.map((u) => ({
+    ...u,
+    ringkasan_interval: typeof u.ringkasan_interval === 'string' ? (JSON.parse(u.ringkasan_interval) as unknown[]) : null,
+  }));
 }
 
 export async function simpanTemplate(id: number, t: Template): Promise<boolean> {

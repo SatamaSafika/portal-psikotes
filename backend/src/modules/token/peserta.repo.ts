@@ -18,20 +18,32 @@ export interface UjianPeserta {
  * Token sekali pakai: cocok hash dan email, status BELUM_DIPAKAI, dan sekarang di dalam jam sesi.
  * Bila lolos, status menjadi BERJALAN dan sesi peserta dibuat. Satu UPDATE, jadi tidak bisa dipakai dua kali.
  */
-export async function masuk(email: string, tokenHash: string, sesiHash: Buffer): Promise<UjianPeserta | null> {
+export async function masuk(
+  email: string,
+  tokenHash: string,
+  sesiHash: Buffer,
+  jenisTes: JenisTes | null,
+  nama: string | null,
+): Promise<UjianPeserta | null> {
   const pool = await ambilPool();
   const hasil = await pool
     .request()
     .input('email', sql.NVarChar(150), email)
     .input('hash', sql.Char(64), tokenHash)
     .input('sesiHash', sql.VarBinary(32), sesiHash)
+    .input('jenis', sql.VarChar(10), jenisTes)
+    .input('nama', sql.NVarChar(100), nama)
     .query<UjianPeserta>(
+      // Tes yang dipilih peserta harus sama dengan tes token; bila beda, tidak ada baris yang berubah
+      // (token tidak terpakai). Nama dari peserta hanya mengisi nama yang belum diisi HC.
       `UPDATE u
-          SET status = 'BERJALAN', sesi_peserta_hash = @sesiHash, sesi_peserta_aktif = SYSDATETIME()
+          SET status = 'BERJALAN', sesi_peserta_hash = @sesiHash, sesi_peserta_aktif = SYSDATETIME(),
+              nama = CASE WHEN (u.nama IS NULL OR u.nama = '') AND @nama IS NOT NULL THEN @nama ELSE u.nama END
        OUTPUT inserted.id, inserted.jenis_tes
          FROM dbo.HCIS_Psikotes_Ujian u
         WHERE u.token_hash = @hash
           AND u.email = @email
+          AND (@jenis IS NULL OR u.jenis_tes = @jenis)
           AND u.status = 'BELUM_DIPAKAI'
           AND SYSDATETIME() >= ${BUKA}
           AND SYSDATETIME() < u.berlaku_sampai`,
@@ -64,6 +76,8 @@ export async function pakaiSesiPeserta(sesiHash: Buffer): Promise<UjianPeserta |
 
 export interface InfoUjian {
   jenis_tes: JenisTes;
+  /** Untuk header tes ("Peserta: ..."). Email bila nama kosong. */
+  nama: string;
   nama_sesi: string;
   status: string;
   waktu_tutup: string;
@@ -71,6 +85,11 @@ export interface InfoUjian {
   batas_selesai: string | null;
   /** Sisa detik menurut jam server, null bila belum mulai. */
   sisa_detik: number | null;
+  /**
+   * Milidetik sejak mulai menurut jam server, null bila belum mulai. Dipakai browser untuk menyamakan
+   * jam waktu_ms Koran setelah refresh, supaya waktu jawaban berikutnya tidak lebih kecil dari yang tersimpan.
+   */
+  berjalan_ms: number | null;
 }
 
 export async function infoUjian(id: number): Promise<InfoUjian | null> {
@@ -79,13 +98,17 @@ export async function infoUjian(id: number): Promise<InfoUjian | null> {
     .request()
     .input('id', sql.Int, id)
     .query<InfoUjian>(
-      `SELECT jenis_tes, nama_sesi, status,
+      `SELECT jenis_tes, COALESCE(NULLIF(nama, ''), email) AS nama, nama_sesi, status,
               CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
               CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
               CONVERT(VARCHAR(19), batas_selesai, 120) AS batas_selesai,
               CASE WHEN batas_selesai IS NULL THEN NULL
                    WHEN batas_selesai <= SYSDATETIME() THEN 0
-                   ELSE DATEDIFF(SECOND, SYSDATETIME(), batas_selesai) END AS sisa_detik
+                   ELSE DATEDIFF(SECOND, SYSDATETIME(), batas_selesai) END AS sisa_detik,
+              -- mulai_pada DATETIME2(0) dibulatkan ke detik terdekat, jadi bisa sedikit di depan jam sekarang.
+              CASE WHEN mulai_pada IS NULL THEN NULL
+                   WHEN mulai_pada > SYSDATETIME() THEN 0
+                   ELSE DATEDIFF(MILLISECOND, mulai_pada, SYSDATETIME()) END AS berjalan_ms
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE id = @id`,
     );
