@@ -10,6 +10,15 @@
   </div>
 </header>
 
+@if (jenis() === 'KORAN') {
+  @if (galat()) {
+    <div class="wadah area-koran"><div class="kotak-galat" role="alert">{{ galat() }}</div></div>
+  } @else if (siap()) {
+    <app-kerjakan-koran />
+  } @else {
+    <p class="wadah area-koran teks-redup">Menyiapkan soal...</p>
+  }
+} @else {
 <main class="wadah area-tes">
   @if (galat()) {
     <div class="kotak-galat" role="alert">{{ galat() }}</div>
@@ -96,3 +105,4 @@
     <p class="teks-redup">Menyiapkan soal...</p>
   }
 </main>
+}

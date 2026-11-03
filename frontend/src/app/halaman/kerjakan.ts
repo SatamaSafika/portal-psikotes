@@ -5,6 +5,7 @@ import { BUTIR_PER_SOAL_TIU6, LABEL_TES } from '../core/model';
 import { statusNomor, type StatusNomor } from '../core/navigasi';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { formatSisa } from '../core/waktu';
+import { KerjakanKoran } from '../koran/kerjakan-koran';
 
 /**
  * Pengerjaan TIU 5 dan TIU 6. Boleh melewati, mengosongkan (klik pilihan yang sama lagi), dan mengubah jawaban.
@@ -12,6 +13,7 @@ import { formatSisa } from '../core/waktu';
  */
 @Component({
   selector: 'app-kerjakan',
+  imports: [KerjakanKoran],
   templateUrl: './kerjakan.html',
 })
 export class Kerjakan implements OnInit {

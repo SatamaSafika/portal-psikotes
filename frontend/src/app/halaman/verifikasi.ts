@@ -19,13 +19,7 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
           <h1 class="judul">Verifikasi token dan identitas</h1>
           <p class="teks-redup">Masukkan token dari tim HC beserta nama dan email Anda. Token hanya berlaku pada jadwal sesi tes Anda.</p>
 
-          @if (tes() === 'KORAN') {
-            <div class="kartu">
-              <p>Tes Koran belum tersedia pada versi portal ini.</p>
-              <a class="tombol-tautan" routerLink="/">Kembali</a>
-            </div>
-          } @else {
-            <form class="kartu" (submit)="kirim($event)" novalidate>
+          <form class="kartu" (submit)="kirim($event)" novalidate>
               <label class="isian">
                 <span>Token</span>
                 <input name="token" autocomplete="off" spellcheck="false" placeholder="Contoh: ABCD-1234"
@@ -54,7 +48,6 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
                 <a class="tombol-tautan" routerLink="/">Kembali</a>
               </div>
             </form>
-          }
         </div>
       </main>
       <app-kaki-portal />

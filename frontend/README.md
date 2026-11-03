@@ -15,7 +15,7 @@ Perintah lain: `npm run build` (hasil di `dist/`), `npm test` (tes unit Vitest).
 src/app/core/         akses API, keadaan pengerjaan, hitung mundur, antrean simpan otomatis, navigasi
 src/app/halaman/      pilih tes, verifikasi, instruksi, latihan, kerjakan, kirim, selesai
 src/app/tata-letak/   header (stepper) dan footer netral
-src/app/koran/        bahan latihan Tes Koran (dipakai di Part 7)
+src/app/koran/        Tes Koran: lajur, latihan (contoh 1, contoh 2, uji coba; bahan di latihan.ts), layar tes
 src/styles.scss       token desain dari prototipe (warna, kartu, tombol)
 ```
 
@@ -24,3 +24,4 @@ src/styles.scss       token desain dari prototipe (warna, kartu, tombol)
 - Timer dihitung dari sisa waktu server dan disinkronkan ulang tiap 30 detik. Saat habis, jawaban dikirim otomatis.
 - Jawaban TIU disimpan otomatis (jeda singkat, dicoba lagi bila gagal). Kirim manual hanya bila semua jawaban tersimpan.
 - Peserta tidak pernah melihat skor.
+- Koran: hanya satu kotak aktif (satu-satunya `<input>`), Enter mengunci, tidak bisa kembali atau melompat. Susunan halaman, lajur, dan angka selalu dari server. `waktu_ms` tiap jawaban dari waktu berjalan server, tidak pernah mundur; jawaban dikirim berurutan.

@@ -3,8 +3,8 @@
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
 ## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5 (commit `65b2fa2`), Part 6, semua di cabang `fika`. Backend lengkap; frontend peserta TIU selesai.
-- Berikutnya: Part 7 (frontend Tes Koran).
+- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5 (commit `65b2fa2`), Part 6 (commit `4555a19`), Part 7, semua di cabang `fika`. Backend lengkap; frontend peserta TIU 5, TIU 6, dan Koran selesai.
+- Berikutnya: Part 8 (Dashboard HC).
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
 
 Aturan kerja di setiap part:
@@ -161,10 +161,14 @@ Keputusan pemilik proyek (3 November 2026): Node 24 LTS + Angular 22; nama dari 
 Selesai kalau: satu peserta dummy menyelesaikan TIU 5 dan TIU 6 dari token sampai halaman selesai.
 
 ## Part 7. Frontend peserta, Tes Koran (M)
-- 13 halaman, empat lajur per halaman, 20 angka per lajur. Enter pindah kotak, pindah halaman manual.
-- [REVISI] Pengerjaan ketat satu per satu dari atas ke bawah. Hanya kotak berikutnya yang aktif. Kotak harus terisi satu digit sebelum lanjut (Enter pada kotak kosong tidak berpindah). Kotak yang sudah dijawab terkunci. Tidak bisa kembali atau melompat ke kotak, lajur, atau halaman lain. Pindah halaman manual hanya setelah semua kotak di halaman itu terisi.
-- Satu timer 7 menit 20 detik dari server. Peserta mengerjakan sebisanya. Simpan jawaban bertahap supaya tidak hilang saat waktu habis.
-- [REVISI] Catat waktu relatif tiap jawaban (milidetik sejak tes dimulai) dan kirim bersama jawaban. Ini tidak menampilkan apa pun ke peserta: tidak ada indikator interval atau grafik di layar peserta.
+Keputusan pemilik proyek (3 November 2026): isi kotak aktif boleh diganti sebelum Enter, lalu terkunci; di halaman 13 "Kirim jawaban" membuka halaman konfirmasi; susunan Koran (halaman, lajur, angka) hanya dari konfigurasi dan bank, tanpa angka tetap di kode front-end.
+- [X] 13 halaman, empat lajur per halaman, 20 angka per lajur (dari `/soal`, mengikuti `tes.json`). Enter pindah kotak, pindah halaman manual.
+- [X] [REVISI] Pengerjaan ketat satu per satu dari atas ke bawah. Hanya kotak berikutnya yang aktif. Kotak harus terisi satu digit sebelum lanjut (Enter pada kotak kosong tidak berpindah). Kotak yang sudah dijawab terkunci. Tidak bisa kembali atau melompat ke kotak, lajur, atau halaman lain. Pindah halaman manual hanya setelah semua kotak di halaman itu terisi. Di layar <= 640 px satu digit langsung mengunci.
+- [X] Satu timer 7 menit 20 detik dari server. Peserta mengerjakan sebisanya. Simpan jawaban bertahap (tiap sekitar 2 detik atau 20 jawaban, berurutan, dicoba lagi bila gagal, pulih otomatis bila server menolak urutan) supaya tidak hilang saat waktu habis.
+- [X] [REVISI] Catat waktu relatif tiap jawaban (milidetik sejak tes dimulai) dan kirim bersama jawaban. `waktu_ms` dari `berjalan_ms` server ditambah selang jam browser, tidak pernah mundur. Ini tidak menampilkan apa pun ke peserta: tidak ada indikator interval atau grafik di layar peserta.
+- [X] Instruksi Koran, contoh 1, contoh 2, uji coba (benar/salah setelah "Selesai uji coba", bisa diulang). `/saya` memuat `jumlah_halaman`.
+- [X] Tes unit Vitest: susunan dan nomor datar, halaman setelah refresh, penyaring digit, waktu tidak mundur, antrean berurutan dan pemulihan urutan.
+- [X] Uji oleh pemilik proyek di browser: Koran dari pilih tes sampai selesai, hasil dicek di sisi admin, `waktu_ms` tersimpan dan naik mengikuti nomor.
 - Latihan Koran: bahan sudah ada di `frontend/src/app/koran/latihan.ts` (contoh 1, contoh 2, uji coba; sama dengan prototipe, dipertahankan). Kunci latihan dihitung di browser karena bukan bagian bank soal. Latihan tidak dicatat waktunya dan tidak masuk interval (disetujui pemilik proyek, 2 November 2026).
 
 Selesai kalau: peserta dummy menyelesaikan Koran, hasil koreksi cocok dengan hitungan tangan, dan setiap jawaban tersimpan dengan waktu relatifnya.

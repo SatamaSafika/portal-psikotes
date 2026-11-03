@@ -28,6 +28,8 @@ export interface InfoUjian {
   jumlah_soal: number;
   /** TIU 5: 30, TIU 6: 40 butir, Koran: 988. */
   jumlah_nomor: number;
+  /** Hanya Koran: jumlah halaman (13). */
+  jumlah_halaman: number | null;
 }
 
 export interface ItemLatihan {

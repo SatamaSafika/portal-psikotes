@@ -26,10 +26,17 @@ const batasMasuk = rateLimit({
 
 const GAGAL_MASUK = 'Email atau token salah, sudah dipakai, atau di luar jam sesi';
 
-/** Jumlah soal untuk layar instruksi: TIU 5 = 30 soal, TIU 6 = 8 Soal (40 butir), Koran = 988 kotak. */
-function jumlahSoal(jenis: JenisTes): { jumlah_soal: number; jumlah_nomor: number } {
+/**
+ * Jumlah soal untuk layar instruksi: TIU 5 = 30 soal, TIU 6 = 8 Soal (40 butir), Koran = 988 kotak dalam 13 halaman.
+ * Semua dari tes.json, jadi susunan yang berubah cukup diubah di konfigurasi dan bank.
+ */
+function jumlahSoal(jenis: JenisTes): { jumlah_soal: number; jumlah_nomor: number; jumlah_halaman: number | null } {
   const k = muatTes();
-  return { jumlah_soal: jenis === 'TIU6' ? k.tes.TIU6.jumlah_soal : jumlahNomor(jenis, k), jumlah_nomor: jumlahNomor(jenis, k) };
+  return {
+    jumlah_soal: jenis === 'TIU6' ? k.tes.TIU6.jumlah_soal : jumlahNomor(jenis, k),
+    jumlah_nomor: jumlahNomor(jenis, k),
+    jumlah_halaman: jenis === 'KORAN' ? k.tes.KORAN.halaman : null,
+  };
 }
 
 /** Info ujian beserta durasi dan jumlah soal. sisa_detik tidak melebihi durasi (mulai_pada tersimpan dibulatkan ke detik). */

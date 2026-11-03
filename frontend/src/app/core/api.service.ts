@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import type { JawabanKoran, SoalKoran } from './koran';
 import type { DataLatihan, HasilPeriksa, InfoUjian, JawabanTersimpan, JenisTes, SoalPublik } from './model';
 
 const DASAR = '/api/peserta';
@@ -32,6 +33,15 @@ export class ApiPeserta {
 
   soal(): Promise<{ soal: SoalPublik[] }> {
     return firstValueFrom(this.http.get<{ soal: SoalPublik[] }>(`${DASAR}/soal`));
+  }
+
+  soalKoran(): Promise<SoalKoran> {
+    return firstValueFrom(this.http.get<SoalKoran>(`${DASAR}/soal`));
+  }
+
+  /** Koran: kiriman berurutan dengan waktu_ms. */
+  simpanKoran(jawaban: JawabanKoran[]): Promise<{ nomor_terakhir: number }> {
+    return firstValueFrom(this.http.post<{ nomor_terakhir: number }>(`${DASAR}/koran`, { jawaban }));
   }
 
   jawaban(): Promise<{ jawaban: JawabanTersimpan[] }> {

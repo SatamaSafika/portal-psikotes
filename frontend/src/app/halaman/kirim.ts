@@ -62,7 +62,7 @@ export class Kirim implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       // Setelah refresh: pulihkan jawaban dan hitung mundur dari server.
-      if (this.pengerjaan.soal().length === 0) await this.pengerjaan.siapkanPengerjaan();
+      await this.pengerjaan.siapkanPengerjaan();
       this.siap.set(true);
     } catch (galat) {
       this.galat.set(pesanGalat(galat));

@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiPeserta, pesanGalat } from '../core/api.service';
 import { BUTIR_PER_SOAL_TIU6, LABEL_TES, type HasilPeriksa, type ItemLatihan } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
+import { LatihanKoran } from '../koran/latihan-koran';
 import { KakiPortal } from '../tata-letak/kaki-portal';
 import { KepalaPortal } from '../tata-letak/kepala-portal';
 
@@ -15,7 +16,7 @@ type HasilTiu6 = { butir: { butir: number; benar: boolean; kunci: string }[] };
  */
 @Component({
   selector: 'app-latihan',
-  imports: [RouterLink, KepalaPortal, KakiPortal],
+  imports: [RouterLink, KepalaPortal, KakiPortal, LatihanKoran],
   templateUrl: './latihan.html',
 })
 export class Latihan implements OnInit {
