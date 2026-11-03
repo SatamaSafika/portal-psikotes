@@ -2,6 +2,11 @@
   "_catatan": "Konfigurasi susunan tes, tidak rahasia. Dikonfirmasi HC 29 Oktober 2026 (lewat pemilik proyek). Durasi ada di skoring.json, bukan di sini. Kunci jawaban TIDAK di sini, melainkan di backend/bank/<versi>/soal.json.",
   "versi": "2026-10-29",
   "bank_aktif": "v1",
+  "pengerjaan": {
+    "_catatan": "toleransi_kirim_detik: jawaban masih diterima sekian detik setelah batas_selesai (jaringan), lalu ujian otomatis terkirim (keputusan pemilik proyek, 3 November 2026). toleransi_waktu_ms: kelonggaran saat membandingkan waktu jawaban Koran dari browser dengan waktu berjalan menurut server.",
+    "toleransi_kirim_detik": 5,
+    "toleransi_waktu_ms": 1000
+  },
   "tes": {
     "TIU5": {
       "jumlah_soal": 30,

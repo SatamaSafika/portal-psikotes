@@ -13,7 +13,7 @@
     "bank:impor": "tsx scripts/impor-bank.ts",
     "bank:periksa": "tsx scripts/periksa-bank.ts",
     "buat-koran": "tsx scripts/buat-koran.ts",
-    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts test/token.test.ts"
+    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts test/token.test.ts test/pengerjaan.test.ts"
   },
   "dependencies": {
     "argon2": "^0.45.1",

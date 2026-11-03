@@ -71,6 +71,11 @@ export interface InfoUjian {
   batas_selesai: string | null;
   /** Sisa detik menurut jam server, null bila belum mulai. */
   sisa_detik: number | null;
+  /**
+   * Milidetik sejak mulai menurut jam server, null bila belum mulai. Dipakai browser untuk menyamakan
+   * jam waktu_ms Koran setelah refresh, supaya waktu jawaban berikutnya tidak lebih kecil dari yang tersimpan.
+   */
+  berjalan_ms: number | null;
 }
 
 export async function infoUjian(id: number): Promise<InfoUjian | null> {
@@ -85,7 +90,11 @@ export async function infoUjian(id: number): Promise<InfoUjian | null> {
               CONVERT(VARCHAR(19), batas_selesai, 120) AS batas_selesai,
               CASE WHEN batas_selesai IS NULL THEN NULL
                    WHEN batas_selesai <= SYSDATETIME() THEN 0
-                   ELSE DATEDIFF(SECOND, SYSDATETIME(), batas_selesai) END AS sisa_detik
+                   ELSE DATEDIFF(SECOND, SYSDATETIME(), batas_selesai) END AS sisa_detik,
+              -- mulai_pada DATETIME2(0) dibulatkan ke detik terdekat, jadi bisa sedikit di depan jam sekarang.
+              CASE WHEN mulai_pada IS NULL THEN NULL
+                   WHEN mulai_pada > SYSDATETIME() THEN 0
+                   ELSE DATEDIFF(MILLISECOND, mulai_pada, SYSDATETIME()) END AS berjalan_ms
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE id = @id`,
     );

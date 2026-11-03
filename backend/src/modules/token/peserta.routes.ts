@@ -3,7 +3,7 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import type { KonfigurasiAplikasi } from '../../config/env.js';
-import { muatSkoring } from '../../config/skoring.js';
+import { durasiDetik } from '../../config/durasi.js';
 import { buatTokenSesi, hashTokenSesi, tulisCookieSesi } from '../../lib/cookie.js';
 import { infoUjian, masuk, mulai } from './peserta.repo.js';
 import { validasiPeserta } from './sesi.validasi.js';
@@ -22,6 +22,13 @@ const batasMasuk = rateLimit({
 });
 
 const GAGAL_MASUK = 'Email atau token salah, sudah dipakai, atau di luar jam sesi';
+
+/** Info ujian beserta durasi. sisa_detik tidak melebihi durasi (mulai_pada tersimpan dibulatkan ke detik). */
+async function infoDenganDurasi(id: number, durasi: number) {
+  const info = await infoUjian(id);
+  const sisa = info?.sisa_detik ?? null;
+  return { ...info, sisa_detik: sisa === null ? null : Math.min(sisa, durasi), durasi_detik: durasi };
+}
 
 export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
   const rute = Router();
@@ -51,21 +58,20 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
 
   rute.get('/saya', wajibPeserta, async (_req, res) => {
     const ujian = ujianAktif(res);
-    const info = await infoUjian(ujian.id);
-    res.json({ ...info, durasi_detik: muatSkoring().durasi_detik[ujian.jenis_tes] });
+    res.json(await infoDenganDurasi(ujian.id, durasiDetik(ujian.jenis_tes)));
   });
 
   // Aman diulang: bila sudah mulai, mengembalikan waktu yang sudah tercatat.
   rute.post('/mulai', wajibPeserta, async (_req, res) => {
     const ujian = ujianAktif(res);
-    const durasi = muatSkoring().durasi_detik[ujian.jenis_tes];
+    const durasi = durasiDetik(ujian.jenis_tes);
     await mulai(ujian.id, durasi);
-    const info = await infoUjian(ujian.id);
-    if (!info?.mulai_pada) {
+    const info = await infoDenganDurasi(ujian.id, durasi);
+    if (!info.mulai_pada) {
       res.status(409).json({ pesan: 'Ujian tidak bisa dimulai: jam sesi sudah lewat' });
       return;
     }
-    res.json({ ...info, durasi_detik: durasi });
+    res.json(info);
   });
 
   return rute;

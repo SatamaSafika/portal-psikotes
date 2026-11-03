@@ -21,6 +21,7 @@ Variabel yang dibaca kode:
 | `LOGIN_MAKS_GAGAL` | Jumlah salah kata sandi sebelum akun dikunci, bawaan 5 |
 | `LOGIN_KUNCI_MENIT` | Lama akun dikunci, bawaan 15 menit |
 | `PORTAL_URL` | Alamat portal peserta untuk tautan di undangan email, bawaan `http://localhost:4200` |
+| `DURASI_UJI_DETIK` | Hanya untuk pengujian: memperpendek durasi semua tes (detik). Diabaikan bila `NODE_ENV=production`. Kosongkan setelah uji. |
 
 ## Perintah
 - `npm run dev`: jalankan API dengan muat ulang otomatis. Cek di http://localhost:3000/api/health
@@ -60,6 +61,25 @@ Rute peserta:
 - Pengiriman lewat tautan `mailto` (membuka aplikasi email bawaan Windows). HC memakai Outlook desktop: atur MAILTO ke Outlook di Pengaturan > Aplikasi > Aplikasi default, kalau tidak tautan bisa terbuka di browser. Pengiriman otomatis lewat SMTP menyusul bila IT menyediakan akun.
 - Jadwal dibandingkan dengan jam server database. Peserta harus masuk dan mulai di dalam jadwal tesnya; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
 - Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
+
+## Pengerjaan
+Rute peserta (wajib sesi peserta):
+
+| Rute | Kapan | Hasil |
+| --- | --- | --- |
+| `GET /api/peserta/latihan` | selama sesi | Instruksi dan latihan, tanpa kunci |
+| `POST /api/peserta/latihan/periksa` | selama sesi | Body `{ nomor, jawaban }` (TIU 5: `"1"`-`"5"`; TIU 6: daftar 5 `"B"`/`"S"`). Balasan: benar/salah dan kunci; penjelasan hanya TIU 5. Jawaban kosong ditolak. |
+| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur |
+| `GET /api/peserta/gambar/:nama` | latihan selama sesi; soal setelah mulai | Hanya gambar milik jenis tes peserta |
+| `GET /api/peserta/jawaban` | setelah mulai | Jawaban tersimpan (tanpa waktu) |
+| `PUT /api/peserta/jawaban` | setelah mulai, sebelum waktu habis | TIU 5/6: `{ jawaban: [{ nomor, jawaban }] }`, `jawaban` null = kosong. TIU 6 nomor datar `(soal - 1) x 5 + butir`. |
+| `POST /api/peserta/koran` | setelah mulai, sebelum waktu habis | `{ jawaban: [{ nomor, jawaban, waktu_ms }] }` |
+| `POST /api/peserta/kirim` | setelah mulai | Selesai (`DIKIRIM`), sesi peserta ditutup |
+
+- Koran ketat satu per satu: kiriman harus melanjutkan tepat dari nomor terakhir (nomor datar `(lajur - 1) x 19 + kotak`, 1 sampai 988), satu digit per kotak, `waktu_ms` tidak mundur, di bawah durasi, dan tidak lebih besar dari waktu berjalan menurut server (`berjalan_ms` di `/saya`) ditambah `toleransi_waktu_ms`. Satu pelanggaran menolak seluruh kiriman.
+- Jawaban diterima sampai `batas_selesai` + `toleransi_kirim_detik` (5 detik, di `config/tes.json`).
+- Setiap 15 detik server menutup otomatis: ujian yang lewat batas menjadi `WAKTU_HABIS` (terkirim otomatis, jawaban tersimpan tetap dinilai); token yang jadwalnya lewat tanpa pernah mulai menjadi `KEDALUWARSA`.
+- Rute peserta dibatasi 600 permintaan per 15 menit per peserta (bukan per IP, karena peserta kantor berbagi IP).
 
 ## Bank soal
 Bahan di `materi_rahasia/mentah/`:

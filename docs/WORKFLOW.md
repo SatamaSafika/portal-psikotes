@@ -3,8 +3,8 @@
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
 ## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`), semua di cabang `fika`.
-- Berikutnya: Part 4.
+- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4, semua di cabang `fika`.
+- Berikutnya: Part 5.
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
 
 Aturan kerja di setiap part:
@@ -112,11 +112,16 @@ Keputusan pemilik proyek (2 November 2026): undangan lewat email saja (bukan WA)
 Selesai kalau: token tidak bisa dipakai dua kali, tidak bisa dipakai di luar jam sesi, dan email undangan berisi token terbentuk dari template.
 
 ## Part 4. API pengerjaan (L)
-- [ ] [REVISI] Skrip `db/06_tambah_waktu_jawaban.sql` (nomor 05 sudah dipakai Part 3): tambah satu kolom waktu relatif (milidetik sejak mulai tes) pada `dbo.HCIS_Psikotes_Jawaban`, boleh kosong untuk TIU 5 dan TIU 6. Ini DDL, jalankan hanya setelah disetujui pemilik proyek. Lakukan sebelum endpoint simpan jawaban Koran.
-- Ambil soal tanpa kunci. Gambar lewat endpoint yang memeriksa token dan percobaan berjalan.
-- Simpan jawaban (boleh kosong, boleh diubah sebelum kirim). Tolak setelah `batas_selesai`. TIU 6 disimpan per butir dengan nomor datar `(soal - 1) x 5 + butir`.
-- Kirim jawaban dan penanganan waktu habis. Untuk Koran, simpan bertahap dan terima sisa jawaban saat waktu habis.
-- [REVISI] Koran: setiap jawaban disimpan bersama waktu relatifnya (dari klien). Server memvalidasi: waktu tidak negatif, naik terus mengikuti urutan jawaban (tes berurutan), tidak melewati durasi 440 detik ditambah toleransi kecil, dan selaras dengan `mulai_pada` server. Waktu tidak valid ditolak atau ditandai, bukan dipercaya begitu saja.
+Keputusan pemilik proyek (3 November 2026): kunci latihan dikirim setelah latihan dijawab; toleransi kirim 5 detik; ujian otomatis terkirim saat waktu habis, apa pun kondisi jawabannya.
+- [X] Kode Part 4 (lihat butir di bawah). Uji otomatis: 72 tes lolos.
+- [X] Uji oleh pemilik proyek: jalankan `db/06`, uji alur TIU dan Koran, waktu habis dengan `DURASI_UJI_DETIK` (TIU 5 tertutup otomatis `WAKTU_HABIS`, TIU 6 dan Koran `DIKIRIM`).
+- [X] [REVISI] Skrip `db/06_tambah_waktu_jawaban.sql` (nomor 05 sudah dipakai Part 3): tambah satu kolom waktu relatif (milidetik sejak mulai tes) pada `dbo.HCIS_Psikotes_Jawaban`, boleh kosong untuk TIU 5 dan TIU 6. Ini DDL, jalankan hanya setelah disetujui pemilik proyek. Lakukan sebelum endpoint simpan jawaban Koran.
+- [X] Ambil soal tanpa kunci. Gambar lewat endpoint yang memeriksa token dan percobaan berjalan.
+- [X] Simpan jawaban (boleh kosong, boleh diubah sebelum kirim). Tolak setelah `batas_selesai`. TIU 6 disimpan per butir dengan nomor datar `(soal - 1) x 5 + butir`.
+- [X] Latihan: dikirim tanpa kunci; `latihan/periksa` membalas benar/salah dan kunci setelah peserta menjawab (penjelasan hanya TIU 5).
+- [X] Kirim jawaban dan penanganan waktu habis. Untuk Koran, simpan bertahap dan terima sisa jawaban saat waktu habis. Jawaban diterima sampai `batas_selesai` + 5 detik; setelah itu server menutup otomatis (`WAKTU_HABIS`, setiap 15 detik). Token yang jadwalnya lewat tanpa mulai menjadi `KEDALUWARSA`.
+- [X] Batas laju rute peserta per peserta (600 per 15 menit), bukan per IP.
+- [X] [REVISI] Koran: setiap jawaban disimpan bersama waktu relatifnya (dari klien). Server memvalidasi: waktu tidak negatif, naik terus mengikuti urutan jawaban (tes berurutan), di bawah durasi 440 detik (jawaban pada atau setelah detik 440 ditolak, supaya skor sama dengan jumlah 22 interval), dan tidak lebih besar dari waktu berjalan menurut server sejak `mulai_pada` ditambah toleransi 1 detik. Waktu tidak valid ditolak, bukan dipercaya begitu saja.
 - [REVISI] Koran dikerjakan ketat satu per satu (keputusan pemilik proyek, 2 November 2026): tidak bisa kembali, tidak bisa melompat, tidak bisa mengubah. Server hanya menerima jawaban untuk nomor berikutnya (nomor terakhir + 1, mulai dari 1), berisi satu digit 0 sampai 9. Jawaban kosong, nomor yang sudah dijawab, dan nomor yang melompat ditolak. Akibatnya jawaban Koran selalu berupa deretan nomor 1 sampai n tanpa celah, satu kotak satu waktu, dan waktu naik mengikuti nomor. Berbeda dengan TIU 5 dan TIU 6 yang boleh melewati dan mengubah jawaban.
 - Tidak ada endpoint hasil untuk peserta.
 
