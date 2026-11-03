@@ -45,6 +45,12 @@ test('ambang total benar Koran harus cocok dengan pembagi', () => {
   assert.match(galatDari((d) => (d.KORAN.pembagi = 20)), /ambang_total_benar tidak cocok/);
 });
 
+test('interval Koran harus membagi habis durasi', () => {
+  assert.match(galatDari((d) => (d.KORAN.interval_detik = 30)), /habis dibagi/);
+  assert.match(galatDari((d) => (d.KORAN.interval_detik = 0)), /interval_detik/);
+  assert.deepEqual(validasiSkoring(salinan()), []);
+});
+
 test('durasi harus bilangan bulat positif', () => {
   assert.match(galatDari((d) => (d.durasi_detik.KORAN = 0)), /durasi_detik\.KORAN/);
 });

@@ -80,6 +80,8 @@
   "KORAN": {
     "masukan": "total_benar",
     "pembagi": 22,
+    "interval_detik": 20,
+    "_catatan_interval": "Tracking per peserta untuk grafik admin HC (permintaan HC, 2 November 2026). Jumlah interval = durasi_detik.KORAN / interval_detik = 440 / 20 = 22. Interval ke-k = waktu jawaban [interval x (k-1), interval x k).",
     "_catatan": "N = total_benar / pembagi dibulatkan ke bilangan bulat terdekat, setengah ke atas (disetujui HC). Rumus bulat tanpa float: N = floor((total_benar + 11) / 22). Ambang total benar: 121, 231, 341, 451.",
     "kategori_dan_skor": [
       {

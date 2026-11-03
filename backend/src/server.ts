@@ -4,6 +4,7 @@ import { durasiUji } from './config/durasi.js';
 import { muatSkoring } from './config/skoring.js';
 import { muatTes } from './config/tes.js';
 import { tutupPool } from './db/pool.js';
+import { hitungTertunda } from './modules/hasil/hasil.service.js';
 import { tutupOtomatis } from './modules/tes/pengerjaan.repo.js';
 
 // Konfigurasi tes dan skoring diperiksa saat mulai: server tidak jalan bila tidak valid.
@@ -18,12 +19,14 @@ const server = app.listen(port, () => {
   console.log(`API berjalan di http://localhost:${port}`);
 });
 
-// Ujian yang waktunya habis terkirim otomatis; token yang jadwalnya lewat menjadi kedaluwarsa.
+// Ujian yang waktunya habis terkirim otomatis; token yang jadwalnya lewat menjadi kedaluwarsa;
+// lalu ujian selesai yang belum punya hasil dihitung.
 // Galat hanya dicetak nomornya atau pesannya, tanpa data peserta.
 const SELANG_TUTUP_MS = 15_000;
 async function jalankanTutupOtomatis(): Promise<void> {
   try {
     await tutupOtomatis(muatTes().pengerjaan.toleransi_kirim_detik);
+    await hitungTertunda();
   } catch (galat) {
     const nomor = (galat as { number?: unknown })?.number;
     console.error('Tutup otomatis gagal:', typeof nomor === 'number' ? `galat database nomor ${nomor}` : galat instanceof Error ? galat.message : 'galat tidak dikenal');

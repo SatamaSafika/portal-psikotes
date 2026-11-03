@@ -81,6 +81,13 @@ Rute peserta (wajib sesi peserta):
 - Setiap 15 detik server menutup otomatis: ujian yang lewat batas menjadi `WAKTU_HABIS` (terkirim otomatis, jawaban tersimpan tetap dinilai); token yang jadwalnya lewat tanpa pernah mulai menjadi `KEDALUWARSA`.
 - Rute peserta dibatasi 600 permintaan per 15 menit per peserta (bukan per IP, karena peserta kantor berbagi IP).
 
+## Koreksi dan hasil
+- Hasil dihitung otomatis saat ujian dikirim, dan setiap 15 detik untuk ujian `DIKIRIM`/`WAKTU_HABIS` yang belum punya hasil. Peserta tidak bisa melihat hasil.
+- Skor mentah = jumlah benar, tanpa penalti. TIU 6 per butir. Koran: kunci = digit terakhir dari jumlah dua angka bersebelahan; N = benar / 22 dibulatkan setengah ke atas (bilangan bulat); kategori Koran memakai N.
+- Koran: ringkasan `interval_detik` (20 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah 440 detik tidak dihitung di skor maupun interval.
+- Admin melihat hasil per token di `GET /api/admin/sesi/:id` (benar, salah, dijawab, N, kategori, skor akhir, ringkasan interval, versi aturan).
+- `npm run hasil:hitung-ulang` (atau `-- --sesi <id>`): hitung ulang dari jawaban mentah dengan `skoring.json` terbaru. Ujian yang jawaban mentahnya sudah terhapus (retensi 3 bulan) dilewati, hasil lama tetap.
+
 ## Bank soal
 Bahan di `materi_rahasia/mentah/`:
 - `kunci.csv` dengan header `tes,jenis,soal,butir,kunci,penjelasan`. `tes` = `TIU5`/`TIU6`, `jenis` = `latihan`/`soal`. TIU 5: `butir` kosong, kunci 1 sampai 5. TIU 6: `butir` 1 sampai 5, kunci `B`/`S`. Penjelasan hanya untuk latihan TIU 5 (wajib di sana). Pada soal TIU 5, latihan TIU 6, dan soal TIU 6 penjelasan diabaikan dengan peringatan.
@@ -110,7 +117,7 @@ src/db/             pool koneksi SQL Server bersama
 src/lib/            utilitas kecil (parser CSV)
 src/middleware/     helmet, CORS, batas laju, penanganan galat
 src/modules/        token, tes (pembaca bank soal), skoring, hasil, admin
-scripts/            skrip bantu (cek-db, buat-admin, impor-bank, periksa-bank, buat-koran)
+scripts/            skrip bantu (cek-db, buat-admin, impor-bank, periksa-bank, buat-koran, hitung-ulang)
 test/               tes otomatis (node:test, data dummy)
 db/                 skrip SQL tabel HCIS_Psikotes_* (dijalankan manual lewat SSMS)
 config/             konfigurasi tes dan skoring (tidak rahasia)

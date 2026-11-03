@@ -3,6 +3,7 @@
 import { Router, type Response } from 'express';
 import { durasiDetik } from '../../config/durasi.js';
 import { muatTes } from '../../config/tes.js';
+import { hitungDanSimpan } from '../hasil/hasil.service.js';
 import { ujianAktif, wajibPeserta } from '../token/wajib-peserta.js';
 import { angkaKoran, jalurGambar, muatBank, soalPublik, type BankTermuat } from './bank.js';
 import { latihanPublik, periksaLatihan } from './latihan.js';
@@ -124,9 +125,16 @@ export function rutePengerjaan(): Router {
   });
 
   rute.post('/kirim', async (_req, res) => {
-    if (!(await repo.kirim(ujianAktif(res).id, toleransiKirim()))) {
+    const id = ujianAktif(res).id;
+    if (!(await repo.kirim(id, toleransiKirim()))) {
       res.status(409).json({ pesan: 'Ujian tidak bisa dikirim: belum dimulai atau waktu sudah habis' });
       return;
+    }
+    // Hasil langsung dihitung. Bila gagal, pemeriksaan berkala menghitungnya nanti; peserta tetap selesai.
+    try {
+      await hitungDanSimpan(id);
+    } catch (galat) {
+      console.error(`Hitung hasil ujian ${id} gagal:`, galat instanceof Error ? galat.message : 'galat tidak dikenal');
     }
     res.status(204).end();
   });

@@ -3,8 +3,8 @@
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
 ## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4, semua di cabang `fika`.
-- Berikutnya: Part 5.
+- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5, semua di cabang `fika`. Backend lengkap.
+- Berikutnya: Part 6 (frontend).
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
 
 Aturan kerja di setiap part:
@@ -128,13 +128,16 @@ Keputusan pemilik proyek (3 November 2026): kunci latihan dikirim setelah latiha
 Selesai kalau: jawaban setelah batas waktu ditolak, waktu jawaban Koran yang tidak masuk akal ditolak, dan tidak ada respons API yang memuat kunci atau skor.
 
 ## Part 5. Koreksi dan hasil (M)
-- Koreksi dari `jawaban` dan bank soal: skor mentah = jumlah benar. Tidak ada penalti.
-- Kategori dan skor akhir dari `skoring.json`. Koran: N = total benar / 22, dibulatkan ke bilangan bulat setengah ke atas, lalu kategori. Simpan total benar dan N yang sudah dibulatkan.
-- Simpan hasil di `ujian` dengan `aturan_versi` dan `bank_versi`.
-- [REVISI] Koran: hitung ringkasan 22 interval (dikerjakan, benar, salah) dari jawaban dan waktunya. Panjang interval (20 detik) disimpan di `skoring.json` sebagai konfigurasi (CLAUDE.md aturan 5, disetujui pemilik proyek 2 November 2026), dan jumlah interval = durasi / interval, divalidasi harus bilangan bulat.
-- [REVISI] **Keputusan terbuka**: simpan ringkasan ini di database (ikut retensi 4 bulan, perlu kolom atau tabel baru, DDL) atau hitung saat dilihat dari jawaban mentah (hilang setelah 3 bulan, tanpa DDL tambahan). Saran: simpan ringkasan, karena grafik tetap bisa dibuka sampai 4 bulan.
-- Skrip hitung ulang dari jawaban mentah.
-- Uji dengan data dummy yang hasilnya dihitung tangan lebih dulu.
+Keputusan pemilik proyek (3 November 2026): ringkasan 22 interval disimpan di database, sebagai kolom di tabel ujian (tanpa tabel baru).
+- [X] Skrip `db/07_tambah_kolom_hasil.sql`: kolom `n_koran` dan `ringkasan_interval` (JSON, dicek `ISJSON`) di tabel ujian.
+- [X] Koreksi dari `jawaban` dan bank soal: skor mentah = jumlah benar. Tidak ada penalti.
+- [X] Kategori dan skor akhir dari `skoring.json`. Koran: N = total benar / 22, dibulatkan ke bilangan bulat setengah ke atas, lalu kategori. Simpan total benar dan N yang sudah dibulatkan.
+- [X] Simpan hasil di `ujian` dengan `aturan_versi` dan `bank_versi`. Dihitung otomatis saat kirim dan setiap 15 detik untuk ujian selesai yang belum dihitung.
+- [X] [REVISI] Koran: hitung ringkasan 22 interval (dikerjakan, benar, salah) dari jawaban dan waktunya. Panjang interval (20 detik) disimpan di `skoring.json` sebagai konfigurasi (CLAUDE.md aturan 5, disetujui pemilik proyek 2 November 2026), dan jumlah interval = durasi / interval, divalidasi harus bilangan bulat.
+- [X] [REVISI] Ringkasan disimpan di kolom `ringkasan_interval` (ikut retensi 4 bulan), jadi grafik tetap bisa dibuka setelah jawaban mentah dihapus (3 bulan).
+- [X] Skrip hitung ulang dari jawaban mentah (`npm run hasil:hitung-ulang`). Ujian yang jawaban mentahnya sudah terhapus dilewati.
+- [X] Uji dengan data dummy yang hasilnya dihitung tangan lebih dulu (`test/koreksi.test.ts`, 86 tes lolos).
+- [X] Uji oleh pemilik proyek: jalankan `db/07`, kerjakan sesi dummy, cocokkan hasil dengan hitungan tangan (Koran 3 benar, 2 salah, N 0, interval 1 = 3/2/1, interval 2 = 2/1/1, 22 interval; TIU 5 cocok dengan kunci; hitung ulang 2 ujian).
 - Uji nilai batas, tiap sisi:
   - TIU 5: 5 dan 6, 13 dan 14, 21 dan 22, 28 dan 29.
   - TIU 6: 8 dan 9, 16 dan 17, 24 dan 25, 32 dan 33.
