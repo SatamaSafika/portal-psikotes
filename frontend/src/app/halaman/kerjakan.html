@@ -1,0 +1,98 @@
+<header class="kepala-tes">
+  <div class="wadah kepala-tes-isi">
+    <div>
+      <strong class="merek">{{ labelTes() }}</strong>
+      <div class="teks-redup teks-kecil">Peserta: {{ info()?.nama }}</div>
+    </div>
+    <div class="pil-waktu" [class.genting]="hampirHabis()" role="timer" aria-live="off">
+      Sisa waktu <strong>{{ sisa() }}</strong>
+    </div>
+  </div>
+</header>
+
+<main class="wadah area-tes">
+  @if (galat()) {
+    <div class="kotak-galat" role="alert">{{ galat() }}</div>
+  }
+
+  @if (siap() && item(); as s) {
+    <section class="kolom-soal">
+      <div class="kartu-polos">
+        <div class="teks-redup teks-kecil">
+          Soal {{ indeks() + 1 }} dari {{ soal().length }}@if (jenis() === 'TIU6') { ({{ butir.length }} butir)}
+        </div>
+        @if (instruksi()) {
+          <p class="instruksi" [class.kotak-info]="jenis() === 'TIU6'">{{ instruksi() }}</p>
+        }
+        <div class="gambar-soal">
+          <img [src]="gambar(s.gambar)" alt="Gambar soal {{ s.nomor }}" />
+        </div>
+
+        @if (jenis() === 'TIU5') {
+          <p class="teks-redup teks-kecil"><strong>Pilih nomor jawaban</strong></p>
+          <div role="radiogroup" [attr.aria-label]="'Jawaban soal ' + s.nomor">
+            @for (p of pilihan5; track p) {
+              <button type="button" class="pilihan" role="radio"
+                      [attr.aria-checked]="nilai(s.nomor) === p" (click)="pilih(s.nomor, p)">
+                <span class="bulat"></span>{{ p }}
+              </button>
+            }
+          </div>
+          <p class="teks-redup teks-kecil">Klik pilihan yang sama sekali lagi untuk mengosongkan jawaban. Anda boleh melewati soal dan kembali lagi.</p>
+        } @else {
+          <table class="tabel-butir">
+            <thead><tr><th>Butir</th><th>B</th><th>S</th></tr></thead>
+            <tbody>
+              @for (b of butir; track b) {
+                @let n = nomor(s.nomor, b);
+                <tr>
+                  <td>{{ b }}</td>
+                  @for (v of ['B', 'S']; track v) {
+                    <td>
+                      <button type="button" class="tombol-bs" role="radio"
+                              [attr.aria-checked]="nilai(n) === v" [attr.aria-label]="'Butir ' + b + ' ' + v"
+                              (click)="pilih(n, v)">{{ v }}</button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+          <p class="teks-redup teks-kecil">Setiap nomor hanya dapat diisi satu pilihan. Klik pilihan yang sama lagi untuk mengosongkan.</p>
+        }
+      </div>
+
+      <div class="baris-navigasi">
+        <button type="button" class="tombol tombol-garis" [disabled]="indeks() === 0" (click)="ke(indeks() - 1)">Sebelumnya</button>
+        <button type="button" class="tombol tombol-garis" [disabled]="indeks() === soal().length - 1" (click)="ke(indeks() + 1)">Berikutnya</button>
+      </div>
+    </section>
+
+    <aside class="kolom-panel">
+      <div class="kartu-polos">
+        <strong>Navigasi soal</strong>
+        <div class="grid-nomor">
+          @for (x of soal(); track x.nomor; let i = $index) {
+            <button type="button" [class]="'nomor ' + status(i)" [attr.aria-current]="i === indeks() ? 'step' : null"
+                    [attr.aria-label]="'Soal ' + (i + 1)" (click)="ke(i)">{{ i + 1 }}</button>
+          }
+        </div>
+        <ul class="legenda teks-kecil">
+          <li><span class="nomor saat-ini"></span> Soal saat ini</li>
+          <li><span class="nomor dijawab"></span> Sudah dijawab</li>
+          <li><span class="nomor kosong"></span> Belum dijawab</li>
+        </ul>
+        <div class="teks-kecil status-simpan" role="status">
+          @switch (statusSimpan()) {
+            @case ('tersimpan') { Jawaban tersimpan }
+            @case ('menyimpan') { Menyimpan... }
+            @case ('gagal') { <span style="color: var(--salah)">Gagal menyimpan, mencoba lagi...</span> }
+          }
+        </div>
+      </div>
+      <button type="button" class="tombol tombol-navy tombol-penuh" (click)="keKirim()">Kirim jawaban</button>
+    </aside>
+  } @else if (!galat()) {
+    <p class="teks-redup">Menyiapkan soal...</p>
+  }
+</main>

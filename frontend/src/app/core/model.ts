@@ -1,0 +1,60 @@
+// Tipe data dari API backend (lihat backend/README.md). Tidak ada kunci soal di sini kecuali hasil periksa latihan.
+
+export type JenisTes = 'TIU5' | 'TIU6' | 'KORAN';
+
+export const DAFTAR_TES: JenisTes[] = ['TIU5', 'TIU6', 'KORAN'];
+
+export const LABEL_TES: Record<JenisTes, string> = {
+  TIU5: 'TIU 5',
+  TIU6: 'TIU 6',
+  KORAN: 'Tes Koran / Kraepelin',
+};
+
+export const BUTIR_PER_SOAL_TIU6 = 5;
+
+/** GET /api/peserta/saya */
+export interface InfoUjian {
+  jenis_tes: JenisTes;
+  nama: string;
+  nama_sesi: string;
+  status: string;
+  waktu_tutup: string;
+  mulai_pada: string | null;
+  batas_selesai: string | null;
+  sisa_detik: number | null;
+  berjalan_ms: number | null;
+  durasi_detik: number;
+  /** TIU 5: 30, TIU 6: 8 Soal, Koran: 988. */
+  jumlah_soal: number;
+  /** TIU 5: 30, TIU 6: 40 butir, Koran: 988. */
+  jumlah_nomor: number;
+}
+
+export interface ItemLatihan {
+  nomor: number;
+  gambar: string;
+  jumlah_butir?: number;
+}
+
+/** GET /api/peserta/latihan (tanpa kunci) */
+export interface DataLatihan {
+  instruksi: string | null;
+  latihan: ItemLatihan[];
+}
+
+/** POST /api/peserta/latihan/periksa */
+export type HasilPeriksa =
+  | { benar: boolean; kunci: string; penjelasan?: string }
+  | { butir: { butir: number; benar: boolean; kunci: string }[] };
+
+/** GET /api/peserta/soal (TIU, tanpa kunci) */
+export interface SoalPublik {
+  nomor: number;
+  gambar: string;
+  jumlah_butir?: number;
+}
+
+export interface JawabanTersimpan {
+  nomor: number;
+  jawaban: string | null;
+}

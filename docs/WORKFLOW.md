@@ -3,8 +3,8 @@
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
 ## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5, semua di cabang `fika`. Backend lengkap.
-- Berikutnya: Part 6 (frontend).
+- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5 (commit `65b2fa2`), Part 6, semua di cabang `fika`. Backend lengkap; frontend peserta TIU selesai.
+- Berikutnya: Part 7 (frontend Tes Koran).
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
 
 Aturan kerja di setiap part:
@@ -147,10 +147,16 @@ Keputusan pemilik proyek (3 November 2026): ringkasan 22 interval disimpan di da
 Selesai kalau: hitungan tangan dan hitungan sistem sama untuk setidaknya satu contoh tiap tes, semua uji nilai batas lolos, dan ringkasan 22 interval cocok dengan hitungan tangan pada satu contoh Koran.
 
 ## Part 6. Frontend peserta, TIU 5 dan TIU 6 (L)
-- Angular (versi stabil terbaru), proksi `/api` ke backend.
-- Halaman: token, instruksi, latihan, TIU 5, TIU 6, kirim, selesai. Ikuti prototipe lo-fi, dengan jumlah soal dan timer 10 menit sesuai tabel. Halaman selesai tanpa skor.
-- [REVISI] Landing page: hanya judul dan pilihan langsung, tanpa deskripsi. Semua halaman tanpa nama dan logo perusahaan (aturan 6), termasuk footer dan judul tab. Pakai teks netral, misalnya "Portal Psikotes".
-- Navigasi soal, timer dari server, simpan otomatis.
+Keputusan pemilik proyek (3 November 2026): Node 24 LTS + Angular 22; nama dari peserta disimpan bila HC belum mengisi; token untuk tes lain ditolak tanpa terpakai; klik nomor di navigasi soal melompat ke soal itu. Acuan UI: `docs/prototipe/` (versi 47).
+- [X] Node 24.22 (nvm-windows), Angular 22.2 di `frontend/`, proksi `/api` ke backend, font Montserrat dipasang lokal, token desain dari prototipe.
+- [X] Backend: `masuk` menerima `jenis_tes` dan `nama`; `/saya` memuat `nama`, `jumlah_soal`, `jumlah_nomor`.
+- [X] Halaman: pilih tes, verifikasi (token, nama, email), instruksi, latihan (kunci setelah dijawab), TIU 5, TIU 6, kirim, selesai. Halaman selesai tanpa skor.
+- [X] [REVISI] Landing page: hanya judul dan pilihan langsung, tanpa deskripsi. Semua halaman tanpa nama dan logo perusahaan (aturan 6), termasuk footer dan judul tab. Pakai teks netral, misalnya "Portal Psikotes".
+- [X] Navigasi soal (klik nomor), timer dari server (sinkron tiap 30 detik), simpan otomatis, kirim otomatis saat waktu habis (halaman selesai dengan pesan waktu habis).
+- [X] Tes unit frontend (Vitest): hitung mundur, antrean simpan otomatis, status navigasi.
+- [X] Uji oleh pemilik proyek di browser: TIU 5 dan TIU 6 dari pilih tes sampai selesai, token untuk tes lain ditolak tanpa terpakai, kirim otomatis saat waktu habis.
+- Analytics Angular CLI dimatikan (`"analytics": false`). Fungsi bantu uji manual: `backend/scripts/uji-api.ps1`.
+- Kartu Tes Koran di halaman awal sudah ada; halaman Koran dibuat di Part 7.
 
 Selesai kalau: satu peserta dummy menyelesaikan TIU 5 dan TIU 6 dari token sampai halaman selesai.
 
@@ -159,7 +165,7 @@ Selesai kalau: satu peserta dummy menyelesaikan TIU 5 dan TIU 6 dari token sampa
 - [REVISI] Pengerjaan ketat satu per satu dari atas ke bawah. Hanya kotak berikutnya yang aktif. Kotak harus terisi satu digit sebelum lanjut (Enter pada kotak kosong tidak berpindah). Kotak yang sudah dijawab terkunci. Tidak bisa kembali atau melompat ke kotak, lajur, atau halaman lain. Pindah halaman manual hanya setelah semua kotak di halaman itu terisi.
 - Satu timer 7 menit 20 detik dari server. Peserta mengerjakan sebisanya. Simpan jawaban bertahap supaya tidak hilang saat waktu habis.
 - [REVISI] Catat waktu relatif tiap jawaban (milidetik sejak tes dimulai) dan kirim bersama jawaban. Ini tidak menampilkan apa pun ke peserta: tidak ada indikator interval atau grafik di layar peserta.
-- Latihan Koran (2 soal latihan dengan kunci langsung): tentukan bahannya (lajur pendek berisi angka contoh, tidak rahasia, di konfigurasi). Latihan tidak dicatat waktunya dan tidak masuk interval (disetujui pemilik proyek, 2 November 2026).
+- Latihan Koran: bahan sudah ada di `frontend/src/app/koran/latihan.ts` (contoh 1, contoh 2, uji coba; sama dengan prototipe, dipertahankan). Kunci latihan dihitung di browser karena bukan bagian bank soal. Latihan tidak dicatat waktunya dan tidak masuk interval (disetujui pemilik proyek, 2 November 2026).
 
 Selesai kalau: peserta dummy menyelesaikan Koran, hasil koreksi cocok dengan hitungan tangan, dan setiap jawaban tersimpan dengan waktu relatifnya.
 
