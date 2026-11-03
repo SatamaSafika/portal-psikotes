@@ -1,7 +1,7 @@
 // Semua data di sini DUMMY (domain contoh.test).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ringkasJadwal, validasiPeserta, validasiSesi } from '../src/modules/token/sesi.validasi.js';
+import { ringkasJadwal, validasiMasuk, validasiPeserta, validasiSesi } from '../src/modules/token/sesi.validasi.js';
 import { buatTokenPeserta, hashTokenPeserta, normalisasiToken } from '../src/modules/token/token.js';
 import { formatTanggal, isiUndangan, MAILTO_MAKS, templateBawaan, validasiTemplate } from '../src/modules/token/undangan.js';
 
@@ -116,6 +116,32 @@ test('mailto berisi alamat, subjek, dan isi yang di-encode', () => {
 test('mailto panjang ditandai', () => {
   const u = isiUndangan({ subjek: 'S', isi: `${'x'.repeat(MAILTO_MAKS)}\n{daftar_token}` }, DATA);
   assert.equal(u.mailtoTerlaluPanjang, true);
+});
+
+// ---------- masukan halaman verifikasi ----------
+
+test('masuk: email, token, tes pilihan, dan nama diseragamkan', () => {
+  const t = buatTokenPeserta();
+  assert.deepEqual(
+    validasiMasuk({ email: ' Peserta.Satu@Contoh.TEST ', token: t.toLowerCase(), jenis_tes: 'TIU6', nama: '  Peserta Satu ' }, normalisasiToken),
+    { email: 'peserta.satu@contoh.test', token: t.replace(/-/g, ''), jenis_tes: 'TIU6', nama: 'Peserta Satu' },
+  );
+  // Tanpa tes pilihan dan nama tetap diterima (klien lama).
+  assert.deepEqual(validasiMasuk({ email: 'a@contoh.test', token: t }, normalisasiToken)?.jenis_tes, null);
+  assert.equal(validasiMasuk({ email: 'a@contoh.test', token: t, nama: '   ' }, normalisasiToken)?.nama, null);
+});
+
+test('masuk: bentuk yang salah ditolak', () => {
+  const t = buatTokenPeserta();
+  for (const salah of [
+    { email: 'bukan-email', token: t },
+    { email: 'a@contoh.test', token: 'salah' },
+    { email: 'a@contoh.test', token: t, jenis_tes: 'TIU7' },
+    { email: 'a@contoh.test', token: t, nama: 'x'.repeat(101) },
+    null,
+  ]) {
+    assert.equal(validasiMasuk(salah, normalisasiToken), null, JSON.stringify(salah));
+  }
 });
 
 // ---------- validasi sesi ----------

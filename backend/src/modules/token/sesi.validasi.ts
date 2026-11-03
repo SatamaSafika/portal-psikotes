@@ -70,6 +70,39 @@ export function validasiPeserta(data: unknown): { peserta: PesertaMasukan[]; gal
   return { peserta, galat };
 }
 
+export interface MasukanMasuk {
+  email: string;
+  /** Token yang sudah dinormalisasi. */
+  token: string;
+  /** Tes yang dipilih peserta di halaman awal. Null = tidak dicek (kompatibel dengan klien lama). */
+  jenis_tes: JenisTes | null;
+  /** Nama yang diketik peserta. Disimpan hanya bila HC belum mengisi nama. */
+  nama: string | null;
+}
+
+/**
+ * Masukan halaman verifikasi. Null bila bentuknya pasti salah; pemanggil membalas pesan gagal yang seragam.
+ * normalisasi: fungsi penyeragam token (disuntikkan supaya modul ini tetap tanpa ketergantungan).
+ */
+export function validasiMasuk(data: unknown, normalisasi: (t: string) => string | null): MasukanMasuk | null {
+  const d = (data ?? {}) as Record<string, unknown>;
+  const email = validasiPeserta([{ email: d.email }]).peserta[0]?.email;
+  const token = typeof d.token === 'string' && d.token.length <= 64 ? normalisasi(d.token) : null;
+  if (!email || !token) return null;
+
+  let jenis: JenisTes | null = null;
+  if (d.jenis_tes !== undefined && d.jenis_tes !== null) {
+    if (!DAFTAR_TES.includes(d.jenis_tes as JenisTes)) return null;
+    jenis = d.jenis_tes as JenisTes;
+  }
+  let nama: string | null = null;
+  if (typeof d.nama === 'string' && d.nama.trim() !== '') {
+    if (d.nama.trim().length > 100) return null;
+    nama = d.nama.trim();
+  }
+  return { email, token, jenis_tes: jenis, nama };
+}
+
 export function validasiJadwal(data: unknown): { jadwal: JadwalTes[]; galat: string[] } {
   const galat: string[] = [];
   if (!Array.isArray(data) || data.length === 0) {

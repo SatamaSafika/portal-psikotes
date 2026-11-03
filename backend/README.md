@@ -51,8 +51,8 @@ Rute peserta:
 
 | Rute | Hasil |
 | --- | --- |
-| `POST /api/peserta/masuk` | Body `{ "email", "token" }`. Token sekali pakai, harus di dalam jam sesi. Berhasil: cookie `psikotes_peserta`. |
-| `GET /api/peserta/saya` | Jenis tes, status, durasi, sisa waktu menurut jam server. |
+| `POST /api/peserta/masuk` | Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
+| `GET /api/peserta/saya` | Jenis tes, nama (atau email bila kosong), status, durasi, jumlah soal, sisa waktu dan `berjalan_ms` menurut jam server. |
 | `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
 
 - Satu token per tes, dan setiap tes punya jadwal (tanggal, jam buka, jam tutup) sendiri, sama untuk semua peserta sesi itu. Jadwal disimpan per token di tabel ujian; kolom tanggal dan jam di tabel sesi hanya ringkasan hari pertama. Peserta tambahan mengikuti jadwal yang sudah ada.
