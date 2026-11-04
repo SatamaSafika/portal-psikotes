@@ -24,18 +24,19 @@ const LABEL_JADWAL = { BELUM_MULAI: 'Belum mulai', BERJALAN: 'Berjalan', SELESAI
         <h2 class="judul-kartu">Jadwal hari ini</h2>
         <div class="tabel-gulir">
           <table class="tabel">
-            <thead><tr><th>Nama sesi</th><th>Jenis tes</th><th>Jumlah peserta</th><th>Waktu</th><th>Status</th></tr></thead>
+            <thead><tr><th>Nama sesi</th><th>Mode</th><th>Jenis tes</th><th>Jumlah peserta</th><th>Waktu</th><th>Status</th></tr></thead>
             <tbody>
               @for (j of d.jadwal_hari_ini; track j.sesi_id + j.jenis_tes) {
                 <tr>
                   <td>{{ j.nama_sesi }}</td>
+                  <td>{{ j.mode === 'KELOMPOK' ? 'Serentak' : 'Individu' }}</td>
                   <td>{{ label[j.jenis_tes] }}</td>
-                  <td>{{ j.jumlah_peserta }}</td>
+                  <td>{{ j.mode === 'KELOMPOK' ? j.jumlah_peserta + ' dari ' + j.kuota : j.jumlah_peserta }}</td>
                   <td>{{ j.waktu_buka }}–{{ j.waktu_tutup }}</td>
                   <td><span class="lencana" [class]="'lencana ' + j.status">{{ labelJadwal[j.status] }}</span></td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="teks-redup">Tidak ada jadwal tes hari ini.</td></tr>
+                <tr><td colspan="6" class="teks-redup">Tidak ada jadwal tes hari ini.</td></tr>
               }
             </tbody>
           </table>

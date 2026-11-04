@@ -37,9 +37,9 @@
       <tbody>
         @for (h of hasil(); track h.ujian_id) {
           <tr [class.terpilih]="jawabanUntuk()?.ujian_id === h.ujian_id">
-            <td>{{ h.nama ?? h.email }}<div class="teks-redup teks-kecil">{{ h.nama ? h.email : '' }}</div></td>
+            <td>{{ h.nama ?? h.email }}<div class="teks-redup teks-kecil">{{ h.nama ? (h.email ?? '') : '' }}</div></td>
             <td>{{ label[h.jenis_tes] }}@if (h.status === 'WAKTU_HABIS') {<div class="teks-redup teks-kecil">waktu habis</div>}</td>
-            <td>{{ h.nama_sesi }}<div class="teks-redup teks-kecil">{{ h.tanggal }}</div></td>
+            <td>{{ h.nama_sesi }}<div class="teks-redup teks-kecil">{{ h.tanggal }}{{ h.mode === 'KELOMPOK' ? ' · serentak' : '' }}</div></td>
             <td>{{ h.jumlah_benar ?? '—' }}</td>
             <td>{{ h.jumlah_salah ?? '—' }}</td>
             <td>{{ h.jumlah_dijawab ?? '—' }}</td>

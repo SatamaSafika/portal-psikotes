@@ -196,13 +196,14 @@ Keputusan pemilik proyek atas rencana 8b (4 November 2026):
 3. Kuota maksimum 1000 per token (pemakaian normal 100 sampai 200). Batas gagal jalur token 300 per 15 menit per IP (yang berhasil tidak dihitung). Nama peserta kelompok minimal 2, maksimal 100 karakter.
 4. Cabut token kelompok hanya menolak klaim baru; peserta yang sedang mengerjakan tetap lanjut.
 5. Aturan mode individu tidak berubah (token per peserta, terikat email, sekali pakai, sesuai jadwal). Tampilan verifikasi menjadi dua langkah untuk kedua mode.
-- [ ] DDL `db/09_sesi_kelompok.sql` (draf sudah ditulis, belum dijalankan; dijalankan pemilik proyek di SSMS): tabel `HCIS_Psikotes_Kelompok` (sesi, jenis tes, hash token, kuota, terpakai, jadwal, dicabut), kolom `kelompok_id` di tabel ujian, kolom `mode` dan `email_penerima` di tabel sesi, pelonggaran `email` dan `token_hash` (keputusan 1).
-- [ ] Klaim atomik: satu transaksi `UPDATE ... WHERE terpakai < kuota` pada jadwal aktif dan belum dicabut, lalu `INSERT` catatan ujian. Tidak boleh baca lalu tulis terpisah.
-- [ ] Token kelompok pendek dan mudah diketik (usulan 10 karakter tanpa karakter mirip). Batas gagal jalur kelompok per token, ambang per IP dinaikkan, supaya satu ruangan tidak terkunci karena salah ketik.
-- [ ] Verifikasi peserta (dua langkah): token, lalu nama (mode kelompok) atau nama dan email (mode individu). Pesan gagal tetap seragam. Cookie sesi peserta seperti Part 3.
-- [ ] Buat sesi serentak: nama sesi, email PIC, X, daftar tes dengan jadwal per tes. Template email bawaan kelompok terpisah (tanpa kalimat larangan membagikan token), bisa disunting HC.
-- [ ] Dashboard: terpakai n dari X per token, tambah kuota, cabut, hasil diurutkan per sesi lalu nama (termasuk ekspor), koreksi nama oleh admin, kartu Overview menghitung per token.
-- [ ] Mode individu tidak berubah (uji regresi seluruh tes yang ada).
+Status 4 November 2026: DDL dijalankan; kode backend dan frontend selesai; uji di kantor oleh pemilik proyek lolos (`npm run uji:kelompok`, alur manual serentak, regresi individu). Tersisa: pembaruan prototipe.
+- [x] DDL `db/09_sesi_kelompok.sql` (dijalankan pemilik proyek di SSMS, 4 November 2026): tabel `HCIS_Psikotes_Kelompok` (sesi, jenis tes, hash token, kuota, terpakai, jadwal, dicabut), kolom `kelompok_id` di tabel ujian, kolom `mode` dan `email_penerima` di tabel sesi, pelonggaran `email` dan `token_hash` (keputusan 1).
+- [x] Klaim atomik: satu transaksi `UPDATE ... WHERE terpakai < kuota` pada jadwal aktif dan belum dicabut, lalu `INSERT` catatan ujian. Tidak boleh baca lalu tulis terpisah.
+- [x] Token kelompok pendek dan mudah diketik (usulan 10 karakter tanpa karakter mirip). Batas gagal jalur kelompok per token, ambang per IP dinaikkan, supaya satu ruangan tidak terkunci karena salah ketik.
+- [x] Verifikasi peserta (dua langkah): token, lalu nama (mode kelompok) atau nama dan email (mode individu). Pesan gagal tetap seragam. Cookie sesi peserta seperti Part 3.
+- [x] Buat sesi serentak: nama sesi, email PIC, X, daftar tes dengan jadwal per tes. Template email bawaan kelompok terpisah (tanpa kalimat larangan membagikan token), bisa disunting HC.
+- [x] Dashboard: terpakai n dari X per token, tambah kuota, cabut, hasil diurutkan per sesi lalu nama (termasuk ekspor), koreksi nama oleh admin, kartu Overview menghitung per token.
+- [x] Mode individu tidak berubah (uji regresi seluruh tes yang ada).
 - [ ] Perbarui prototipe dan `PROTOTIPE_SPEC.md` (pilihan mode, kuota, layar verifikasi dua langkah).
 Selesai kalau: 100 klaim paralel pada kuota 50 menghasilkan tepat 50 peserta; di luar jadwal dan token tercabut ditolak; 100 salah ketik dari satu IP tidak mengunci peserta yang benar; hasil per peserta dan skor tetap sesuai hitungan tangan; semua tes lama tetap lolos.
 

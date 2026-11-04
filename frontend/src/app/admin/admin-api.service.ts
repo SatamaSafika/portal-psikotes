@@ -5,11 +5,15 @@ import type { JenisTes } from '../core/model';
 import type {
   BarisHasil,
   DetailSesi,
+  EmailKelompok,
   JadwalTes,
   JawabanNomor,
+  ModeSesi,
+  PesertaKelompok,
   Ringkasan,
   SesiRingkas,
   Template,
+  TokenKelompokBaru,
   Undangan,
 } from './admin-model';
 
@@ -54,8 +58,8 @@ export class ApiAdmin {
   }): Promise<{ sesi_id: number; undangan: Undangan[] }> {
     return this.post('/sesi', data);
   }
-  templateBawaan(): Promise<Template> {
-    return this.get('/template-bawaan');
+  templateBawaan(mode: ModeSesi = 'INDIVIDU'): Promise<Template> {
+    return this.get('/template-bawaan', mode === 'KELOMPOK' ? new HttpParams().set('mode', 'kelompok') : undefined);
   }
   simpanTemplate(sesiId: number, t: Template): Promise<void> {
     return firstValueFrom(this.http.put<void>(`${DASAR}/sesi/${sesiId}/template`, t));
@@ -68,6 +72,35 @@ export class ApiAdmin {
   }
   cabut(ujianId: number): Promise<void> {
     return this.post(`/ujian/${ujianId}/cabut`, {});
+  }
+
+  // ----- sesi serentak (token kelompok) -----
+  buatSesiKelompok(data: {
+    nama_sesi: string;
+    kuota: number;
+    email_penerima: string;
+    jadwal: JadwalTes[];
+    template: Template | null;
+  }): Promise<{ sesi_id: number; token: TokenKelompokBaru[]; email: EmailKelompok }> {
+    return this.post('/sesi-kelompok', data);
+  }
+  pesertaKelompok(kelompokId: number): Promise<{ peserta: PesertaKelompok[] }> {
+    return this.get(`/kelompok/${kelompokId}/peserta`);
+  }
+  tambahKuota(kelompokId: number): Promise<{ kuota: number }> {
+    return this.post(`/kelompok/${kelompokId}/tambah-kuota`, {});
+  }
+  tokenBaruKelompok(kelompokId: number): Promise<{ token: TokenKelompokBaru; email: EmailKelompok | null }> {
+    return this.post(`/kelompok/${kelompokId}/token-baru`, {});
+  }
+  cabutKelompok(kelompokId: number): Promise<void> {
+    return this.post(`/kelompok/${kelompokId}/cabut`, {});
+  }
+  tandaiEmailKelompok(sesiId: number): Promise<void> {
+    return this.post(`/sesi/${sesiId}/email-kelompok-dikirim`, {});
+  }
+  ubahNama(ujianId: number, nama: string): Promise<{ nama: string }> {
+    return firstValueFrom(this.http.put<{ nama: string }>(`${DASAR}/ujian/${ujianId}/nama`, { nama }));
   }
 
   hasil(filter: { jenis: JenisTes | ''; sesi: string; tanggal: string }): Promise<{ hasil: BarisHasil[] }> {

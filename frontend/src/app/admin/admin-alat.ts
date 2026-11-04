@@ -34,6 +34,31 @@ export function uraiPeserta(teks: string): { peserta: { email: string; nama: str
   return { peserta, galat };
 }
 
+// ---------- sesi serentak ----------
+
+/** Sama dengan batas backend (keputusan pemilik proyek, 4 November 2026). */
+export const KUOTA_MAKS = 1000;
+
+/** Kuota dari isian teks: bilangan bulat 1 sampai KUOTA_MAKS, selain itu null. */
+export function uraiKuota(teks: string): number | null {
+  const t = teks.trim();
+  if (!/^\d{1,4}$/.test(t)) return null;
+  const n = Number(t);
+  return n >= 1 && n <= KUOTA_MAKS ? n : null;
+}
+
+/** Satu email penerima (huruf kecil), atau null bila tidak valid. */
+export function uraiEmail(teks: string): string | null {
+  const e = teks.trim().toLowerCase();
+  return POLA_EMAIL.test(e) && e.length <= 150 ? e : null;
+}
+
+/** Lebar batang "n dari X" dalam persen, 0 sampai 100. */
+export function persenKuota(terpakai: number, kuota: number): number {
+  if (kuota <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((terpakai / kuota) * 100)));
+}
+
 // ---------- grafik ----------
 
 export interface UkuranGrafik {

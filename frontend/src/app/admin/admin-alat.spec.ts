@@ -1,6 +1,34 @@
 // Data DUMMY (domain contoh.test).
-import { batasAtas, buatCsv, skalaGrafik, uraiPeserta } from './admin-alat';
+import { tampilToken } from '../halaman/verifikasi';
+import { batasAtas, buatCsv, persenKuota, skalaGrafik, uraiEmail, uraiKuota, uraiPeserta } from './admin-alat';
 import type { Interval } from './admin-model';
+
+describe('sesi serentak', () => {
+  it('kuota bilangan bulat 1 sampai 1000', () => {
+    expect(uraiKuota('50')).toBe(50);
+    expect(uraiKuota(' 1000 ')).toBe(1000);
+    for (const salah of ['', '0', '1001', '2.5', '-3', 'abc', '1e2']) expect(uraiKuota(salah)).toBeNull();
+  });
+
+  it('email penerima dinormalisasi atau ditolak', () => {
+    expect(uraiEmail(' Pengawas@Contoh.Test ')).toBe('pengawas@contoh.test');
+    expect(uraiEmail('bukan-email')).toBeNull();
+    expect(uraiEmail('a@b.test\nBcc: x@y.test')).toBeNull();
+  });
+
+  it('batang kuota dibatasi 0 sampai 100 persen', () => {
+    expect(persenKuota(0, 50)).toBe(0);
+    expect(persenKuota(25, 50)).toBe(50);
+    expect(persenKuota(51, 50)).toBe(100);
+    expect(persenKuota(1, 0)).toBe(0);
+  });
+
+  it('token ditampilkan dengan format baku', () => {
+    expect(tampilToken('abcde fghjk')).toBe('ABCDE-FGHJK');
+    expect(tampilToken('abcd-efgh-jkmn-pqrs-tvwx')).toBe('ABCD-EFGH-JKMN-PQRS-TVWX');
+    expect(tampilToken('abcdefghjkmnpqrstvwx')).toBe('ABCD-EFGH-JKMN-PQRS-TVWX');
+  });
+});
 
 describe('daftar peserta dari teks', () => {
   it('email saja atau email dengan nama, berbagai pemisah, baris kosong dilewati', () => {

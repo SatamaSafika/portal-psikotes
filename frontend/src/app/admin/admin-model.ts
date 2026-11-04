@@ -7,9 +7,13 @@ export interface Interval {
   salah: number;
 }
 
+/** INDIVIDU = token per peserta; KELOMPOK = sesi serentak, satu token per tes dengan kuota. */
+export type ModeSesi = 'INDIVIDU' | 'KELOMPOK';
+
 export interface SesiRingkas {
   id: number;
   nama_sesi: string;
+  mode: ModeSesi;
   tanggal: string;
   waktu_buka: string;
   waktu_tutup: string;
@@ -32,7 +36,9 @@ export interface JadwalTes {
 
 export interface UjianAdmin {
   ujian_id: number;
-  email: string;
+  /** null untuk peserta sesi serentak (masuk dengan nama saja). */
+  email: string | null;
+  kelompok_id: number | null;
   nama: string | null;
   jenis_tes: JenisTes;
   tanggal: string;
@@ -55,8 +61,54 @@ export interface UjianAdmin {
 export interface DetailSesi extends SesiRingkas {
   template_subjek: string;
   template_isi: string;
+  /** Hanya sesi serentak: penerima email token (PIC). */
+  email_penerima: string | null;
   jadwal: JadwalTes[];
   ujian: UjianAdmin[];
+  /** Hanya sesi serentak: satu token per tes. */
+  kelompok: KelompokAdmin[];
+}
+
+export type StatusKelompok = 'BELUM_MULAI' | 'AKTIF' | 'PENUH' | 'SELESAI' | 'DICABUT';
+
+export interface KelompokAdmin extends JadwalTes {
+  kelompok_id: number;
+  kuota: number;
+  terpakai: number;
+  status: StatusKelompok;
+  email_dikirim_pada: string | null;
+}
+
+export const LABEL_STATUS_KELOMPOK: Record<StatusKelompok, string> = {
+  BELUM_MULAI: 'Belum buka',
+  AKTIF: 'Aktif',
+  PENUH: 'Kuota penuh',
+  SELESAI: 'Jadwal selesai',
+  DICABUT: 'Dicabut',
+};
+
+export interface TokenKelompokBaru extends JadwalTes {
+  kelompok_id: number;
+  /** Token mentah: hanya ada di respons pembuatan, tidak pernah dari GET. */
+  token: string;
+}
+
+/** Email token kelompok untuk penerima (PIC). */
+export interface EmailKelompok {
+  email: string;
+  subjek: string;
+  isi: string;
+  mailto: string;
+  mailtoTerlaluPanjang: boolean;
+}
+
+export interface PesertaKelompok {
+  ujian_id: number;
+  nama: string;
+  masuk_pada: string;
+  status: string;
+  /** Ada peserta lain di token ini dengan nama sama (tidak ditolak, hanya ditandai). */
+  nama_kembar: boolean;
 }
 
 export interface TokenPeserta extends JadwalTes {
@@ -88,7 +140,10 @@ export interface Ringkasan {
     sesi_id: number;
     nama_sesi: string;
     jenis_tes: JenisTes;
+    mode: ModeSesi;
+    /** Individu: jumlah token. Serentak: jumlah peserta yang sudah masuk (n dari kuota). */
     jumlah_peserta: number;
+    kuota: number | null;
     waktu_buka: string;
     waktu_tutup: string;
     status: 'BELUM_MULAI' | 'BERJALAN' | 'SELESAI';
@@ -101,7 +156,8 @@ export interface BarisHasil {
   nama_sesi: string;
   tanggal: string;
   jenis_tes: JenisTes;
-  email: string;
+  mode: ModeSesi;
+  email: string | null;
   nama: string | null;
   status: string;
   selesai_pada: string | null;

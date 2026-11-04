@@ -32,6 +32,7 @@ Variabel yang dibaca kode:
 - `npm run bank:periksa`: muat bank yang sudah terimpor lewat pembaca server, cetak jumlah dan sidik jari.
 - `npm run buat-koran`: buat angka Tes Koran baru (sekali per versi bank) ke `materi_rahasia/mentah/koran.json`. Susunan dari `config/tes.json`. Tidak menimpa berkas yang ada.
 - `npm test`: tes otomatis (data dummy saja).
+- `npm run uji:kelompok`: uji sesi serentak dengan database (data dummy "Uji Kuota ..."): 100 klaim paralel pada kuota 50, di luar jadwal, tes lain, tambah kuota, 100 salah ketik lewat HTTP, token baru, cabut, ubah nama. Jalankan `npm run dev` di terminal lain dulu (pilihan `-- --api <url>`). Setiap kali jalan membuat satu sesi uji baru; tidak mencetak token.
 
 Semua skrip bank hanya mencetak nama berkas, nomor, jumlah, dan sidik jari. Kunci, penjelasan, instruksi, dan angka Koran tidak pernah dicetak.
 
@@ -51,7 +52,9 @@ Rute peserta:
 
 | Rute | Hasil |
 | --- | --- |
-| `POST /api/peserta/masuk` | Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
+| `POST /api/peserta/token` | Langkah 1 verifikasi. Body `{ "token", "jenis_tes" }`. Balasan `{ "mode": "INDIVIDU" | "KELOMPOK" }` bila token berlaku untuk tes itu sekarang; token tidak dipakai. Gagal: 401 dengan pesan seragam. Dibatasi 300 gagal per 15 menit per IP (yang berhasil tidak dihitung). |
+| `POST /api/peserta/masuk-kelompok` | Langkah 2 sesi serentak. Body `{ "token", "jenis_tes", "nama" }` (nama 2 sampai 100 karakter). Klaim satu kursi kuota secara atomik dan membuat catatan ujian sendiri. Berhasil: cookie `psikotes_peserta`. |
+| `POST /api/peserta/masuk` | Langkah 2 individu. Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
 | `GET /api/peserta/saya` | Jenis tes, nama (atau email bila kosong), status, durasi, jumlah soal (`jumlah_soal`, `jumlah_nomor`, `jumlah_halaman` untuk Koran), sisa waktu dan `berjalan_ms` menurut jam server. |
 | `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
 
@@ -61,6 +64,22 @@ Rute peserta:
 - Pengiriman lewat tautan `mailto` (membuka aplikasi email bawaan Windows). HC memakai Outlook desktop: atur MAILTO ke Outlook di Pengaturan > Aplikasi > Aplikasi default, kalau tidak tautan bisa terbuka di browser. Pengiriman otomatis lewat SMTP menyusul bila IT menyediakan akun.
 - Jadwal dibandingkan dengan jam server database. Peserta harus masuk dan mulai di dalam jadwal tesnya; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
 - Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
+
+### Sesi serentak (token kelompok, `db/09`)
+| Rute | Hasil |
+| --- | --- |
+| `POST /api/admin/sesi-kelompok` | `nama_sesi`, `kuota` (1 sampai 1000), `email_penerima`, `jadwal` (1 sampai 3 tes), `template` opsional. Satu token 10 karakter (`XXXXX-XXXXX`) per tes. Respons berisi token dan satu email untuk penerima. **Token mentah hanya tampil di respons ini.** |
+| `GET /api/admin/kelompok/:id/peserta` | Peserta yang sudah masuk, urut nama, dengan tanda `nama_kembar` |
+| `POST /api/admin/kelompok/:id/tambah-kuota` | Kuota +1 (ditolak bila dicabut atau sudah 1000) |
+| `POST /api/admin/kelompok/:id/token-baru` | Ganti token; kuota, terpakai, dan peserta yang sudah masuk tidak berubah. Respons berisi token baru dan email berisi token itu saja. |
+| `POST /api/admin/kelompok/:id/cabut` | Tolak klaim baru; peserta yang sudah masuk tetap lanjut |
+| `POST /api/admin/sesi/:id/email-kelompok-dikirim` | Tandai email token sudah dibuka di aplikasi email |
+| `PUT /api/admin/ujian/:id/nama` | Body `{ "nama" }`. Koreksi nama peserta |
+| `GET /api/admin/template-bawaan?mode=kelompok` | Template email bawaan sesi serentak (`config/undangan-kelompok.json`). Penanda: `{nama_sesi}`, `{kuota}`, `{tautan}`, `{daftar_token}`. |
+
+- Token individu (20 karakter) dan kelompok (10 karakter) dibedakan dari panjangnya. Huruf besar/kecil, spasi, dan tanda hubung diabaikan.
+- Satu peserta serentak = satu catatan ujian dengan timer sendiri, tanpa email dan tanpa token sendiri. Penutupan otomatis, koreksi, dan hasil sama dengan individu.
+- Sesi serentak tidak bisa ditambah peserta individu atau dibuatkan token individu (409).
 
 ## Pengerjaan
 Rute peserta (wajib sesi peserta):

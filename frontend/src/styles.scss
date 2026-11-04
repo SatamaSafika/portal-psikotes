@@ -466,6 +466,27 @@ h1.judul {
   }
 }
 
+// ---------- verifikasi dua langkah ----------
+
+.baris-token {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+
+  .tombol-tautan {
+    text-decoration: underline;
+    padding: 0;
+  }
+}
+
+.token-teks {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--navy);
+}
+
 // ---------- halaman pilih tes, latihan, selesai ----------
 
 .daftar-tes {
@@ -913,12 +934,14 @@ h1.judul {
   background: var(--biru-muda);
   color: var(--navy);
 
-  &.BERJALAN {
+  &.BERJALAN,
+  &.AKTIF {
     background: var(--oranye-muda);
     color: #7a3b0c;
   }
 
   &.SELESAI,
+  &.PENUH,
   &.DIKIRIM,
   &.WAKTU_HABIS {
     background: var(--benar-muda);
@@ -1003,6 +1026,57 @@ h1.judul {
 // Isi kolom grid boleh menyusut; tanpa ini isian yang lebar meluber ke kolom sebelah.
 .tata-token > * {
   min-width: 0;
+}
+
+// Pilihan mode sesi: individu atau serentak.
+.pilih-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--kontrol);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--teks-redup);
+    cursor: pointer;
+
+    &.aktif {
+      background: var(--navy);
+      color: #fff;
+    }
+  }
+}
+
+// Batang "n dari X" pada token kelompok.
+.batang-kuota {
+  width: 100%;
+  min-width: 80px;
+  height: 6px;
+  margin-top: 4px;
+  border-radius: 3px;
+  background: var(--garis);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--navy);
+  }
+}
+
+.isian-sebaris {
+  font: inherit;
+  width: 100%;
+  min-width: 160px;
+  padding: 4px 6px;
+  border: 1px solid var(--kontrol);
+  border-radius: 6px;
 }
 
 .isian select,

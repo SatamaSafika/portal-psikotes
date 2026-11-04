@@ -100,11 +100,12 @@ export class AdminHasil implements OnInit {
   }
 
   protected eksporCsv(): void {
-    const kepala = ['Peserta', 'Email', 'Sesi', 'Tanggal tes', 'Tes', 'Status', 'Benar', 'Salah', 'Dijawab', 'N (Koran)', 'Kategori', 'Skor akhir'];
+    const kepala = ['Peserta', 'Email', 'Sesi', 'Mode', 'Tanggal tes', 'Tes', 'Status', 'Benar', 'Salah', 'Dijawab', 'N (Koran)', 'Kategori', 'Skor akhir'];
     const baris = this.hasil().map((h) => [
       h.nama ?? '',
-      h.email,
+      h.email ?? '',
       h.nama_sesi,
+      h.mode === 'KELOMPOK' ? 'Serentak' : 'Individu',
       h.tanggal,
       LABEL_TES[h.jenis_tes],
       LABEL_STATUS[h.status] ?? h.status,
