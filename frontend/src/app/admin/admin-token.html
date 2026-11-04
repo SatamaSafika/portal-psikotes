@@ -172,7 +172,7 @@
             </div>
             <div class="tabel-gulir">
               <table class="tabel">
-                <thead><tr><th>Nama</th><th>Masuk</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Nama</th><th>Masuk</th><th>Persetujuan</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   @for (p of pesertaKelompok(); track p.ujian_id) {
                     <tr>
@@ -186,6 +186,9 @@
                         }
                       </td>
                       <td>{{ p.masuk_pada.slice(11, 16) }}</td>
+                      <td [attr.title]="p.persetujuan_versi ? 'Versi teks ' + p.persetujuan_versi : null">
+                        {{ p.persetujuan_pada ? 'Setuju ' + p.persetujuan_pada.slice(11, 16) : '—' }}
+                      </td>
                       <td><span [class]="'lencana ' + p.status">{{ labelStatus[p.status] ?? p.status }}</span></td>
                       <td class="sel-aksi">
                         @if (ubahNamaId() === p.ujian_id) {
@@ -197,7 +200,7 @@
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="4" class="teks-redup">Belum ada peserta yang masuk dengan token ini.</td></tr>
+                    <tr><td colspan="5" class="teks-redup">Belum ada peserta yang masuk dengan token ini.</td></tr>
                   }
                 </tbody>
               </table>

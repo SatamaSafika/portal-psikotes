@@ -207,6 +207,15 @@ Status 4 November 2026: DDL dijalankan; kode backend dan frontend selesai; uji d
 - [ ] Perbarui prototipe dan `PROTOTIPE_SPEC.md` (pilihan mode, kuota, layar verifikasi dua langkah).
 Selesai kalau: 100 klaim paralel pada kuota 50 menghasilkan tepat 50 peserta; di luar jadwal dan token tercabut ditolak; 100 salah ketik dari satu IP tidak mengunci peserta yang benar; hasil per peserta dan skor tetap sesuai hitungan tangan; semua tes lama tetap lolos.
 
+## Part 8c. Persetujuan peserta (S)
+Permintaan HC terkait legal (4 November 2026, disampaikan pemilik proyek; DDL `db/10` disetujui dan dijalankan pemilik proyek). Teks dari tangkapan layar formulir HC, disimpan di `backend/config/persetujuan.json` dengan versi.
+- [x] DDL `db/10_tambah_persetujuan.sql`: kolom `persetujuan_pada` dan `persetujuan_versi` di tabel ujian.
+- [x] Verifikasi langkah 2 (individu dan serentak): teks persetujuan, pilihan Saya Setuju / Saya Tidak Setuju tanpa pilihan bawaan; tidak setuju = tidak bisa lanjut, token dan kuota tidak terpakai.
+- [x] Server mewajibkan `setuju: true` dengan versi teks yang berlaku (400 tanpa persetujuan, 409 bila teks sudah diperbarui), lalu menyimpan waktu dan versi bersama catatan ujian.
+- [x] Admin: kolom persetujuan di daftar peserta serentak dan di ekspor hasil.
+Perlu verifikasi HC/legal: (a) teks sudah final atau masih draf; (b) kata "proses rekrutmen" cocok untuk semua sesi serentak (misalnya tes di kampus); (c) bukti persetujuan ikut terhapus 4 bulan setelah tes atau perlu disimpan lebih lama.
+Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat API langsung), dan setiap catatan ujian baru menyimpan waktu dan versi persetujuan.
+
 ## Part 9. Pengujian dan gladi demo (M)
 - Daftar uji keamanan (lihat bawah) dan uji alur penuh.
 - `npm audit`, perbaiki kerentanan berat.

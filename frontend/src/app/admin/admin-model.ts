@@ -109,6 +109,9 @@ export interface PesertaKelompok {
   status: string;
   /** Ada peserta lain di token ini dengan nama sama (tidak ditolak, hanya ditandai). */
   nama_kembar: boolean;
+  /** Waktu peserta memilih "Saya Setuju" dan versi teksnya. */
+  persetujuan_pada: string | null;
+  persetujuan_versi: string | null;
 }
 
 export interface TokenPeserta extends JadwalTes {
@@ -168,6 +171,9 @@ export interface BarisHasil {
   kategori: string | null;
   skor_akhir: number | null;
   ringkasan_interval: Interval[] | null;
+  /** Bukti persetujuan; null untuk ujian sebelum fitur persetujuan. */
+  persetujuan_pada: string | null;
+  persetujuan_versi: string | null;
 }
 
 export interface JawabanNomor {

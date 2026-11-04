@@ -6,23 +6,42 @@ import type { DataLatihan, HasilPeriksa, InfoUjian, JawabanTersimpan, JenisTes, 
 
 const DASAR = '/api/peserta';
 
+/** Teks persetujuan peserta dari server (config/persetujuan.json). */
+export interface Persetujuan {
+  versi: string;
+  judul: string;
+  pembuka: string;
+  butir: string[];
+  penutup: string;
+  label_setuju: string;
+  label_tidak_setuju: string;
+}
+
+/** Server mewajibkan setuju = true dan versi teks yang ditampilkan. */
+interface DataSetuju {
+  setuju: true;
+  persetujuan_versi: string;
+}
+
 /** Akses API peserta. Cookie sesi peserta dikirim otomatis (satu origin lewat proksi /api). */
 @Injectable({ providedIn: 'root' })
 export class ApiPeserta {
   private readonly http = inject(HttpClient);
 
-  /** Langkah 1: periksa token tanpa memakainya. Mode menentukan isian langkah 2. */
-  cekToken(token: string, jenis_tes: JenisTes): Promise<{ mode: 'INDIVIDU' | 'KELOMPOK' }> {
-    return firstValueFrom(this.http.post<{ mode: 'INDIVIDU' | 'KELOMPOK' }>(`${DASAR}/token`, { token, jenis_tes }));
+  /** Langkah 1: periksa token tanpa memakainya. Mode menentukan isian langkah 2; teks persetujuan ikut dikirim. */
+  cekToken(token: string, jenis_tes: JenisTes): Promise<{ mode: 'INDIVIDU' | 'KELOMPOK'; persetujuan: Persetujuan }> {
+    return firstValueFrom(
+      this.http.post<{ mode: 'INDIVIDU' | 'KELOMPOK'; persetujuan: Persetujuan }>(`${DASAR}/token`, { token, jenis_tes }),
+    );
   }
 
-  /** Langkah 2 individu: token, email, nama. */
-  masuk(data: { email: string; token: string; jenis_tes: JenisTes; nama: string }): Promise<{ jenis_tes: JenisTes }> {
+  /** Langkah 2 individu: token, email, nama, dan persetujuan. */
+  masuk(data: { email: string; token: string; jenis_tes: JenisTes; nama: string } & DataSetuju): Promise<{ jenis_tes: JenisTes }> {
     return firstValueFrom(this.http.post<{ jenis_tes: JenisTes }>(`${DASAR}/masuk`, data));
   }
 
-  /** Langkah 2 kelompok: token dan nama saja (klaim kuota di server). */
-  masukKelompok(data: { token: string; jenis_tes: JenisTes; nama: string }): Promise<{ jenis_tes: JenisTes }> {
+  /** Langkah 2 kelompok: token, nama, dan persetujuan (klaim kuota di server). */
+  masukKelompok(data: { token: string; jenis_tes: JenisTes; nama: string } & DataSetuju): Promise<{ jenis_tes: JenisTes }> {
     return firstValueFrom(this.http.post<{ jenis_tes: JenisTes }>(`${DASAR}/masuk-kelompok`, data));
   }
 

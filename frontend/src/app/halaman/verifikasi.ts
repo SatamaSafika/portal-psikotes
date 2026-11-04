@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ApiPeserta, pesanGalat, statusGalat } from '../core/api.service';
+import { ApiPeserta, pesanGalat, statusGalat, type Persetujuan } from '../core/api.service';
 import { DAFTAR_TES, LABEL_TES, type JenisTes } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { KakiPortal } from '../tata-letak/kaki-portal';
@@ -8,6 +8,8 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
 
 /** Pesan seragam: tidak membedakan salah, penuh, kedaluwarsa, dicabut, atau tes lain (teks akhir menunggu HC). */
 const GAGAL_TOKEN = 'Token tidak dapat digunakan. Periksa kembali token Anda atau hubungi pengawas atau tim HC.';
+/** Sama dengan pesan server bila persetujuan tidak dikirim. */
+const WAJIB_SETUJU = 'Tes tidak dapat dilanjutkan tanpa persetujuan. Hubungi pengawas atau tim HC.';
 
 /** Token yang diketik ditampilkan rapi: kelompok XXXXX-XXXXX, individu XXXX-XXXX-XXXX-XXXX-XXXX. */
 export function tampilToken(masukan: string): string {
@@ -61,6 +63,29 @@ export function tampilToken(masukan: string): string {
                 <span>Token <strong class="token-teks">{{ tokenTampil() }}</strong> diterima</span>
                 <button type="button" class="tombol-tautan" (click)="gantiToken()">Ganti token</button>
               </div>
+              @if (persetujuan(); as p) {
+                <fieldset class="persetujuan">
+                  <legend>{{ p.judul }} <span class="wajib" aria-hidden="true">*</span></legend>
+                  <p>{{ p.pembuka }}</p>
+                  <ol>
+                    @for (b of p.butir; track $index) {
+                      <li>{{ b }}</li>
+                    }
+                  </ol>
+                  <p>{{ p.penutup }}</p>
+                  <label class="pilihan-setuju">
+                    <input type="radio" name="setuju" [checked]="setuju() === true" (change)="setuju.set(true)" />
+                    {{ p.label_setuju }}
+                  </label>
+                  <label class="pilihan-setuju">
+                    <input type="radio" name="setuju" [checked]="setuju() === false" (change)="setuju.set(false)" />
+                    {{ p.label_tidak_setuju }}
+                  </label>
+                  @if (setuju() === false) {
+                    <div class="kotak-peringatan" role="status">{{ wajibSetuju }}</div>
+                  }
+                </fieldset>
+              }
               <label class="isian">
                 <span>Nama lengkap</span>
                 <input name="nama" autocomplete="name" placeholder="Sesuai data pendaftaran"
@@ -80,7 +105,7 @@ export function tampilToken(masukan: string): string {
                 <div class="kotak-galat" role="alert" style="margin-top: 12px">{{ galat() }}</div>
               }
               <div class="baris-tombol">
-                <button class="tombol tombol-utama" type="submit" [disabled]="memproses()">
+                <button class="tombol tombol-utama" type="submit" [disabled]="memproses() || setuju() !== true">
                   {{ memproses() ? 'Memeriksa...' : 'Verifikasi dan lanjut' }}
                 </button>
                 <a class="tombol-tautan" routerLink="/">Kembali</a>
@@ -107,6 +132,11 @@ export class Verifikasi implements OnInit {
   protected readonly galat = signal('');
   protected readonly memproses = signal(false);
   protected readonly tokenTampil = computed(() => tampilToken(this.token()));
+  /** Teks persetujuan dari server (balasan langkah 1). */
+  protected readonly persetujuan = signal<Persetujuan | null>(null);
+  /** null = belum memilih. Tidak ada pilihan bawaan. */
+  protected readonly setuju = signal<boolean | null>(null);
+  protected readonly wajibSetuju = WAJIB_SETUJU;
 
   protected labelTes(): string {
     return LABEL_TES[this.tes() as JenisTes] ?? '';
@@ -143,7 +173,10 @@ export class Verifikasi implements OnInit {
     }
     this.memproses.set(true);
     try {
-      this.mode.set((await this.api.cekToken(this.token().trim(), this.tes() as JenisTes)).mode);
+      const hasil = await this.api.cekToken(this.token().trim(), this.tes() as JenisTes);
+      this.persetujuan.set(hasil.persetujuan);
+      this.setuju.set(null);
+      this.mode.set(hasil.mode);
     } catch (galat) {
       this.galat.set(this.pesanGagal(galat));
     } finally {
@@ -159,6 +192,11 @@ export class Verifikasi implements OnInit {
   protected async masuk(e: Event): Promise<void> {
     e.preventDefault();
     this.galat.set('');
+    const p = this.persetujuan();
+    if (!p || this.setuju() !== true) {
+      this.galat.set(WAJIB_SETUJU);
+      return;
+    }
     const nama = this.nama().trim();
     if (nama.length < 2 || (this.mode() === 'INDIVIDU' && !this.email().trim())) {
       this.galat.set(this.mode() === 'INDIVIDU' ? 'Nama lengkap dan email wajib diisi.' : 'Nama lengkap wajib diisi (minimal 2 huruf).');
@@ -167,8 +205,9 @@ export class Verifikasi implements OnInit {
     this.memproses.set(true);
     try {
       const jenis_tes = this.tes() as JenisTes;
-      if (this.mode() === 'KELOMPOK') await this.api.masukKelompok({ token: this.token().trim(), jenis_tes, nama });
-      else await this.api.masuk({ email: this.email().trim(), token: this.token().trim(), jenis_tes, nama });
+      const setuju = { setuju: true as const, persetujuan_versi: p.versi };
+      if (this.mode() === 'KELOMPOK') await this.api.masukKelompok({ token: this.token().trim(), jenis_tes, nama, ...setuju });
+      else await this.api.masuk({ email: this.email().trim(), token: this.token().trim(), jenis_tes, nama, ...setuju });
       await this.pengerjaan.muatInfo();
       await this.router.navigateByUrl('/tes/instruksi');
     } catch (galat) {

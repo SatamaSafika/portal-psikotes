@@ -100,7 +100,7 @@ export class AdminHasil implements OnInit {
   }
 
   protected eksporCsv(): void {
-    const kepala = ['Peserta', 'Email', 'Sesi', 'Mode', 'Tanggal tes', 'Tes', 'Status', 'Benar', 'Salah', 'Dijawab', 'N (Koran)', 'Kategori', 'Skor akhir'];
+    const kepala = ['Peserta', 'Email', 'Sesi', 'Mode', 'Tanggal tes', 'Tes', 'Status', 'Benar', 'Salah', 'Dijawab', 'N (Koran)', 'Kategori', 'Skor akhir', 'Persetujuan', 'Versi persetujuan'];
     const baris = this.hasil().map((h) => [
       h.nama ?? '',
       h.email ?? '',
@@ -115,6 +115,8 @@ export class AdminHasil implements OnInit {
       h.n_koran,
       h.kategori,
       h.skor_akhir,
+      h.persetujuan_pada,
+      h.persetujuan_versi,
     ]);
     const tgl = new Date().toISOString().slice(0, 10);
     unduh(`hasil-psikotes-${tgl}.csv`, buatCsv(kepala, baris));
