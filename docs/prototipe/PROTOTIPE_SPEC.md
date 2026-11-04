@@ -45,6 +45,7 @@ Urutan stepper di header: 1 Pilih tes > 2 Verifikasi > 3 Instruksi > 4 Latihan >
 - Enter pada kotak berisi memindah fokus ke kotak berikutnya. Enter pada kotak kosong tidak melakukan apa-apa.
 - Layar sempit (<= 640 px): kotak berpindah otomatis setelah satu digit terisi.
 - Tombol "Halaman berikutnya" nonaktif (redup) sampai kotak terakhir halaman terisi. Di halaman 13 tombolnya menjadi kirim.
+- Revisi HC 4 Nov 2026: setelah halaman penuh, Enter sekali lagi juga memindah ke halaman berikutnya (kecuali halaman 13: kirim hanya lewat tombol). Di atas lajur ada kotak peringatan: setelah Enter jawaban terkunci dan kursor tidak dapat naik ke kotak di atasnya. Keterangan yang sama ada di instruksi dan uji coba.
 - Tidak ada indikator benar/salah di tes sebenarnya (hanya di uji coba).
 - Header: "Sisa waktu" 07:20 (440 detik), "Halaman x dari 13", "Terjawab n dari 988 soal".
 - Setiap jawaban perlu membawa penanda waktu ke server karena Koran dilacak per 20 detik (22 interval). Rincian format ada di backend Part 4-5.

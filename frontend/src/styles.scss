@@ -919,6 +919,18 @@ h1.judul {
   margin-top: 20px;
 }
 
+// Di dalam grid, jarak sudah diatur gap. Tanpa ini kartu ke-2 dan seterusnya turun 20 px
+// sehingga tinggi dan posisi kartu sebaris tidak sama (laman awal dan kartu angka Overview).
+.daftar-tes > .kartu,
+.kartu-angka > .kartu {
+  margin-top: 0;
+}
+
+// Peringatan Tes Koran: jawaban terkunci setelah Enter.
+.peringatan-koran {
+  margin: 0 0 14px;
+}
+
 .tabel-gulir {
   overflow-x: auto;
 }

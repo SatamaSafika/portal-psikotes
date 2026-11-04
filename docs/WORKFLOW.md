@@ -218,6 +218,12 @@ Permintaan HC terkait legal (4 November 2026, disampaikan pemilik proyek; DDL `d
 Perlu verifikasi HC/legal: (a) teks sudah final atau masih draf; (b) kata "proses rekrutmen" cocok untuk semua sesi serentak (misalnya tes di kampus); (c) bukti persetujuan ikut terhapus 4 bulan setelah tes atau perlu disimpan lebih lama.
 Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat API langsung), dan setiap catatan ujian baru menyimpan waktu dan versi persetujuan.
 
+## Revisi UI HC (4 November 2026, disampaikan pemilik proyek)
+- [x] Kartu pilihan tes TIU 5 dan TIU 6 di laman awal sama ukuran dan sejajar (sebelumnya kartu ke-2 turun 20 px).
+- [x] Tiga kartu angka di Overview dashboard HC sama ukuran dan sejajar.
+- [x] Tes Koran: saat semua kotak satu halaman terisi, Enter (kedua) memindah ke halaman berikutnya, selain tombol. Enter yang mengunci kotak terakhir tidak ikut memindah halaman. Halaman 13: kirim tetap lewat tombol lalu layar konfirmasi "Kirim jawaban sekarang?" (dikonfirmasi pemilik proyek, 4 November 2026).
+- [x] Tes Koran: keterangan bahwa setelah Enter jawaban terkunci dan kursor tidak dapat naik ke kotak di atasnya, di layar tes, uji coba, dan instruksi.
+
 ## Part 9. Pengujian dan gladi demo (M)
 - Daftar uji keamanan (lihat bawah) dan uji alur penuh.
 - `npm audit`, perbaiki kerentanan berat.

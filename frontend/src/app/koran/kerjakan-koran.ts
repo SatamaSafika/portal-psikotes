@@ -14,12 +14,17 @@ const LAYAR_SEMPIT = '(max-width: 640px)';
 @Component({
   selector: 'app-kerjakan-koran',
   imports: [LajurKoran],
+  host: { '(document:keydown.enter)': 'enterHalaman($event)' },
   template: `
     @if (susunan(); as s) {
       <div class="wadah area-koran">
         <div class="info-halaman">
           <strong>Halaman {{ halaman() }} dari {{ s.soal.halaman }}</strong>
           <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
+        </div>
+        <div class="kotak-peringatan peringatan-koran" role="note">
+          <strong>Perhatian:</strong> setelah Anda menekan Enter, jawaban terkunci dan kursor tidak dapat kembali ke kotak
+          di atasnya. Periksa angka sebelum menekan Enter. Halaman sebelumnya juga tidak dapat dibuka lagi.
         </div>
         <div class="kertas-koran">
           @for (l of lajurTampil(); track l.lajur) {
@@ -28,11 +33,20 @@ const LAYAR_SEMPIT = '(max-width: 640px)';
           }
         </div>
         <div class="kaki-koran">
+          @if (halamanPenuh() && !halamanTerakhir()) {
+            <p class="kotak-info" role="status">
+              Semua kotak di halaman ini sudah terisi. Tekan <strong>Enter</strong> atau tombol Halaman berikutnya untuk lanjut.
+            </p>
+          }
           <p class="teks-redup teks-kecil">
             Jumlahkan dua angka yang mengapit kotak, tulis digit terakhirnya. Isi satu kotak, lalu tekan <strong>Enter</strong>
             untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati, dan jawaban yang sudah ditinggalkan tidak dapat diubah.
             Di layar kecil, kotak pindah otomatis setelah Anda mengisi angka. Setelah semua kotak di halaman ini terisi,
-            tekan tombol {{ halamanTerakhir() ? 'Kirim jawaban' : 'Halaman berikutnya' }}.
+            @if (halamanTerakhir()) {
+              tekan tombol Kirim jawaban.
+            } @else {
+              tekan Enter sekali lagi atau tombol Halaman berikutnya.
+            }
           </p>
           <button type="button" class="tombol tombol-navy" [disabled]="!halamanPenuh()" (click)="berikutnya()">
             {{ halamanTerakhir() ? 'Kirim jawaban' : 'Halaman berikutnya' }}
@@ -107,6 +121,21 @@ export class KerjakanKoran {
     // Kotak aktif harus ada di halaman ini (halaman penuh menunggu tombol halaman berikutnya).
     if (nomor > s.nomorTerakhirHalaman(this.halaman()) || nomor > s.total) return;
     if (this.pengerjaan.jawabKoran(nomor, digit)) this.isiAktif.set('');
+  }
+
+  /**
+   * Enter saat halaman penuh = pindah ke halaman berikutnya (permintaan HC). Tetap aksi manual peserta:
+   * Enter yang mengunci kotak terakhir tidak ikut memindah halaman (sasarannya kotak input), jadi perlu Enter kedua.
+   * Diabaikan bila fokus di tombol (Enter sudah menekan tombol itu) atau tombol ditahan (auto-repeat).
+   * Halaman terakhir tidak: kirim jawaban tetap lewat tombol supaya tidak terkirim tanpa sengaja.
+   */
+  protected enterHalaman(e: Event): void {
+    const k = e as KeyboardEvent;
+    const sasaran = k.target as HTMLElement | null;
+    if (k.repeat || sasaran instanceof HTMLInputElement || sasaran instanceof HTMLButtonElement) return;
+    if (!this.halamanPenuh() || this.halamanTerakhir()) return;
+    k.preventDefault();
+    void this.berikutnya();
   }
 
   protected async berikutnya(): Promise<void> {

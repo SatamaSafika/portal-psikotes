@@ -43,6 +43,8 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
               <ol>
                 <li>Jumlahkan dua angka yang mengapit kotak, lalu tulis angka terakhir dari hasilnya.</li>
                 <li>Kerjakan berurutan dari atas ke bawah. Tekan Enter untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati dan Anda tidak dapat kembali ke halaman sebelumnya.</li>
+                <li><strong>Setelah menekan Enter, jawaban terkunci dan kursor tidak dapat naik kembali ke kotak di atasnya.</strong> Periksa angka sebelum menekan Enter.</li>
+                <li>Setelah semua kotak di satu halaman terisi, tekan Enter sekali lagi atau tombol Halaman berikutnya untuk pindah halaman.</li>
                 <li>Sebelum tes ada 2 contoh dan 1 uji coba. Uji coba tidak dinilai dan jawabannya tidak disimpan.</li>
                 <li>Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal dengan cepat, teliti, dan akurat.</li>
                 <li>Waktu berjalan saat tes dimulai dan tidak dapat dihentikan. Jawaban dikirim otomatis saat waktu habis.</li>

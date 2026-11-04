@@ -82,6 +82,10 @@
           Jumlahkan dua angka yang mengapit kotak. Jika hasilnya dua digit, tulis angka terakhir saja. Tekan tombol
           <strong>Enter</strong> untuk pindah ke kotak berikutnya. Hasil uji coba muncul setelah Anda menekan tombol selesai.
         </p>
+        <div class="kotak-peringatan" role="note">
+          <strong>Perhatian:</strong> setelah Anda menekan Enter, jawaban terkunci dan kursor tidak dapat kembali ke kotak
+          di atasnya. Aturan ini sama pada tes sebenarnya.
+        </div>
         @if (ujiSelesai()) {
           <div [class]="jumlahBenar() === isiUji().length ? 'kotak-benar' : 'kotak-peringatan'" role="status">
             Benar {{ jumlahBenar() }} dari {{ isiUji().length }}. Kunci: {{ kunciTampil }}.
