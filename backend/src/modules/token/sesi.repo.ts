@@ -31,16 +31,22 @@ export interface SesiRingkas {
   waktu_tutup: string;
   daftar_tes: string;
   bank_versi: string;
+  /** INDIVIDU atau KELOMPOK (db/09). */
+  mode: 'INDIVIDU' | 'KELOMPOK';
 }
 
 export interface SesiDetail extends SesiRingkas {
   template_subjek: string;
   template_isi: string;
+  /** Hanya sesi serentak: penerima email token (PIC). */
+  email_penerima: string | null;
 }
 
 export interface UjianAdmin {
   ujian_id: number;
-  email: string;
+  /** Null untuk peserta kelompok. */
+  email: string | null;
+  kelompok_id: number | null;
   nama: string | null;
   jenis_tes: JenisTes;
   tanggal: string;
@@ -66,7 +72,7 @@ export interface UjianAdmin {
 // Kolom sesi sebagai teks: tanggal YYYY-MM-DD, jam HH:MM.
 const KOLOM_SESI = `s.id, s.nama_sesi, CONVERT(CHAR(10), s.tanggal, 23) AS tanggal,
   CONVERT(CHAR(5), s.waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), s.waktu_tutup, 108) AS waktu_tutup,
-  s.daftar_tes, s.bank_versi`;
+  s.daftar_tes, s.bank_versi, s.mode`;
 
 /** Kode galat SQL Server untuk pelanggaran UNIQUE. */
 export function galatUnik(galat: unknown): boolean {
@@ -160,8 +166,9 @@ export function tambahUjian(sesiId: number, baris: BarisUjianBaru[]): Promise<nu
 export async function daftarSesi(): Promise<(SesiRingkas & Record<string, number>)[]> {
   const pool = await ambilPool();
   const hasil = await pool.request().query(
+    // Individu: peserta = email berbeda. Kelompok: setiap catatan ujian adalah satu peserta (tanpa email).
     `SELECT ${KOLOM_SESI},
-            COUNT(DISTINCT u.email) AS jumlah_peserta,
+            COUNT(DISTINCT u.email) + SUM(CASE WHEN u.kelompok_id IS NOT NULL THEN 1 ELSE 0 END) AS jumlah_peserta,
             COUNT(u.id) AS jumlah_token,
             SUM(CASE WHEN u.status = 'BELUM_DIPAKAI' THEN 1 ELSE 0 END) AS belum_dipakai,
             SUM(CASE WHEN u.status = 'BERJALAN' THEN 1 ELSE 0 END) AS berjalan,
@@ -169,7 +176,7 @@ export async function daftarSesi(): Promise<(SesiRingkas & Record<string, number
             SUM(CASE WHEN u.status = 'DICABUT' THEN 1 ELSE 0 END) AS dicabut
        FROM dbo.HCIS_Psikotes_Sesi s
        LEFT JOIN dbo.HCIS_Psikotes_Ujian u ON u.sesi_id = s.id
-      GROUP BY s.id, s.nama_sesi, s.tanggal, s.waktu_buka, s.waktu_tutup, s.daftar_tes, s.bank_versi
+      GROUP BY s.id, s.nama_sesi, s.tanggal, s.waktu_buka, s.waktu_tutup, s.daftar_tes, s.bank_versi, s.mode
       ORDER BY s.tanggal DESC, s.id DESC`,
   );
   return hasil.recordset;
@@ -180,7 +187,9 @@ export async function ambilSesi(id: number): Promise<SesiDetail | null> {
   const hasil = await pool
     .request()
     .input('id', sql.Int, id)
-    .query<SesiDetail>(`SELECT ${KOLOM_SESI}, s.template_subjek, s.template_isi FROM dbo.HCIS_Psikotes_Sesi s WHERE s.id = @id`);
+    .query<SesiDetail>(
+      `SELECT ${KOLOM_SESI}, s.template_subjek, s.template_isi, s.email_penerima FROM dbo.HCIS_Psikotes_Sesi s WHERE s.id = @id`,
+    );
   return hasil.recordset[0] ?? null;
 }
 
@@ -190,7 +199,7 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
     .request()
     .input('id', sql.Int, sesiId)
     .query<UjianAdmin>(
-      `SELECT id AS ujian_id, email, nama, jenis_tes,
+      `SELECT id AS ujian_id, email, kelompok_id, nama, jenis_tes,
               CONVERT(CHAR(10), tanggal, 23) AS tanggal,
               CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
               status,
@@ -201,7 +210,7 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
               CONVERT(VARCHAR(19), undangan_dikirim_pada, 120) AS undangan_dikirim_pada
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE sesi_id = @id
-        ORDER BY email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
+        ORDER BY COALESCE(nama, email), email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
     );
   return hasil.recordset.map((u) => ({
     ...u,

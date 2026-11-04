@@ -57,23 +57,30 @@ export async function bahanHitung(id: number): Promise<BahanHitung | null> {
 
 /** Awal dan akhir jadwal sebagai DATETIME2 dari kolom tanggal dan waktu_*. */
 const BUKA = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), u.waktu_buka), CAST(u.tanggal AS DATETIME2(0)))`;
+const BUKA_K = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), k.waktu_buka), CAST(k.tanggal AS DATETIME2(0)))`;
+const TUTUP_K = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), k.waktu_tutup), CAST(k.tanggal AS DATETIME2(0)))`;
 
 export interface Ringkasan {
   selesai_hari_ini: number;
+  /** Token individu yang belum dipakai ditambah token kelompok yang masih bisa dipakai (satu per tes). */
   token_aktif: number;
   sesi_aktif: number;
   jadwal_hari_ini: {
     sesi_id: number;
     nama_sesi: string;
     jenis_tes: JenisTes;
+    mode: 'INDIVIDU' | 'KELOMPOK';
+    /** Individu: jumlah token. Kelompok: jumlah peserta yang sudah masuk (n dari kuota). */
     jumlah_peserta: number;
+    /** Hanya kelompok. */
+    kuota: number | null;
     waktu_buka: string;
     waktu_tutup: string;
     status: 'BELUM_MULAI' | 'BERJALAN' | 'SELESAI';
   }[];
 }
 
-/** Ringkasan hari ini menurut jam server database. */
+/** Ringkasan hari ini menurut jam server database, individu dan kelompok. */
 export async function ringkasanHariIni(): Promise<Ringkasan> {
   const pool = await ambilPool();
   const angka = await pool.request().query<Omit<Ringkasan, 'jadwal_hari_ini'>>(
@@ -81,20 +88,34 @@ export async function ringkasanHariIni(): Promise<Ringkasan> {
        (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Ujian
          WHERE ${SELESAI} AND CAST(selesai_pada AS DATE) = CAST(SYSDATETIME() AS DATE)) AS selesai_hari_ini,
        (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Ujian
-         WHERE status = 'BELUM_DIPAKAI' AND berlaku_sampai > SYSDATETIME()) AS token_aktif,
-       (SELECT COUNT(DISTINCT u.sesi_id) FROM dbo.HCIS_Psikotes_Ujian u
-         WHERE u.sesi_id IS NOT NULL AND SYSDATETIME() >= ${BUKA} AND SYSDATETIME() < u.berlaku_sampai) AS sesi_aktif`,
+         WHERE kelompok_id IS NULL AND status = 'BELUM_DIPAKAI' AND berlaku_sampai > SYSDATETIME())
+       + (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Kelompok k
+           WHERE k.dicabut_pada IS NULL AND k.terpakai < k.kuota AND SYSDATETIME() < ${TUTUP_K}) AS token_aktif,
+       (SELECT COUNT(DISTINCT x.sesi_id) FROM (
+          SELECT u.sesi_id FROM dbo.HCIS_Psikotes_Ujian u
+           WHERE u.kelompok_id IS NULL AND u.sesi_id IS NOT NULL AND SYSDATETIME() >= ${BUKA} AND SYSDATETIME() < u.berlaku_sampai
+          UNION ALL
+          SELECT k.sesi_id FROM dbo.HCIS_Psikotes_Kelompok k
+           WHERE k.dicabut_pada IS NULL AND SYSDATETIME() >= ${BUKA_K} AND SYSDATETIME() < ${TUTUP_K}) x) AS sesi_aktif`,
   );
   const jadwal = await pool.request().query<Ringkasan['jadwal_hari_ini'][number]>(
-    `SELECT u.sesi_id, u.nama_sesi, u.jenis_tes, COUNT(*) AS jumlah_peserta,
+    `SELECT u.sesi_id, u.nama_sesi, u.jenis_tes, 'INDIVIDU' AS mode, COUNT(*) AS jumlah_peserta, CAST(NULL AS INT) AS kuota,
             CONVERT(CHAR(5), u.waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), u.waktu_tutup, 108) AS waktu_tutup,
             CASE WHEN SYSDATETIME() < MIN(${BUKA}) THEN 'BELUM_MULAI'
                  WHEN SYSDATETIME() < MAX(u.berlaku_sampai) THEN 'BERJALAN'
                  ELSE 'SELESAI' END AS status
        FROM dbo.HCIS_Psikotes_Ujian u
-      WHERE u.sesi_id IS NOT NULL AND u.tanggal = CAST(SYSDATETIME() AS DATE)
+      WHERE u.sesi_id IS NOT NULL AND u.kelompok_id IS NULL AND u.tanggal = CAST(SYSDATETIME() AS DATE)
       GROUP BY u.sesi_id, u.nama_sesi, u.jenis_tes, u.waktu_buka, u.waktu_tutup
-      ORDER BY u.waktu_buka, u.nama_sesi`,
+     UNION ALL
+     SELECT k.sesi_id, s.nama_sesi, k.jenis_tes, 'KELOMPOK', k.terpakai, k.kuota,
+            CONVERT(CHAR(5), k.waktu_buka, 108), CONVERT(CHAR(5), k.waktu_tutup, 108),
+            CASE WHEN SYSDATETIME() < ${BUKA_K} THEN 'BELUM_MULAI'
+                 WHEN SYSDATETIME() < ${TUTUP_K} THEN 'BERJALAN'
+                 ELSE 'SELESAI' END
+       FROM dbo.HCIS_Psikotes_Kelompok k JOIN dbo.HCIS_Psikotes_Sesi s ON s.id = k.sesi_id
+      WHERE k.tanggal = CAST(SYSDATETIME() AS DATE)
+      ORDER BY waktu_buka, nama_sesi`,
   );
   return { ...angka.recordset[0], jadwal_hari_ini: jadwal.recordset };
 }
@@ -105,7 +126,9 @@ export interface BarisHasil {
   nama_sesi: string;
   tanggal: string;
   jenis_tes: JenisTes;
-  email: string;
+  mode: 'INDIVIDU' | 'KELOMPOK';
+  /** Null untuk peserta kelompok. */
+  email: string | null;
   nama: string | null;
   status: string;
   selesai_pada: string | null;
@@ -128,6 +151,7 @@ export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | 
     .input('tanggal', sql.VarChar(10), f.tanggal)
     .query<BarisHasil>(
       `SELECT TOP (1000) id AS ujian_id, sesi_id, nama_sesi, CONVERT(CHAR(10), tanggal, 23) AS tanggal, jenis_tes,
+              CASE WHEN kelompok_id IS NULL THEN 'INDIVIDU' ELSE 'KELOMPOK' END AS mode,
               email, nama, status, CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
               jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir, ringkasan_interval
          FROM dbo.HCIS_Psikotes_Ujian
@@ -135,7 +159,9 @@ export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | 
           AND (@jenis IS NULL OR jenis_tes = @jenis)
           AND (@sesiId IS NULL OR sesi_id = @sesiId)
           AND (@tanggal IS NULL OR tanggal = CAST(@tanggal AS DATE))
-        ORDER BY tanggal DESC, nama_sesi, email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
+        -- Per sesi lalu nama (peserta kelompok tanpa email); tidak ada penggabungan otomatis lintas tes.
+        ORDER BY tanggal DESC, nama_sesi, sesi_id, COALESCE(nama, email), email,
+                 CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
     );
   return hasil.recordset.map((r) => ({
     ...r,

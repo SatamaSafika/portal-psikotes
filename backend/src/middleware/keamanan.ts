@@ -41,7 +41,9 @@ export function pasangKeamanan(app: Express, konfig: KonfigurasiAplikasi): void 
       standardHeaders: 'draft-8',
       legacyHeaders: false,
       keyGenerator: kunciPeserta,
-      skip: (req) => req.path === '/masuk',
+      // Jalur sebelum peserta punya cookie (masuk, token, masuk-kelompok) punya batas sendiri; bila dihitung di sini,
+      // satu ruang tes dengan satu IP bisa terkunci karena semua permintaan tanpa cookie dihitung per IP.
+      skip: (req) => req.path === '/masuk' || req.path === '/token' || req.path === '/masuk-kelompok',
       message: { pesan: 'Terlalu banyak permintaan. Coba lagi nanti.' },
     }),
   );

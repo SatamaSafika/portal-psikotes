@@ -3,6 +3,7 @@
 import type { KonfigurasiAplikasi } from '../../config/env.js';
 import { muatTes } from '../../config/tes.js';
 import { muatBank } from '../tes/bank.js';
+import { daftarKelompokSesi } from './kelompok.repo.js';
 import * as repo from './sesi.repo.js';
 import { DAFTAR_TES, ringkasJadwal, type JadwalTes, type PesertaMasukan, type SesiMasukan } from './sesi.validasi.js';
 import { buatTokenPeserta, hashTokenPeserta, normalisasiToken } from './token.js';
@@ -108,6 +109,7 @@ async function jadwalAtauGalat(sesiId: number): Promise<JadwalTes[]> {
 
 export async function tambahPeserta(sesiId: number, peserta: PesertaMasukan[], konfig: KonfigurasiAplikasi): Promise<UndanganPeserta[]> {
   const sesi = await sesiAtauGalat(sesiId);
+  wajibIndividu(sesi);
   const siap = siapkanToken(peserta, await jadwalAtauGalat(sesiId));
   let ujianId: number[];
   try {
@@ -122,6 +124,7 @@ export async function tambahPeserta(sesiId: number, peserta: PesertaMasukan[], k
 /** Token baru untuk satu peserta. Hanya token yang belum dipakai yang diganti; token lama langsung tidak berlaku. */
 export async function tokenBaru(sesiId: number, email: string, konfig: KonfigurasiAplikasi): Promise<UndanganPeserta> {
   const sesi = await sesiAtauGalat(sesiId);
+  wajibIndividu(sesi);
   const ujian = (await repo.ujianBelumDipakai(sesiId, email)).sort(urutBaku);
   if (ujian.length === 0) throw new GalatPermintaan(404, 'Tidak ada token yang belum dipakai untuk email ini di sesi ini');
 
@@ -140,5 +143,16 @@ export async function tokenBaru(sesiId: number, email: string, konfig: Konfigura
 
 export async function detailSesi(sesiId: number) {
   const sesi = await sesiAtauGalat(sesiId);
-  return { ...sesi, jadwal: ((await repo.jadwalSesi(sesiId)) ?? []).sort(urutBaku), ujian: await repo.daftarUjianSesi(sesiId) };
+  const ujian = await repo.daftarUjianSesi(sesiId);
+  if (sesi.mode === 'KELOMPOK') {
+    // Jadwal sesi serentak ada di token kelompok, bukan di catatan ujian (yang baru ada setelah peserta masuk).
+    const kelompok = await daftarKelompokSesi(sesiId);
+    return { ...sesi, jadwal: kelompok.map(({ tes, tanggal, waktu_buka, waktu_tutup }) => ({ tes, tanggal, waktu_buka, waktu_tutup })), kelompok, ujian };
+  }
+  return { ...sesi, jadwal: ((await repo.jadwalSesi(sesiId)) ?? []).sort(urutBaku), kelompok: [], ujian };
+}
+
+/** Peserta tambahan dan token baru per email hanya untuk sesi individu. */
+function wajibIndividu(sesi: repo.SesiDetail): void {
+  if (sesi.mode === 'KELOMPOK') throw new GalatPermintaan(409, 'Sesi serentak memakai token kelompok, bukan token per peserta');
 }
