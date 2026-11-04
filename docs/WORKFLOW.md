@@ -174,11 +174,37 @@ Keputusan pemilik proyek (3 November 2026): isi kotak aktif boleh diganti sebelu
 Selesai kalau: peserta dummy menyelesaikan Koran, hasil koreksi cocok dengan hitungan tangan, dan setiap jawaban tersimpan dengan waktu relatifnya.
 
 ## Part 8. Dashboard HC (M)
-- Overview, token dan sesi (buat, cabut), hasil per peserta (jumlah benar, N untuk Koran, kategori, skor akhir). Hanya admin HC.
-- [REVISI] Halaman hasil Koran per peserta: tabel dan grafik 22 titik (dikerjakan, benar, salah per interval 20 detik). Pilih pustaka grafik dulu (rencanakan di Plan mode). Grafik hanya untuk admin HC dan tidak ada di sisi peserta. Opsi ekspor (gambar atau CSV) hanya jika HC meminta.
-- [REVISI] Dashboard juga tanpa nama dan logo perusahaan (aturan 6).
+Keputusan pemilik proyek (4 November 2026): grafik SVG sendiri tanpa pustaka; ekspor CSV (Excel) dan cetak browser (PDF); penanda "undangan dikirim" disimpan di database (db/08, kolom di tabel ujian); "Lihat jawaban" menampilkan jawaban dan benar/salah tanpa kunci.
+- [X] Overview, token dan sesi (buat dengan jadwal per tes, cabut), hasil per peserta (jumlah benar, N untuk Koran, kategori, skor akhir). Hanya admin HC (login di `/admin/masuk`).
+- [X] [REVISI] Halaman hasil Koran per peserta: tabel dan grafik 22 titik (dikerjakan, benar, salah per interval 20 detik), SVG tanpa pustaka. Grafik hanya untuk admin HC dan tidak ada di sisi peserta.
+- [X] [REVISI] Dashboard juga tanpa nama dan logo perusahaan (aturan 6).
+- [X] Skrip `db/08_tambah_undangan_dikirim.sql`: kolom `undangan_dikirim_pada` di tabel ujian. DDL, dijalankan pemilik proyek.
+- [X] Backend: `GET /api/admin/ringkasan`, `GET /api/admin/hasil` (filter jenis, sesi, tanggal), `GET /api/admin/ujian/:id/jawaban` (benar/salah, tanpa kunci), `GET /api/admin/template-bawaan`, `POST /api/admin/sesi/:id/undangan-dikirim`.
+- [X] Undangan: tombol membuka Outlook (mailto) dan menandai terkirim; "Buka undangan berikutnya" satu per klik (browser memblokir banyak mailto sekaligus). Token mentah hanya di memori sesaat setelah dibuat; setelah dimuat ulang, kirim ulang = buat token baru (beda dengan prototipe "token yang sama", karena token hanya disimpan sebagai hash).
+- [X] Ekspor Excel (CSV titik koma, BOM UTF-8, pengaman rumus) dan Ekspor PDF (cetak browser dengan tata letak cetak).
+- [X] Kode admin dimuat terpisah (lazy), peserta tidak mengunduhnya. Tes: 91 backend, 30 frontend.
+- [X] Uji oleh pemilik proyek di kantor (butuh database): jalankan `db/08`, login admin, buat sesi 3 tes, kirim undangan, cabut token, hasil, grafik Koran cocok dengan tabel, ekspor, keluar.
 
 Selesai kalau: HC dummy dapat membuat sesi, mencabut token, membaca hasil, dan melihat grafik 22 interval Koran yang cocok dengan ringkasan tangan.
+
+## Part 8b. Sesi serentak / kelompok (L)
+Keputusan pemilik proyek (4 November 2026, setelah uji coba dashboard dengan HC): token per peserta dirasa tidak efisien untuk tes massal di sekolah atau kampus. Dua metode: individu (yang sekarang, tidak berubah) dan serentak.
+Aturan metode serentak: satu sesi berisi 1 sampai 3 tes; tiap tes punya satu token kelompok dengan kuota X (jumlah orang), jadwal sendiri, dan hanya aktif pada jadwalnya. Email token (satu email, semua tes dan jadwal) dikirim ke alamat yang diinput, diasumsikan pengawas, guru, atau panitia. Peserta mengisi nama saja, tanpa email dan tanpa NIM/NISN. Satu peserta satu catatan ujian dengan timer sendiri. Tes selalu diawasi di tempat, semua peserta di atas 18 tahun.
+Keputusan pemilik proyek atas rencana 8b (4 November 2026):
+1. Tabel ujian: Opsi A. `email` dan `token_hash` dilonggarkan menjadi boleh NULL (DROP CONSTRAINT `UQ_HCIS_Psikotes_Ujian_Token` dan `UQ_HCIS_Psikotes_Ujian_Peserta`, DROP INDEX `IX_HCIS_Psikotes_Ujian_Email`, lalu dibuat ulang sebagai indeks unik terfilter), ditambah CHECK: baris individu wajib email dan token, baris kelompok wajib nama tanpa email dan token. Struktur saja, tanpa menghapus data.
+2. Email penerima token kelompok (PIC) disimpan di tabel sesi (`email_penerima`), ikut retensi 4 bulan (Part 10).
+3. Kuota maksimum 1000 per token (pemakaian normal 100 sampai 200). Batas gagal jalur token 300 per 15 menit per IP (yang berhasil tidak dihitung). Nama peserta kelompok minimal 2, maksimal 100 karakter.
+4. Cabut token kelompok hanya menolak klaim baru; peserta yang sedang mengerjakan tetap lanjut.
+5. Aturan mode individu tidak berubah (token per peserta, terikat email, sekali pakai, sesuai jadwal). Tampilan verifikasi menjadi dua langkah untuk kedua mode.
+- [ ] DDL `db/09_sesi_kelompok.sql` (draf sudah ditulis, belum dijalankan; dijalankan pemilik proyek di SSMS): tabel `HCIS_Psikotes_Kelompok` (sesi, jenis tes, hash token, kuota, terpakai, jadwal, dicabut), kolom `kelompok_id` di tabel ujian, kolom `mode` dan `email_penerima` di tabel sesi, pelonggaran `email` dan `token_hash` (keputusan 1).
+- [ ] Klaim atomik: satu transaksi `UPDATE ... WHERE terpakai < kuota` pada jadwal aktif dan belum dicabut, lalu `INSERT` catatan ujian. Tidak boleh baca lalu tulis terpisah.
+- [ ] Token kelompok pendek dan mudah diketik (usulan 10 karakter tanpa karakter mirip). Batas gagal jalur kelompok per token, ambang per IP dinaikkan, supaya satu ruangan tidak terkunci karena salah ketik.
+- [ ] Verifikasi peserta (dua langkah): token, lalu nama (mode kelompok) atau nama dan email (mode individu). Pesan gagal tetap seragam. Cookie sesi peserta seperti Part 3.
+- [ ] Buat sesi serentak: nama sesi, email PIC, X, daftar tes dengan jadwal per tes. Template email bawaan kelompok terpisah (tanpa kalimat larangan membagikan token), bisa disunting HC.
+- [ ] Dashboard: terpakai n dari X per token, tambah kuota, cabut, hasil diurutkan per sesi lalu nama (termasuk ekspor), koreksi nama oleh admin, kartu Overview menghitung per token.
+- [ ] Mode individu tidak berubah (uji regresi seluruh tes yang ada).
+- [ ] Perbarui prototipe dan `PROTOTIPE_SPEC.md` (pilihan mode, kuota, layar verifikasi dua langkah).
+Selesai kalau: 100 klaim paralel pada kuota 50 menghasilkan tepat 50 peserta; di luar jadwal dan token tercabut ditolak; 100 salah ketik dari satu IP tidak mengunci peserta yang benar; hasil per peserta dan skor tetap sesuai hitungan tangan; semua tes lama tetap lolos.
 
 ## Part 9. Pengujian dan gladi demo (M)
 - Daftar uji keamanan (lihat bawah) dan uji alur penuh.
