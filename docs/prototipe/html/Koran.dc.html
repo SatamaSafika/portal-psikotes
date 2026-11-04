@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: pengerjaan Tes Koran</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-radius:12px}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px;border:0;font-family:inherit;cursor:pointer}
+.btn2{display:inline-block;background:#fff;color:#003C71;font-weight:600;font-size:15px;padding:11px 20px;border-radius:8px;border:1px solid #003C71;font-family:inherit;cursor:pointer}
+.btn:focus,.btn2:focus{outline:3px solid #003C71;outline-offset:2px}
+.cell{position:absolute;left:44px;top:22px;width:40px;height:32px;box-sizing:border-box;text-align:center;font:inherit;font-size:20px;font-weight:700;border:2px solid #8A94A1;border-radius:7px;background:#E9ECF0;color:#17202A;padding:0}
+.cell:focus{outline:3px solid #CB6015;outline-offset:1px;border-color:#CB6015;background:#fff}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB6015;margin-top:12px}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="position:sticky;top:0;z-index:5;background:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column"><div style="font-weight:700;font-size:17px;color:#003C71">Tes Koran / Kraepelin</div><div style="font-size:13px;color:#5B6673">Peserta: [nama peserta]</div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#FBE9DC;color:#7A3A0A;border:1.5px solid #CB6015;padding:7px 15px;border-radius:999px;font-weight:700;font-size:18px"><span style="font-size:13px;font-weight:600">Sisa waktu</span><span>07:20</span></div>
+    </div>
+  </div>
+  <div style="max-width:1160px;width:100%;box-sizing:border-box;margin:0 auto;padding:24px 24px 32px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="font-size:15px;font-weight:600">Halaman {{pageNo}} dari {{pageCount}}</div>
+      <div style="font-size:14px;color:#5B6673">Terjawab {{answered}} dari 988 soal</div>
+    </div>
+    <div class="card" style="padding:28px 24px 36px;display:flex;flex-wrap:wrap;justify-content:center;gap:28px 64px">
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+          <div style="font-size:13px;font-weight:600;color:#5B6673">{{c.title}}</div>
+          <div>
+            <sc-for list="{{c.rows}}" as="r" hint-placeholder-count="20">
+              <div style="position:relative;width:92px;height:38px">
+                <div style="width:30px;text-align:right;font-size:24px;font-weight:700;line-height:38px">{{r.num}}</div>
+                <sc-if value="{{r.hasBox}}" hint-placeholder-val="{{ true }}">
+                  <input class="cell" id="{{r.id}}" value="{{r.value}}" style="{{r.st}}" readOnly="{{r.locked}}" tabIndex="{{r.tab}}" maxlength="1" inputmode="numeric" autocomplete="off" aria-label="Jawaban penjumlahan {{r.label}}" onChange="{{r.onChange}}" onKeyDown="{{r.onKey}}">
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;color:#5B6673;line-height:1.6;max-width:560px">Jumlahkan dua angka yang mengapit kotak, tulis digit terakhirnya. Isi satu kotak, lalu tekan <b>Enter</b> untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati, dan jawaban yang sudah ditinggalkan tidak dapat diubah. Di layar kecil, kotak pindah otomatis setelah Anda mengisi angka. Setelah semua kotak di halaman ini terisi, tekan tombol Halaman berikutnya.</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <sc-if value="{{hasNext}}" hint-placeholder-val="{{ true }}"><button class="btn" id="nextbtn" onClick="{{next}}" disabled="{{pageOpen}}" style="{{nextSt}}">Halaman berikutnya</button></sc-if>
+        <sc-if value="{{canSubmit}}" hint-placeholder-val="{{ false }}"><a href="Submit.dc.html" class="btn" id="nextbtn">Kirim jawaban</a></sc-if>
+        <sc-if value="{{lastOpen}}" hint-placeholder-val="{{ false }}"><button class="btn" id="nextbtn" disabled style="opacity:.45;cursor:not-allowed">Kirim jawaban</button></sc-if>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#5B6673">Angka pada layar ini dibuat otomatis sebagai contoh tampilan, bukan soal asli HC.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const TOTAL = 988, PER = 19;
+    let seed = 12345;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed; };
+    const lajur = [];
+    for (let L = 0; L * PER < TOTAL; L++) {
+      const boxes = Math.min(PER, TOTAL - L * PER);
+      const nums = [];
+      for (let p = 0; p <= boxes; p++) nums.push(1 + ((rnd() >>> 4) % 9));
+      lajur.push({ boxes, nums });
+    }
+    this.lajur = lajur;
+    this.perPage = 4;
+    this.pages = Math.ceil(lajur.length / this.perPage);
+    // cur = urutan kotak yang sedang aktif di halaman ini (0 sampai 75); satu-satunya kotak yang bisa diisi
+    this.state = { page: 0, cur: 0, ans: {} };
+  }
+  boxId(page, k) {
+    const L = page * this.perPage + Math.floor(k / 19), p = k % 19;
+    return 'k' + L + '_' + p;
+  }
+  pageBoxes(page) {
+    let n = 0;
+    for (let k = 0; k < this.perPage; k++) { const L = page * this.perPage + k; if (L < this.lajur.length) n += this.lajur[L].boxes; }
+    return n;
+  }
+  componentDidMount() { this.focusSoon(); }
+  componentDidUpdate(prev, prevState) { if (prevState.cur !== this.state.cur || prevState.page !== this.state.page) this.focusSoon(); }
+  focusCur() {
+    const { page, cur } = this.state;
+    const el = document.getElementById(this.boxId(page, cur));
+    if (el && document.activeElement !== el) el.focus();
+  }
+  focusSoon() { [0, 40, 150].forEach((t) => setTimeout(() => this.focusCur(), t)); }
+  renderVals() {
+    const { page, cur, ans } = this.state;
+    const total = this.pageBoxes(page);
+    const lastId = this.boxId(page, total - 1);
+    const pageDone = (ans[lastId] || '') !== '' && cur === total - 1;
+    const cols = [];
+    for (let k = 0; k < this.perPage; k++) {
+      const L = page * this.perPage + k;
+      if (L >= this.lajur.length) break;
+      const { boxes, nums } = this.lajur[L];
+      const rows = nums.map((n, p) => {
+        const id = 'k' + L + '_' + p;
+        const flat = k * 19 + p;
+        const isCur = p < boxes && flat === cur;
+        const st = isCur ? 'background:#fff;border-color:#CB6015' : (flat > cur ? 'opacity:.55' : '');
+        return {
+          num: n,
+          hasBox: p < boxes,
+          id,
+          value: ans[id] || '',
+          st,
+          locked: !isCur,
+          tab: isCur ? 0 : -1,
+          label: n + ' dan ' + nums[p + 1],
+          onChange: (e) => {
+            if (this.state.cur !== flat) return;
+            const v = String(e.target.value).replace(/[^0-9]/g, '').slice(-1);
+            const a = Object.assign({}, this.state.ans);
+            a[id] = v;
+            const narrow = window.innerWidth <= 640;
+            this.setState(narrow && v !== '' && flat < total - 1 ? { ans: a, cur: flat + 1 } : { ans: a }, () => { if (narrow) this.focusSoon(); });
+          },
+          onKey: (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if ((this.state.ans[id] || '') === '') return;
+              if (flat < total - 1) this.setState({ cur: flat + 1 }, () => this.focusSoon());
+            }
+          }
+        };
+      });
+      cols.push({ title: 'Lajur ' + (L + 1), rows });
+    }
+    const answered = Object.keys(ans).filter((key) => ans[key] !== '').length;
+    const isLast = page === this.pages - 1;
+    return {
+      cols,
+      pageNo: page + 1,
+      pageCount: this.pages,
+      answered,
+      hasNext: !isLast,
+      pageOpen: !pageDone,
+      nextSt: pageDone ? '' : 'opacity:.45;cursor:not-allowed',
+      canSubmit: isLast && pageDone,
+      lastOpen: isLast && !pageDone,
+      next: () => { if (pageDone) this.setState({ page: page + 1, cur: 0 }, () => this.focusSoon()); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Dashboard HC: overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
+.tab{padding:10px 16px;border-radius:8px;font-size:15px;font-weight:600;color:#5B6673}
+.tab:hover{background:#E3EBF4}
+th{text-align:left;font-size:13px;color:#5B6673;font-weight:600;padding:10px 14px;border-bottom:2px solid #CB6015;white-space:nowrap}
+td{padding:12px 14px;font-size:15px;border-bottom:1px solid #EAEEF3}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#003C71;color:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:18px">Portal Psikotes · Dashboard HC</div>
+      <div style="font-size:14px;color:#D5E0EE">Admin HC</div>
+    </div>
+  </div>
+  <div style="background:#fff;border-bottom:1px solid #D5DBE3">
+    <div style="max-width:1160px;margin:0 auto;padding:8px 24px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="HcOverview.dc.html" class="tab" style="background:#E3EBF4;color:#003C71;border-bottom:3px solid #CB6015">Overview</a>
+      <a href="HcToken.dc.html" class="tab">Token dan jadwal</a>
+      <a href="HcHasil.dc.html" class="tab">Hasil dan laporan</a>
+    </div>
+  </div>
+  <div style="max-width:1160px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+      <h1 style="margin:0;font-size:26px">Ringkasan hari ini</h1>
+      <div style="font-size:13px;color:#5B6673">Data pada layar ini hanya contoh tampilan.</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px">
+      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Peserta selesai hari ini</div><div style="font-size:36px;font-weight:700;color:#CB6015">18</div></div>
+      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Token aktif</div><div style="font-size:36px;font-weight:700;color:#CB6015">42</div></div>
+      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Sesi tes aktif</div><div style="font-size:36px;font-weight:700;color:#CB6015">2</div></div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-weight:700;font-size:17px">Jadwal hari ini</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:720px">
+          <thead><tr><th>Nama sesi</th><th>Mode</th><th>Jenis tes</th><th>Jumlah peserta</th><th>Waktu buka</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Magang SMK Contoh</td><td>Serentak</td><td>TIU 5</td><td>6 dari 40</td><td>08.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh A</td><td>Individu</td><td>TIU 5</td><td>12</td><td>08.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh B</td><td>Individu</td><td>Tes Koran / Kraepelin</td><td>12</td><td>09.30</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh C</td><td>Individu</td><td>TIU 6</td><td>6</td><td>07.00</td><td><span style="background:#E3F3E8;color:#1E6B3A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Selesai</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Sesi serentak: jumlah peserta = yang sudah masuk dari kuota X. Token serentak dihitung satu per tes, bukan per peserta.</div>
+    </div>
+  </div>
+  <div style="margin-top:auto;background:#003C71;color:#fff;border-top:4px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
+      <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
+      <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

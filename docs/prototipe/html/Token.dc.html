@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: verifikasi token</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px}
+.btn:hover{background:#002E57}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid #8A94A1;border-radius:8px;background:#fff;color:#17202A}
+.field input:focus{outline:2px solid #CB6015;outline-offset:1px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+button.btn{border:0;font-family:inherit;cursor:pointer}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB6015;margin-top:12px}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:18px;color:#003C71">Portal Psikotes</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:#5B6673">
+        <span>1 Pilih tes</span><span>›</span><span style="font-weight:700;color:#003C71;background:#FBE9DC;border-bottom:2px solid #CB6015;padding:2px 8px;border-radius:4px">2 Verifikasi</span><span>›</span><span>3 Instruksi</span><span>›</span><span>4 Latihan</span><span>›</span><span>5 Tes</span><span>›</span><span>6 Selesai</span>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:560px;width:100%;box-sizing:border-box;margin:0 auto;padding:56px 24px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h1 style="margin:0;font-size:30px;line-height:1.25">Verifikasi token dan identitas</h1>
+      <sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#5B6673">Masukkan token dari tim HC atau pengawas tes. Token hanya berlaku pada jadwal sesi tes.</p></sc-if>
+      <sc-if value="{{isInd}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#5B6673">Masukkan nama dan email yang tertera pada undangan Anda.</p></sc-if>
+      <sc-if value="{{isGrp}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#5B6673">Token ini dipakai bersama satu kelompok. Tulis nama lengkap Anda dengan benar, karena hasil tes dicatat atas nama ini.</p></sc-if>
+    </div>
+    <div class="card" style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}">
+        <div class="field"><label for="token">Token</label><input id="token" type="text" value="{{token}}" onChange="{{onToken}}" placeholder="Contoh: 7KQ4M-X9RTC" autocomplete="off" autocapitalize="characters" spellcheck="false"><span style="font-size:13px;color:#5B6673">Huruf besar atau kecil sama saja. Tanda hubung boleh diabaikan.</span></div>
+        <sc-if value="{{err}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBE4E6;color:#8A1F2B;border:1.5px solid #8A1F2B;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.5;font-weight:600">{{err}}</div></sc-if>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn btnO" onClick="{{toStep2}}">Lanjut</button>
+          <a href="Main.dc.html" style="font-size:15px;color:#003C71;font-weight:600">Kembali</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{isStep2}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#E3EBF4;border-radius:8px;padding:10px 14px">
+          <div style="font-size:14px;color:#1B3A5C">Token <b class="mono">{{tokenShow}}</b> diterima</div>
+          <button onClick="{{back}}" style="font:inherit;font-size:14px;font-weight:600;color:#003C71;background:none;border:0;cursor:pointer;text-decoration:underline">Ganti token</button>
+        </div>
+        <div class="field"><label for="nama">Nama lengkap</label><input id="nama" type="text" value="{{nama}}" onChange="{{onNama}}" placeholder="Nama lengkap Anda" autocomplete="off"></div>
+        <sc-if value="{{isInd}}" hint-placeholder-val="{{ false }}">
+          <div class="field"><label for="email">Email</label><input id="email" type="email" value="{{email}}" onChange="{{onEmail}}" placeholder="nama@email.com" autocomplete="off"></div>
+        </sc-if>
+        <div style="background:#FBE9DC;color:#7A3A0A;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.5">Setelah tes dimulai, waktu berjalan dan tidak dapat dihentikan. Pastikan koneksi internet stabil.</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <a href="Instruksi.dc.html" class="btn btnO">Verifikasi dan lanjut</a>
+          <button onClick="{{back}}" style="font:inherit;font-size:15px;color:#003C71;font-weight:600;background:none;border:0;cursor:pointer">Kembali</button>
+        </div>
+      </sc-if>
+    </div>
+    <div style="border:1.5px dashed #8A94A1;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;color:#5B6673">
+      <b>Catatan prototipe (bukan bagian tampilan):</b> ketik <span class="mono">7KQ4M-X9RTC</span> untuk melihat mode serentak (nama saja), <span class="mono">SALAH-0000</span> untuk pesan galat, atau token lain untuk mode individu (nama dan email). Layar dua langkah: mode baru diketahui setelah token dikirim ke server.
+    </div>
+  </div>
+  <div style="margin-top:auto;background:#003C71;color:#fff;border-top:4px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
+      <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
+      <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 1, token: '', nama: '', email: '', err: '' }; }
+  norm(t) { return String(t || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  renderVals() {
+    const s = this.state;
+    const n = this.norm(s.token);
+    const grp = n === '7KQ4MX9RTC';
+    const show = n.length === 10 ? n.slice(0, 5) + '-' + n.slice(5) : s.token.toUpperCase();
+    return {
+      isStep1: s.step === 1,
+      isStep2: s.step === 2,
+      isGrp: s.step === 2 && grp,
+      isInd: s.step === 2 && !grp,
+      token: s.token, nama: s.nama, email: s.email, err: s.err, tokenShow: show,
+      onToken: (e) => this.setState({ token: e.target.value, err: '' }),
+      onNama: (e) => this.setState({ nama: e.target.value }),
+      onEmail: (e) => this.setState({ email: e.target.value }),
+      toStep2: () => {
+        const m = this.norm(this.state.token);
+        if (!m) { this.setState({ err: 'Masukkan token terlebih dahulu.' }); return; }
+        if (m === 'SALAH0000') { this.setState({ err: 'Token tidak dapat digunakan. Periksa kembali token Anda atau hubungi pengawas atau tim HC.' }); return; }
+        this.setState({ step: 2, err: '' });
+      },
+      back: () => this.setState({ step: 1, err: '' })
+    };
+  }
+}
+</script>
+</body>
+</html>

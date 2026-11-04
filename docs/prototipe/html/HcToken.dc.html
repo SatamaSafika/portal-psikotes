@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Dashboard HC: token dan jadwal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
+.tab{padding:10px 16px;border-radius:8px;font-size:15px;font-weight:600;color:#5B6673}
+.tab:hover{background:#E3EBF4}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px;border:0;font-family:inherit;cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input,.field select{font:inherit;font-size:15px;padding:10px 12px;border:1px solid #8A94A1;border-radius:8px;background:#fff;color:#17202A}
+.field input:focus,.field select:focus{outline:2px solid #CB6015;outline-offset:1px}
+th{text-align:left;font-size:13px;color:#5B6673;font-weight:600;padding:10px 14px;border-bottom:2px solid #CB6015;white-space:nowrap}
+td{padding:12px 14px;font-size:15px;border-bottom:1px solid #EAEEF3}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#003C71;color:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:18px">Portal Psikotes · Dashboard HC</div>
+      <div style="font-size:14px;color:#D5E0EE">Admin HC</div>
+    </div>
+  </div>
+  <div style="background:#fff;border-bottom:1px solid #D5DBE3">
+    <div style="max-width:1160px;margin:0 auto;padding:8px 24px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="HcOverview.dc.html" class="tab">Overview</a>
+      <a href="HcToken.dc.html" class="tab" style="background:#E3EBF4;color:#003C71;border-bottom:3px solid #CB6015">Token dan jadwal</a>
+      <a href="HcHasil.dc.html" class="tab">Hasil dan laporan</a>
+    </div>
+  </div>
+  <div style="max-width:1160px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+    <div class="card" style="flex:1 1 320px;padding:24px;display:flex;flex-direction:column;gap:16px">
+      <h2 style="margin:0;font-size:20px">Buat sesi tes</h2>
+      <div role="group" aria-label="Metode sesi" style="display:flex;gap:0;border:1.5px solid #003C71;border-radius:10px;overflow:hidden">
+        <button onClick="{{setInd}}" aria-pressed="{{isInd}}" style="{{indSt}}">Individu</button>
+        <button onClick="{{setGrp}}" aria-pressed="{{isGrp}}" style="{{grpSt}}">Serentak (kelompok)</button>
+      </div>
+      <sc-if value="{{isInd}}" hint-placeholder-val="{{ true }}">
+      <div class="field"><label for="ns">Nama sesi</label><input id="ns" type="text" placeholder="Contoh: Sesi pagi"></div>
+      <div class="field"><label for="jt">Jenis tes</label><select id="jt"><option>TIU 5</option><option>TIU 6</option><option>Tes Koran / Kraepelin</option></select></div>
+      <div class="field"><label for="tg">Tanggal</label><input id="tg" type="date"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="field" style="flex:1 1 120px"><label for="wb">Waktu buka</label><input id="wb" type="time"></div>
+        <div class="field" style="flex:1 1 120px"><label for="wt">Waktu tutup</label><input id="wt" type="time"></div>
+      </div>
+      <div class="field"><label for="em">Email peserta (satu per baris)</label><textarea id="em" rows="4" style="font:inherit;font-size:15px;padding:10px 12px;border:1px solid #8A94A1;border-radius:8px;resize:vertical" placeholder="peserta1@contoh.com"></textarea></div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Token dibuat per peserta untuk tes ini, hanya berlaku pada tanggal dan jam sesi, dan sekali pakai. Tiap tes punya jadwal sendiri; undangan semua tes seorang peserta digabung dalam satu email.</div>
+      <button class="btn">Buat sesi dan token</button>
+      </sc-if>
+      <sc-if value="{{isGrp}}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Satu token per tes untuk satu kelompok. Setiap token bisa dipakai oleh X orang, hanya pada jadwal tes tersebut. Peserta mengisi nama saja.</div>
+      <div class="field"><label for="gns">Nama sesi</label><input id="gns" type="text" placeholder="Contoh: Magang SMK Contoh"></div>
+      <div class="field"><label for="gx">Jumlah peserta (X)</label><input id="gx" type="number" min="1" value="{{xVal}}" onChange="{{onX}}"></div>
+      <div class="field"><label for="gem">Email penerima token</label><input id="gem" type="email" value="{{gemVal}}" onChange="{{onGem}}" placeholder="pengawas, guru, atau panitia"><span style="font-size:13px;color:#5B6673">Satu email berisi token semua tes beserta jadwalnya.</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:14px;font-weight:600">Tes dan jadwal</div>
+        <sc-for list="{{testRows}}" as="t" hint-placeholder-count="3">
+          <div style="border:1px solid #D5DBE3;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+            <button onClick="{{t.toggle}}" aria-pressed="{{t.on}}" style="{{t.st}}">{{t.mark}} {{t.label}}</button>
+            <sc-if value="{{t.on}}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <div class="field" style="flex:1 1 130px"><label style="font-size:12px">Tanggal</label><input type="date"></div>
+                <div class="field" style="flex:1 1 90px"><label style="font-size:12px">Buka</label><input type="time"></div>
+                <div class="field" style="flex:1 1 90px"><label style="font-size:12px">Tutup</label><input type="time"></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Setiap peserta punya catatan ujian dan timer sendiri. Token ditolak bila kuota X sudah penuh atau di luar jadwal.</div>
+      <button class="btn" onClick="{{createGrp}}">Buat sesi dan token kelompok</button>
+      </sc-if>
+    </div>
+    <div style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:24px">
+    <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background:#E3F3E8;color:#1E6B3A;border:1.5px solid #1E6B3A;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;gap:12px;align-items:center">
+        <span>{{toast}}</span><button onClick="{{closeToast}}" style="font:inherit;font-weight:700;color:#1E6B3A;background:none;border:0;cursor:pointer" aria-label="Tutup pemberitahuan">Tutup</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{isInd}}" hint-placeholder-val="{{ true }}">
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Undangan peserta</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="font-size:13px;color:#5B6673">Data contoh</span><button class="btn" onClick="{{sendAll}}">Kirim semua undangan yang belum terkirim</button></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:640px">
+          <thead><tr><th>Peserta</th><th>Email</th><th>Tes diundang</th><th>Undangan</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{people}}" as="p" hint-placeholder-count="3">
+              <tr>
+                <td>{{p.nama}}</td><td>{{p.email}}</td><td>{{p.tes}}</td>
+                <td>
+                  <sc-if value="{{p.sent}}" hint-placeholder-val="{{ false }}"><span style="background:#E3F3E8;color:#1E6B3A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Terkirim {{p.sentAt}}</span></sc-if>
+                  <sc-if value="{{p.notSent}}" hint-placeholder-val="{{ true }}"><span style="background:#fff;color:#5B6673;border:1px solid #8A94A1;font-weight:600;font-size:13px;padding:3px 10px;border-radius:999px">Belum dikirim</span></sc-if>
+                </td>
+                <td style="white-space:nowrap">
+                  <sc-if value="{{p.canSend}}" hint-placeholder-val="{{ true }}"><button class="btn2" onClick="{{p.send}}" style="padding:7px 12px;font-size:14px">{{p.sendLabel}}</button></sc-if>
+                  <sc-if value="{{p.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#5B6673">Tidak ada token aktif</span></sc-if>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Satu email per peserta berisi semua tes yang diundang, masing-masing dengan jadwal dan token sendiri. Kirim ulang memakai token yang sama. Token yang sudah dipakai atau kedaluwarsa tidak disertakan.</div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Token dan jadwal per tes</div>
+        <div style="font-size:13px;color:#5B6673">Data contoh</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:700px">
+          <thead><tr><th>Token</th><th>Peserta</th><th>Tes</th><th>Jadwal</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+              <tr>
+                <td class="mono">{{r.token}}</td><td>{{r.nama}}</td><td>{{r.tes}}</td><td>{{r.jadwal}}</td>
+                <td>
+                  <sc-if value="{{r.isUsed}}" hint-placeholder-val="{{ false }}"><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Dipakai</span></sc-if>
+                  <sc-if value="{{r.isUnused}}" hint-placeholder-val="{{ true }}"><span style="background:#E3EBF4;color:#003C71;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Belum dipakai</span></sc-if>
+                  <sc-if value="{{r.isExpired}}" hint-placeholder-val="{{ false }}"><span style="background:#E5E7EB;color:#374151;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Kedaluwarsa</span></sc-if>
+                </td>
+                <td><sc-if value="{{r.isUnused}}" hint-placeholder-val="{{ true }}"><button style="font:inherit;font-size:14px;font-weight:600;color:#8A1F2B;background:none;border:0;cursor:pointer">Cabut</button></sc-if></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Pratinjau email undangan</div>
+        <div style="font-size:13px;color:#5B6673">Templat otomatis, tanpa nama perusahaan</div>
+      </div>
+      <div style="border:1px solid #D5DBE3;border-radius:10px;overflow:hidden">
+        <div style="background:#F4F6F9;padding:12px 16px;font-size:14px;line-height:1.7;border-bottom:1px solid #D5DBE3">
+          <div><b>Dari:</b> [alamat pengirim, menunggu keputusan HC]</div>
+          <div><b>Kepada:</b> peserta4@contoh.test</div>
+          <div><b>Subjek:</b> Undangan Psikotes</div>
+        </div>
+        <div style="padding:16px;font-size:15px;line-height:1.7;background:#fff">
+          <p style="margin:0 0 12px">Halo Peserta Empat,</p>
+          <p style="margin:0 0 12px">Anda diundang mengikuti psikotes. Setiap tes memiliki token dan jadwal sendiri:</p>
+          <p style="margin:0 0 12px"><b>TIU 5</b> - Senin, 2 November 2026, pukul 15:46-17:16<br>Token: <span class="mono">NPQR-3456</span></p>
+          <p style="margin:0 0 12px"><b>TIU 6</b> - Senin, 2 November 2026, pukul 17:16-18:16<br>Token: <span class="mono">STUV-7890</span></p>
+          <p style="margin:0 0 12px"><b>Tes Koran</b> - Selasa, 3 November 2026, pukul 08:00-09:00<br>Token: <span class="mono">WXYZ-2468</span></p>
+          <p style="margin:0">Pada jadwal tiap tes, buka [alamat portal]/masuk lalu masukkan alamat email ini dan token tes tersebut. Setiap token hanya bisa dipakai satu kali dan hanya berlaku pada jadwalnya. Jangan bagikan token kepada orang lain.</p>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Contoh dengan data fiktif. Blok tes mengikuti tes yang diundang untuk peserta tersebut. Nilai dalam kurung siku diisi sistem saat email dikirim.</div>
+    </div>
+    </sc-if>
+    <sc-if value="{{isGrp}}" hint-placeholder-val="{{ false }}">
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Token kelompok</div>
+        <div style="font-size:13px;color:#5B6673">Data contoh</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:640px">
+          <thead><tr><th>Tes dan sesi</th><th>Jadwal</th><th>Terpakai</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody>
+            <sc-for list="{{grpRows}}" as="r" hint-placeholder-count="4">
+              <tr style="{{r.rowSt}}">
+                <td><div style="font-weight:700">{{r.tes}}</div><div style="font-size:13px;color:#5B6673">{{r.sesi}}</div></td><td style="font-size:14px">{{r.jadwal}}</td>
+                <td style="min-width:110px"><div style="font-weight:600;font-size:14px">{{r.used}} dari {{r.kuota}}</div><div style="height:6px;background:#EAEEF3;border-radius:3px;margin-top:6px"><div style="{{r.barSt}}"></div></div></td>
+                <td><span style="{{r.badgeSt}}">{{r.status}}</span></td>
+                <td>
+                  <div style="display:flex;gap:4px 12px;flex-wrap:wrap;font-size:14px;font-weight:600">
+                    <button onClick="{{r.view}}" style="font:inherit;color:#003C71;background:none;border:0;cursor:pointer;padding:0">Lihat peserta</button>
+                    <sc-if value="{{r.canAct}}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{r.addQuota}}" style="font:inherit;color:#003C71;background:none;border:0;cursor:pointer;padding:0">Tambah kuota</button>
+                      <button onClick="{{r.newToken}}" style="font:inherit;color:#003C71;background:none;border:0;cursor:pointer;padding:0">Token baru</button>
+                      <button onClick="{{r.revoke}}" style="font:inherit;color:#8A1F2B;background:none;border:0;cursor:pointer;padding:0">Cabut</button>
+                    </sc-if>
+                  </div>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Kuota dihitung atomik: peserta yang masuk melewati X ditolak. Tambah kuota menambah 1 tempat (untuk peserta yang berganti perangkat atau terlambat). Token mentah hanya tampil sekali setelah dibuat.</div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Peserta yang sudah masuk</div>
+        <div style="font-size:14px;color:#5B6673">{{selLabel}}</div>
+      </div>
+      <sc-if value="{{hasPeople}}" hint-placeholder-val="{{ true }}">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:560px">
+          <thead><tr><th>Nama</th><th>Masuk</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{people}}" as="p" hint-placeholder-count="5">
+              <tr>
+                <td>
+                  <sc-if value="{{p.show}}" hint-placeholder-val="{{ true }}"><span>{{p.nama}}</span></sc-if>
+                  <sc-if value="{{p.editing}}" hint-placeholder-val="{{ false }}"><input id="edit_name" type="text" value="{{editVal}}" onChange="{{onEdit}}" style="font:inherit;font-size:15px;padding:6px 10px;border:1px solid #8A94A1;border-radius:8px;width:200px"></sc-if>
+                  <sc-if value="{{p.dup}}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#7A3A0A;margin-top:2px">Nama sama dengan peserta lain di token ini. Periksa.</div></sc-if>
+                </td>
+                <td>{{p.masuk}}</td>
+                <td><span style="{{p.badgeSt}}">{{p.status}}</span></td>
+                <td style="white-space:nowrap">
+                  <sc-if value="{{p.show}}" hint-placeholder-val="{{ true }}"><button onClick="{{p.startEdit}}" style="font:inherit;font-size:14px;font-weight:600;color:#003C71;background:none;border:0;cursor:pointer">Ubah nama</button></sc-if>
+                  <sc-if value="{{p.editing}}" hint-placeholder-val="{{ false }}"><button onClick="{{p.save}}" style="font:inherit;font-size:14px;font-weight:700;color:#1E6B3A;background:none;border:0;cursor:pointer">Simpan</button><button onClick="{{p.cancel}}" style="font:inherit;font-size:14px;font-weight:600;color:#5B6673;background:none;border:0;cursor:pointer">Batal</button></sc-if>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Diurutkan menurut nama. Nama kembar tidak ditolak (bisa orang berbeda), hanya ditandai. Admin dapat memperbaiki salah ketik. Hasil lintas tes tidak digabung otomatis.</div>
+      </sc-if>
+      <sc-if value="{{noPeople}}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#5B6673">Belum ada peserta yang masuk dengan token ini.</div></sc-if>
+    </div>
+    <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:17px">Pratinjau email token kelompok</div>
+        <button class="btn" onClick="{{sendGrp}}">Kirim email token ke penerima</button>
+      </div>
+      <div style="border:1px solid #D5DBE3;border-radius:10px;overflow:hidden">
+        <div style="background:#F4F6F9;padding:12px 16px;font-size:14px;line-height:1.7;border-bottom:1px solid #D5DBE3">
+          <div><b>Dari:</b> [alamat pengirim, menunggu keputusan HC]</div>
+          <div><b>Kepada:</b> panitia@contoh.test</div>
+          <div><b>Subjek:</b> Token psikotes untuk kelompok Anda</div>
+        </div>
+        <div style="padding:16px;font-size:15px;line-height:1.7;background:#fff">
+          <p style="margin:0 0 12px">Halo,</p>
+          <p style="margin:0 0 12px">Berikut token psikotes untuk sesi <b>Magang SMK Contoh</b>. Setiap token berlaku untuk maksimal <b>40 orang</b> dan hanya aktif pada jadwal tesnya.</p>
+          <p style="margin:0 0 12px"><b>TIU 5</b> - Selasa, 10 November 2026, pukul 08:00-10:00<br>Token: <span class="mono">7KQ4M-X9RTC</span></p>
+          <p style="margin:0 0 12px"><b>TIU 6</b> - Selasa, 10 November 2026, pukul 10:15-11:15<br>Token: <span class="mono">H3WZP-2NDFA</span></p>
+          <p style="margin:0 0 12px"><b>Tes Koran</b> - Selasa, 10 November 2026, pukul 11:30-12:30<br>Token: <span class="mono">R8TBV-5CJ6Y</span></p>
+          <p style="margin:0">Bagikan token tiap tes kepada peserta yang hadir pada jadwalnya. Peserta membuka [alamat portal], memilih tes, memasukkan token, lalu menulis nama lengkapnya. Hindari mengumumkan token sebelum tes dimulai.</p>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#5B6673;line-height:1.5">Contoh dengan data fiktif. Token tampil sekali setelah dibuat. Setelah halaman dimuat ulang, gunakan Token baru bila email hilang.</div>
+    </div>
+    </sc-if>
+    </div>
+  </div>
+  <div style="margin-top:auto;background:#003C71;color:#fff;border-top:4px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
+      <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
+      <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sent: { 'peserta1@contoh.test': '07.45' }, toast: '', mode: 'ind',
+      sel: { t5: true, t6: true, k: true }, x: '40', gem: 'panitia@contoh.test',
+      grp: [
+        { id: 'g1', sesi: 'Magang SMK Contoh', tes: 'TIU 5', jadwal: 'Sel, 10 Nov 08.00-10.00', kuota: 40, used: 6, base: 'aktif', revoked: false },
+        { id: 'g2', sesi: 'Magang SMK Contoh', tes: 'TIU 6', jadwal: 'Sel, 10 Nov 10.15-11.15', kuota: 40, used: 0, base: 'menunggu', revoked: false },
+        { id: 'g3', sesi: 'Magang SMK Contoh', tes: 'Tes Koran', jadwal: 'Sel, 10 Nov 11.30-12.30', kuota: 40, used: 0, base: 'menunggu', revoked: false },
+        { id: 'g4', sesi: 'Kampus Contoh', tes: 'TIU 5', jadwal: 'Sen, 9 Nov 13.00-15.00', kuota: 25, used: 25, base: 'aktif', revoked: false }
+      ],
+      selId: 'g1',
+      names: [
+        { nama: 'Ayu Lestari', masuk: '08.02', st: 'Selesai' },
+        { nama: 'Budi Santoso', masuk: '08.03', st: 'Mengerjakan' },
+        { nama: 'Budi Santoso', masuk: '08.05', st: 'Mengerjakan' },
+        { nama: 'Citra Dewi', masuk: '08.01', st: 'Mengerjakan' },
+        { nama: 'Dimas Pratama', masuk: '08.04', st: 'Mengerjakan' },
+        { nama: 'Eka Putri', masuk: '08.06', st: 'Waktu habis' }
+      ],
+      editIdx: -1, editVal: ''
+    };
+    this.data = [
+      { token: 'ABCD-1234', nama: 'Peserta contoh 1', email: 'peserta1@contoh.test', tes: 'TIU 5', jadwal: 'Sen, 2 Nov 08.00-10.00', st: 'used' },
+      { token: 'EFGH-5678', nama: 'Peserta contoh 2', email: 'peserta2@contoh.test', tes: 'TIU 5', jadwal: 'Sen, 2 Nov 08.00-10.00', st: 'unused' },
+      { token: 'JKLM-9012', nama: 'Peserta contoh 3', email: 'peserta3@contoh.test', tes: 'TIU 6', jadwal: 'Sen, 26 Okt 07.00-09.00', st: 'expired' },
+      { token: 'NPQR-3456', nama: 'Peserta contoh 4', email: 'peserta4@contoh.test', tes: 'TIU 5', jadwal: 'Sen, 2 Nov 15.46-17.16', st: 'unused' },
+      { token: 'STUV-7890', nama: 'Peserta contoh 4', email: 'peserta4@contoh.test', tes: 'TIU 6', jadwal: 'Sen, 2 Nov 17.16-18.16', st: 'unused' },
+      { token: 'WXYZ-2468', nama: 'Peserta contoh 4', email: 'peserta4@contoh.test', tes: 'Tes Koran', jadwal: 'Sel, 3 Nov 08.00-09.00', st: 'unused' }
+    ];
+  }
+  groups() {
+    const g = [];
+    this.data.forEach((r) => {
+      let x = g.filter((y) => y.email === r.email)[0];
+      if (!x) { x = { nama: r.nama, email: r.email, items: [] }; g.push(x); }
+      x.items.push(r);
+    });
+    return g;
+  }
+  renderVals() {
+    const { sent, toast, mode, sel, x, gem, grp, selId, names, editIdx, editVal } = this.state;
+    const now = '15.27';
+    const mark = (list) => { const n = Object.assign({}, this.state.sent); list.forEach((p) => { n[p.email] = now; }); return n; };
+    const active = (p) => p.items.filter((r) => r.st === 'unused');
+    const people = this.groups().map((p) => {
+      const act = active(p);
+      return {
+        nama: p.nama, email: p.email,
+        tes: act.length ? act.map((r) => r.tes).join(', ') : '-',
+        sent: !!sent[p.email], notSent: !sent[p.email], sentAt: sent[p.email] || '',
+        canSend: act.length > 0, noSend: act.length === 0,
+        sendLabel: sent[p.email] ? 'Kirim ulang' : 'Kirim undangan',
+        send: () => this.setState({ sent: mark([p]), toast: 'Undangan terkirim ke ' + p.email + ': 1 email berisi ' + act.length + ' tes beserta jadwal dan tokennya.' })
+      };
+    });
+    const rows = this.data.map((r) => ({
+      token: r.token, nama: r.nama, tes: r.tes, jadwal: r.jadwal,
+      isUsed: r.st === 'used', isUnused: r.st === 'unused', isExpired: r.st === 'expired'
+    }));
+    // ---- mode serentak ----
+    const seg = (on) => 'flex:1;font:inherit;font-size:14px;font-weight:700;padding:10px 12px;border:0;cursor:pointer;' + (on ? 'background:#003C71;color:#fff' : 'background:#fff;color:#003C71');
+    const badge = (bg, fg) => 'background:' + bg + ';color:' + fg + ';font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px;white-space:nowrap';
+    const tests = [{ k: 't5', label: 'TIU 5' }, { k: 't6', label: 'TIU 6' }, { k: 'k', label: 'Tes Koran / Kraepelin' }];
+    const testRows = tests.map((t) => {
+      const on = !!sel[t.k];
+      return {
+        label: t.label, on, mark: on ? '✓' : '+',
+        st: 'font:inherit;font-size:14px;font-weight:700;text-align:left;padding:8px 12px;border-radius:8px;cursor:pointer;' + (on ? 'background:#E3EBF4;color:#003C71;border:2px solid #003C71' : 'background:#fff;color:#5B6673;border:1px solid #8A94A1'),
+        toggle: () => { const n = Object.assign({}, this.state.sel); n[t.k] = !n[t.k]; this.setState({ sel: n }); }
+      };
+    });
+    const upd = (id, f) => grp.map((r) => (r.id === id ? Object.assign({}, r, f(r)) : r));
+    const grpRows = grp.map((r) => {
+      let status = r.base === 'aktif' ? 'Aktif' : 'Belum mulai';
+      let b = r.base === 'aktif' ? badge('#E3F3E8', '#1E6B3A') : badge('#E3EBF4', '#003C71');
+      if (r.used >= r.kuota) { status = 'Penuh'; b = badge('#FBE9DC', '#7A3A0A'); }
+      if (r.revoked) { status = 'Dicabut'; b = badge('#E5E7EB', '#374151'); }
+      const pct = Math.min(100, Math.round((r.used / r.kuota) * 100));
+      return {
+        sesi: r.sesi, tes: r.tes, jadwal: r.jadwal, used: r.used, kuota: r.kuota, status, badgeSt: b,
+        rowSt: r.id === selId ? 'background:#F4F6F9' : '',
+        barSt: 'height:6px;border-radius:3px;background:' + (r.used >= r.kuota ? '#CB6015' : '#003C71') + ';width:' + pct + '%',
+        canAct: !r.revoked,
+        view: () => this.setState({ selId: r.id, editIdx: -1 }),
+        addQuota: () => this.setState({ grp: upd(r.id, (q) => ({ kuota: q.kuota + 1 })), toast: 'Kuota ' + r.tes + ' (' + r.sesi + ') ditambah 1 menjadi ' + (r.kuota + 1) + '.' }),
+        newToken: () => this.setState({ toast: 'Token baru dibuat untuk ' + r.tes + ' (' + r.sesi + '). Token lama tidak berlaku. Kuota dan peserta yang sudah masuk tidak berubah.' }),
+        revoke: () => this.setState({ grp: upd(r.id, () => ({ revoked: true })), toast: 'Token ' + r.tes + ' (' + r.sesi + ') dicabut.' })
+      };
+    });
+    const selRow = grp.filter((r) => r.id === selId)[0];
+    const showNames = selId === 'g1';
+    const sorted = names.map((n, i) => ({ n, i })).sort((a, b) => a.n.nama.localeCompare(b.n.nama));
+    const cnt = {}; names.forEach((n) => { const k = n.nama.trim().toLowerCase(); cnt[k] = (cnt[k] || 0) + 1; });
+    const stColor = { 'Selesai': badge('#E3F3E8', '#1E6B3A'), 'Mengerjakan': badge('#E3EBF4', '#003C71'), 'Waktu habis': badge('#FBE9DC', '#7A3A0A') };
+    const ppl = showNames ? sorted.map(({ n, i }) => ({
+      nama: n.nama, masuk: n.masuk, status: n.st, badgeSt: stColor[n.st],
+      show: i !== editIdx, editing: i === editIdx,
+      dup: cnt[n.nama.trim().toLowerCase()] > 1,
+      startEdit: () => this.setState({ editIdx: i, editVal: n.nama }),
+      cancel: () => this.setState({ editIdx: -1 }),
+      save: () => { const v = String(this.state.editVal).trim(); if (!v) return; const nn = this.state.names.slice(); nn[i] = Object.assign({}, nn[i], { nama: v }); this.setState({ names: nn, editIdx: -1, toast: 'Nama diperbarui menjadi ' + v + '.' }); }
+    })) : [];
+    return {
+      rows, people, toast,
+      isInd: mode === 'ind', isGrp: mode === 'grp', indSt: seg(mode === 'ind'), grpSt: seg(mode === 'grp'),
+      setInd: () => this.setState({ mode: 'ind' }), setGrp: () => this.setState({ mode: 'grp' }),
+      xVal: x, gemVal: gem, onX: (e) => this.setState({ x: e.target.value }), onGem: (e) => this.setState({ gem: e.target.value }),
+      testRows,
+      createGrp: () => {
+        const n = Object.keys(this.state.sel).filter((k) => this.state.sel[k]).length;
+        this.setState({ toast: n ? 'Sesi serentak dibuat: ' + n + ' token kelompok, masing-masing untuk ' + this.state.x + ' orang. Email token siap dikirim ke ' + this.state.gem + '.' : 'Pilih minimal satu tes.' });
+      },
+      grpRows, selLabel: selRow ? selRow.tes + ' · ' + selRow.sesi : '',
+      hasPeople: showNames, noPeople: !showNames,
+      people: mode === 'grp' ? ppl : people, editVal,
+      onEdit: (e) => this.setState({ editVal: e.target.value }),
+      sendGrp: () => this.setState({ toast: 'Email dibuka di aplikasi email untuk ' + this.state.gem + ': 1 email berisi token semua tes dan jadwalnya.' }),
+      closeToast: () => this.setState({ toast: '' }),
+      sendAll: () => {
+        const todo = this.groups().filter((p) => active(p).length > 0 && !this.state.sent[p.email]);
+        this.setState({ sent: mark(todo), toast: todo.length ? todo.length + ' email undangan terkirim.' : 'Tidak ada undangan yang menunggu dikirim.' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -196,7 +196,7 @@ Keputusan pemilik proyek atas rencana 8b (4 November 2026):
 3. Kuota maksimum 1000 per token (pemakaian normal 100 sampai 200). Batas gagal jalur token 300 per 15 menit per IP (yang berhasil tidak dihitung). Nama peserta kelompok minimal 2, maksimal 100 karakter.
 4. Cabut token kelompok hanya menolak klaim baru; peserta yang sedang mengerjakan tetap lanjut.
 5. Aturan mode individu tidak berubah (token per peserta, terikat email, sekali pakai, sesuai jadwal). Tampilan verifikasi menjadi dua langkah untuk kedua mode.
-Status 4 November 2026: DDL dijalankan; kode backend dan frontend selesai; uji di kantor oleh pemilik proyek lolos (`npm run uji:kelompok`, alur manual serentak, regresi individu). Tersisa: pembaruan prototipe.
+Status 4 November 2026: DDL dijalankan; kode backend dan frontend selesai; uji di kantor oleh pemilik proyek lolos (`npm run uji:kelompok`, alur manual serentak, regresi individu). Prototipe versi 48 sudah memuat 8b.
 - [x] DDL `db/09_sesi_kelompok.sql` (dijalankan pemilik proyek di SSMS, 4 November 2026): tabel `HCIS_Psikotes_Kelompok` (sesi, jenis tes, hash token, kuota, terpakai, jadwal, dicabut), kolom `kelompok_id` di tabel ujian, kolom `mode` dan `email_penerima` di tabel sesi, pelonggaran `email` dan `token_hash` (keputusan 1).
 - [x] Klaim atomik: satu transaksi `UPDATE ... WHERE terpakai < kuota` pada jadwal aktif dan belum dicabut, lalu `INSERT` catatan ujian. Tidak boleh baca lalu tulis terpisah.
 - [x] Token kelompok pendek dan mudah diketik (usulan 10 karakter tanpa karakter mirip). Batas gagal jalur kelompok per token, ambang per IP dinaikkan, supaya satu ruangan tidak terkunci karena salah ketik.
@@ -204,7 +204,7 @@ Status 4 November 2026: DDL dijalankan; kode backend dan frontend selesai; uji d
 - [x] Buat sesi serentak: nama sesi, email PIC, X, daftar tes dengan jadwal per tes. Template email bawaan kelompok terpisah (tanpa kalimat larangan membagikan token), bisa disunting HC.
 - [x] Dashboard: terpakai n dari X per token, tambah kuota, cabut, hasil diurutkan per sesi lalu nama (termasuk ekspor), koreksi nama oleh admin, kartu Overview menghitung per token.
 - [x] Mode individu tidak berubah (uji regresi seluruh tes yang ada).
-- [ ] Perbarui prototipe dan `PROTOTIPE_SPEC.md` (pilihan mode, kuota, layar verifikasi dua langkah).
+- [x] Perbarui prototipe dan `PROTOTIPE_SPEC.md` (pilihan mode, kuota, layar verifikasi dua langkah): prototipe versi 48, tangkapan layar `Token_serentak`, `Token_individu`, `Token_galat`, `HcToken_serentak`, `HcToken_serentak_aksi`.
 Selesai kalau: 100 klaim paralel pada kuota 50 menghasilkan tepat 50 peserta; di luar jadwal dan token tercabut ditolak; 100 salah ketik dari satu IP tidak mengunci peserta yang benar; hasil per peserta dan skor tetap sesuai hitungan tangan; semua tes lama tetap lolos.
 
 ## Part 8c. Persetujuan peserta (S)
@@ -213,6 +213,8 @@ Permintaan HC terkait legal (4 November 2026, disampaikan pemilik proyek; DDL `d
 - [x] Verifikasi langkah 2 (individu dan serentak): teks persetujuan, pilihan Saya Setuju / Saya Tidak Setuju tanpa pilihan bawaan; tidak setuju = tidak bisa lanjut, token dan kuota tidak terpakai.
 - [x] Server mewajibkan `setuju: true` dengan versi teks yang berlaku (400 tanpa persetujuan, 409 bila teks sudah diperbarui), lalu menyimpan waktu dan versi bersama catatan ujian.
 - [x] Admin: kolom persetujuan di daftar peserta serentak dan di ekspor hasil.
+- [x] `PROTOTIPE_SPEC.md` bagian 6a (uraian layar persetujuan).
+- [ ] Board `Token.dc.html` dan tangkapan layar persetujuan (dikerjakan pemilik proyek).
 Perlu verifikasi HC/legal: (a) teks sudah final atau masih draf; (b) kata "proses rekrutmen" cocok untuk semua sesi serentak (misalnya tes di kampus); (c) bukti persetujuan ikut terhapus 4 bulan setelah tes atau perlu disimpan lebih lama.
 Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat API langsung), dan setiap catatan ujian baru menyimpan waktu dan versi persetujuan.
 

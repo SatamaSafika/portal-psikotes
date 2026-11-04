@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: pengerjaan TIU 6</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-radius:12px}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px;border:0;font-family:inherit;cursor:pointer}
+.btn2{display:inline-block;background:#fff;color:#003C71;font-weight:600;font-size:15px;padding:11px 20px;border-radius:8px;border:1px solid #003C71;font-family:inherit;cursor:pointer}
+.bs{width:56px;height:48px;border-radius:8px;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB6015;margin-top:12px}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="position:sticky;top:0;z-index:5;background:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column"><div style="font-weight:700;font-size:17px;color:#003C71">TIU 6</div><div style="font-size:13px;color:#5B6673">Peserta: [nama peserta]</div></div>
+      <div style="display:flex;align-items:center;gap:10px;background:#FBE9DC;color:#7A3A0A;border:1.5px solid #CB6015;padding:7px 15px;border-radius:999px;font-weight:700;font-size:18px"><span style="font-size:13px;font-weight:600">Sisa waktu</span><span>07:35</span></div>
+    </div>
+  </div>
+  <div style="max-width:1160px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+    <div style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:14px;font-weight:600;color:#5B6673">Soal 3 dari 8 (5 butir)</div>
+      <p style="margin:0;font-size:16px;line-height:1.6;background:#E3EBF4;border-radius:8px;padding:12px 14px">[Instruksi dari tim HC, misalnya: Pilihlah pada guntingan-guntingan yang betul sebuah huruf B, dan pada guntingan-guntingan yang salah sebuah huruf S.]</p>
+      <div style="height:200px;border:2px dashed #8A94A1;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#5B6673;font-size:15px;text-align:center;padding:0 16px">[Satu gambar soal: guntingan nomor 1 sampai 5 berada dalam gambar yang sama]</div>
+      <table style="border-collapse:collapse;width:100%;max-width:420px">
+        <thead><tr><th style="text-align:left;padding:8px 12px;font-size:14px;color:#5B6673;border-bottom:1px solid #D5DBE3">Butir</th><th style="text-align:center;padding:8px 12px;font-size:14px;color:#5B6673;border-bottom:1px solid #D5DBE3">B</th><th style="text-align:center;padding:8px 12px;font-size:14px;color:#5B6673;border-bottom:1px solid #D5DBE3">S</th></tr></thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+            <tr>
+              <td style="padding:10px 12px;font-weight:700;font-size:17px;border-bottom:1px solid #EAEEF3">{{r.no}}</td>
+              <td style="text-align:center;padding:10px 12px;border-bottom:1px solid #EAEEF3">
+                <sc-if value="{{r.bOn}}" hint-placeholder-val="{{ false }}"><button onClick="{{r.pickB}}" aria-label="B untuk butir {{r.no}}, dipilih" style="width:28px;height:28px;border-radius:50%;border:2px solid #003C71;background:#fff;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#003C71"></span></button></sc-if>
+                <sc-if value="{{r.bOff}}" hint-placeholder-val="{{ true }}"><button onClick="{{r.pickB}}" aria-label="B untuk butir {{r.no}}" style="width:28px;height:28px;border-radius:50%;border:2px solid #8A94A1;background:#fff;cursor:pointer;padding:0"></button></sc-if>
+              </td>
+              <td style="text-align:center;padding:10px 12px;border-bottom:1px solid #EAEEF3">
+                <sc-if value="{{r.sOn}}" hint-placeholder-val="{{ false }}"><button onClick="{{r.pickS}}" aria-label="S untuk butir {{r.no}}, dipilih" style="width:28px;height:28px;border-radius:50%;border:2px solid #003C71;background:#fff;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#003C71"></span></button></sc-if>
+                <sc-if value="{{r.sOff}}" hint-placeholder-val="{{ true }}"><button onClick="{{r.pickS}}" aria-label="S untuk butir {{r.no}}" style="width:28px;height:28px;border-radius:50%;border:2px solid #8A94A1;background:#fff;cursor:pointer;padding:0"></button></sc-if>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <div style="font-size:14px;color:#5B6673">Setiap nomor hanya dapat diisi satu pilihan. Klik pilihan yang sama lagi untuk mengosongkan.</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <button class="btn2">Sebelumnya</button>
+      <button class="btn2">Berikutnya</button>
+    </div>
+    </div>
+    <div style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:16px">
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-weight:700;font-size:15px">Navigasi soal</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{nums}}" as="n" hint-placeholder-count="8">
+            <div>
+              <sc-if value="{{n.cur}}" hint-placeholder-val="{{ false }}"><div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:#003C71;color:#fff">{{n.no}}</div></sc-if>
+              <sc-if value="{{n.done}}" hint-placeholder-val="{{ false }}"><div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:#E3EBF4;color:#003C71;border:1px solid #003C71">{{n.no}}</div></sc-if>
+              <sc-if value="{{n.blank}}" hint-placeholder-val="{{ true }}"><div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:#fff;color:#5B6673;border:1px solid #8A94A1">{{n.no}}</div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#5B6673">
+          <div style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#003C71"></span>Soal saat ini</div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#E3EBF4;border:1px solid #003C71"></span>Sudah dijawab</div>
+          <div style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#fff;border:1px solid #8A94A1"></span>Belum dijawab</div>
+        </div>
+      </div>
+      <a href="Submit.dc.html" class="btn" style="text-align:center">Kirim jawaban</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { a: [null, null, null, null, null] }; }
+  renderVals() {
+    const a = this.state.a;
+    const set = (i, v) => { const n = a.slice(); n[i] = n[i] === v ? null : v; this.setState({ a: n }); };
+    const rows = a.map((v, i) => ({
+      no: i + 1,
+      bOn: v === 'B', bOff: v !== 'B',
+      sOn: v === 'S', sOff: v !== 'S',
+      pickB: () => set(i, 'B'),
+      pickS: () => set(i, 'S')
+    }));
+    const doneSet = [1, 2, 4];
+    const nums = Array.from({ length: 8 }, (_, k) => {
+      const no = k + 1;
+      const cur = no === 3;
+      const done = !cur && doneSet.indexOf(no) !== -1;
+      return { no, cur, done, blank: !cur && !done };
+    });
+    return { rows, nums };
+  }
+}
+</script>
+</body>
+</html>

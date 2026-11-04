@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: konfirmasi pengiriman</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px}
+.btn:hover{background:#002E57}
+.btn2{display:inline-block;background:#fff;color:#003C71;font-weight:600;font-size:15px;padding:11px 20px;border-radius:8px;border:1px solid #003C71}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB6015;margin-top:12px}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:18px;color:#003C71">Portal Psikotes</div>
+      <div style="font-size:14px;color:#5B6673">TIU 5</div>
+    </div>
+  </div>
+  <div style="max-width:560px;width:100%;box-sizing:border-box;margin:0 auto;padding:64px 24px;display:flex;flex-direction:column;gap:24px">
+    <h1 style="margin:0;font-size:30px;line-height:1.25">Kirim jawaban sekarang?</h1>
+    <div class="card" style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1 1 140px;background:#E3EBF4;border-radius:8px;padding:14px 16px"><div style="font-size:13px;color:#1B3A5C">Sudah dijawab</div><div style="font-size:26px;font-weight:700;color:#003C71">8</div></div>
+        <div style="flex:1 1 140px;background:#FBE9DC;border-radius:8px;padding:14px 16px"><div style="font-size:13px;color:#7A3A0A">Belum dijawab</div><div style="font-size:26px;font-weight:700;color:#7A3A0A">22</div></div>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#5B6673">Angka di atas hanya contoh tampilan. Setelah dikirim, jawaban tidak dapat diubah. Soal yang belum dijawab dianggap kosong.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="Selesai.dc.html" class="btn btnO">Ya, kirim jawaban</a>
+        <a href="Tiu5.dc.html" class="btn2">Kembali ke soal</a>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:auto;background:#003C71;color:#fff;border-top:4px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
+      <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
+      <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

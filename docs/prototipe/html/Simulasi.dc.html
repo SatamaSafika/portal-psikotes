@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: simulasi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+a{color:inherit;text-decoration:none}
+.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
+.btn{display:inline-block;background:#003C71;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px;border:0;font-family:inherit;cursor:pointer}
+.btn:hover{background:#002E57}
+.opt{font-family:inherit;font-size:15px;color:#17202A;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center;cursor:pointer;width:100%;box-sizing:border-box}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB6015;margin-top:12px}
+.btnO{background:#CB6015;font-weight:700;font-size:16px}
+.btnO:hover{background:#A9500F}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#fff;border-bottom:3px solid #CB6015">
+    <div style="max-width:1080px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:18px;color:#003C71">Portal Psikotes</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:#5B6673">
+        <span>1 Pilih tes</span><span>›</span><span>2 Verifikasi</span><span>›</span><span>3 Instruksi</span><span>›</span><span style="font-weight:700;color:#003C71;background:#FBE9DC;border-bottom:2px solid #CB6015;padding:2px 8px;border-radius:4px">4 Latihan</span><span>›</span><span>5 Tes</span><span>›</span><span>6 Selesai</span>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:880px;width:100%;box-sizing:border-box;margin:0 auto;padding:40px 24px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:13px;font-weight:600;color:#003C71;letter-spacing:.04em;border-left:4px solid #CB6015;padding-left:10px">TIU 5 · LATIHAN</div>
+        <h1 style="margin:0;font-size:26px">Soal latihan {{qNo}} dari 2</h1>
+      </div>
+      <div style="background:#E3EBF4;color:#003C71;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px">Latihan tidak dinilai dan tidak disimpan</div>
+    </div>
+    <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+      <p style="margin:0;font-size:16px;line-height:1.6">[Instruksi soal contoh dari tim HC.]</p>
+      <div style="height:180px;border:2px dashed #8A94A1;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#5B6673;font-size:15px;text-align:center;padding:0 16px">[Satu gambar soal contoh: A, B, C dan pilihan 1 sampai 5 berada dalam gambar yang sama]</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{options}}" as="o" hint-placeholder-count="5">
+          <div>
+            <sc-if value="{{o.neutral}}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{o.pick}}" style="display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:600;color:#17202A;background:#fff;border:1px solid #8A94A1;border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left"><span style="width:20px;height:20px;border-radius:50%;border:2px solid #8A94A1"></span>{{o.letter}}</button>
+            </sc-if>
+            <sc-if value="{{o.good}}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;box-sizing:border-box;font-size:16px;font-weight:600;color:#1E6B3A;background:#E3F3E8;border:2px solid #1E6B3A;border-radius:10px;padding:10px 14px"><span style="width:20px;height:20px;border-radius:50%;border:2px solid #1E6B3A"></span>{{o.letter}} · Jawaban benar</div>
+            </sc-if>
+            <sc-if value="{{o.bad}}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;box-sizing:border-box;font-size:16px;font-weight:600;color:#8A1F2B;background:#FBE4E6;border:2px solid #8A1F2B;border-radius:10px;padding:10px 14px"><span style="width:20px;height:20px;border-radius:50%;border:2px solid #8A1F2B"></span>{{o.letter}} · Pilihan Anda</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{answered}}" hint-placeholder-val="{{ false }}">
+        <div style="background:#F4F6F9;border-radius:8px;padding:14px 16px;font-size:15px;line-height:1.6"><b>{{verdict}}</b> [Penjelasan cara mengerjakan soal ini ditampilkan di sini.]</div>
+      </sc-if>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <sc-if value="{{showNext}}" hint-placeholder-val="{{ false }}">
+          <button class="btn" onClick="{{next}}">Soal latihan berikutnya</button>
+        </sc-if>
+        <sc-if value="{{showStart}}" hint-placeholder-val="{{ false }}">
+          <a href="Tiu5.dc.html" class="btn btnO">Mulai tes sekarang</a>
+        </sc-if>
+        <a href="Instruksi.dc.html" style="font-size:15px;color:#003C71;font-weight:600">Kembali ke instruksi</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: 0, picked: null }; }
+  renderVals() {
+    const { q, picked } = this.state;
+    const key = q === 0 ? 2 : 0;
+    const answered = picked !== null;
+    const letters = ['1', '2', '3', '4', '5'];
+    const options = letters.map((letter, i) => ({
+      letter,
+      neutral: !answered || (i !== key && i !== picked),
+      good: answered && i === key,
+      bad: answered && i === picked && i !== key,
+      pick: () => { if (!answered) this.setState({ picked: i }); }
+    }));
+    return {
+      qNo: q + 1,
+      options,
+      answered,
+      verdict: picked === key ? 'Jawaban Anda benar.' : 'Jawaban Anda belum tepat. Jawaban yang benar: ' + letters[key] + '.',
+      showNext: answered && q === 0,
+      showStart: answered && q === 1,
+      next: () => this.setState({ q: 1, picked: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
