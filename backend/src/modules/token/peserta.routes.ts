@@ -1,6 +1,6 @@
 // Rute peserta: masuk dengan email dan token, info ujian, dan mulai ujian.
 // Tidak ada respons yang memuat kunci, skor, atau token.
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import type { KonfigurasiAplikasi } from '../../config/env.js';
 import { durasiDetik } from '../../config/durasi.js';
@@ -9,6 +9,7 @@ import { infoUjian, masuk, mulai } from './peserta.repo.js';
 import { muatTes } from '../../config/tes.js';
 import { jumlahNomor } from '../tes/pengerjaan.validasi.js';
 import { cekTokenIndividu, cekTokenKelompok, klaimKelompok } from './kelompok.repo.js';
+import { cekPersetujuan, muatPersetujuan } from './persetujuan.js';
 import { validasiCekToken, validasiMasuk, validasiMasukKelompok } from './sesi.validasi.js';
 import type { JenisTes } from './undangan.js';
 import { hashTokenPeserta, normalisasiToken, normalisasiTokenApaSaja } from './token.js';
@@ -43,6 +44,21 @@ const batasToken = rateLimit({
 
 /** Pesan seragam: tidak membedakan salah, penuh, kedaluwarsa, dicabut, atau tes lain (teks akhir menunggu HC). */
 const GAGAL_TOKEN = 'Token tidak dapat digunakan. Periksa kembali token Anda atau hubungi pengawas atau tim HC.';
+
+const WAJIB_SETUJU = 'Tes tidak dapat dilanjutkan tanpa persetujuan. Hubungi pengawas atau tim HC.';
+const PERSETUJUAN_BERUBAH = 'Teks persetujuan telah diperbarui. Muat ulang halaman, baca kembali, lalu setujui.';
+
+/**
+ * Persetujuan dicek sebelum token dipakai: tanpa persetujuan, token dan kuota tidak tersentuh.
+ * Mengembalikan versi yang disetujui, atau null bila respons galat sudah dikirim.
+ */
+function persetujuanDari(req: Request, res: Response): string | null {
+  const versi = muatPersetujuan().versi;
+  const cek = cekPersetujuan(req.body, versi);
+  if (cek === 'SAH') return versi;
+  res.status(cek === 'BEDA_VERSI' ? 409 : 400).json({ pesan: cek === 'BEDA_VERSI' ? PERSETUJUAN_BERUBAH : WAJIB_SETUJU });
+  return null;
+}
 
 /**
  * Jumlah soal untuk layar instruksi: TIU 5 = 30 soal, TIU 6 = 8 Soal (40 butir), Koran = 988 kotak dalam 13 halaman.
@@ -81,7 +97,8 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
       res.status(401).json({ pesan: GAGAL_TOKEN });
       return;
     }
-    res.json({ mode: t.jenis });
+    // Teks persetujuan ikut di sini (bukan rute sendiri) supaya tidak menambah permintaan tanpa cookie per IP.
+    res.json({ mode: t.jenis, persetujuan: muatPersetujuan() });
   });
 
   // Langkah 2 mode kelompok: klaim kuota atomik lalu sesi peserta sendiri.
@@ -90,13 +107,15 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
       res.status(415).json({ pesan: 'Gunakan application/json' });
       return;
     }
+    const versi = persetujuanDari(req, res);
+    if (versi === null) return;
     const m = validasiMasukKelompok(req.body, normalisasiTokenApaSaja);
     if (!m) {
       res.status(401).json({ pesan: GAGAL_TOKEN });
       return;
     }
     const sesi = buatTokenSesi();
-    const ujian = await klaimKelompok(hashTokenPeserta(m.token), m.jenis_tes, m.nama, hashTokenSesi(sesi));
+    const ujian = await klaimKelompok(hashTokenPeserta(m.token), m.jenis_tes, m.nama, hashTokenSesi(sesi), versi);
     if (!ujian) {
       res.status(401).json({ pesan: GAGAL_TOKEN });
       return;
@@ -110,6 +129,8 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
       res.status(415).json({ pesan: 'Gunakan application/json' });
       return;
     }
+    const versi = persetujuanDari(req, res);
+    if (versi === null) return;
     const m = validasiMasuk(req.body, normalisasiToken);
     // Pesan sama untuk semua alasan gagal (termasuk token untuk tes lain), supaya tidak membocorkan token mana yang ada.
     if (!m) {
@@ -117,7 +138,7 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
       return;
     }
     const sesi = buatTokenSesi();
-    const ujian = await masuk(m.email, hashTokenPeserta(m.token), hashTokenSesi(sesi), m.jenis_tes, m.nama);
+    const ujian = await masuk(m.email, hashTokenPeserta(m.token), hashTokenSesi(sesi), m.jenis_tes, m.nama, versi);
     if (!ujian) {
       res.status(401).json({ pesan: GAGAL_MASUK });
       return;

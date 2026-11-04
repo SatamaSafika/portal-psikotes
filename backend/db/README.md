@@ -22,7 +22,8 @@ Urutan:
 5. `06_tambah_waktu_jawaban.sql` (Part 4: kolom `waktu_ms` di tabel jawaban, milidetik sejak tes dimulai, hanya untuk Koran)
 6. `07_tambah_kolom_hasil.sql` (Part 5: kolom `n_koran` dan `ringkasan_interval` (JSON 22 interval) di tabel ujian; tanpa tabel baru, ikut retensi 4 bulan)
 7. `08_tambah_undangan_dikirim.sql` (Part 8: kolom `undangan_dikirim_pada` di tabel ujian; diisi saat HC membuka undangan di Outlook)
-8. `09_sesi_kelompok.sql` (Part 8b, DRAF: tabel `HCIS_Psikotes_Kelompok`, kolom `kelompok_id` di ujian, `mode` dan `email_penerima` di sesi; Bagian 2 melonggarkan `email` dan `token_hash` di ujian lewat DROP CONSTRAINT/INDEX lalu indeks unik terfilter, dalam satu transaksi. Struktur saja, tanpa menghapus data.)
+8. `09_sesi_kelompok.sql` (Part 8b, sudah dijalankan 4 November 2026: tabel `HCIS_Psikotes_Kelompok`, kolom `kelompok_id` di ujian, `mode` dan `email_penerima` di sesi; Bagian 2 melonggarkan `email` dan `token_hash` di ujian lewat DROP CONSTRAINT/INDEX lalu indeks unik terfilter, dalam satu transaksi. Struktur saja, tanpa menghapus data.)
+9. `10_tambah_persetujuan.sql` (Part 8c, sudah dijalankan 4 November 2026: kolom `persetujuan_pada` dan `persetujuan_versi` di tabel ujian, bukti peserta memilih "Saya Setuju"; boleh NULL untuk baris lama, ikut retensi 4 bulan)
 
 Semua skrip diawali `USE BA;`, aman dijalankan ulang, dan tidak memuat DROP atau TRUNCATE.
 

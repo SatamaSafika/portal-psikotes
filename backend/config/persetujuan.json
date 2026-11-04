@@ -1,0 +1,15 @@
+{
+  "versi": "2026-11-04",
+  "judul": "Persetujuan Peserta Proses Rekrutmen",
+  "pembuka": "Dengan mengisi dan mengirimkan formulir ini, saya menyatakan bahwa:",
+  "butir": [
+    "Saya bersedia mengikuti seluruh tahapan proses rekrutmen dan seleksi yang diselenggarakan oleh perusahaan.",
+    "Saya menyatakan bahwa data dan informasi yang saya berikan dalam formulir ini adalah benar dan dapat dipertanggungjawabkan.",
+    "Saya memberikan persetujuan kepada perusahaan untuk mengumpulkan, menggunakan, mengolah, dan menyimpan data yang saya berikan untuk keperluan administrasi, proses seleksi, dan pertimbangan dalam proses rekrutmen.",
+    "Saya memahami bahwa data tersebut dapat digunakan oleh pihak yang berwenang di perusahaan dalam rangka pelaksanaan proses rekrutmen dan seleksi.",
+    "Saya memahami bahwa pengisian formulir ini tidak menjamin saya akan diterima sebagai karyawan, dan keputusan akhir merupakan kewenangan perusahaan."
+  ],
+  "penutup": "Dengan mencentang pernyataan persetujuan di bawah ini, saya menyatakan telah membaca, memahami, dan menyetujui ketentuan di atas.",
+  "label_setuju": "Saya Setuju",
+  "label_tidak_setuju": "Saya Tidak Setuju"
+}

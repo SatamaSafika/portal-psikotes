@@ -139,6 +139,9 @@ export interface BarisHasil {
   kategori: string | null;
   skor_akhir: number | null;
   ringkasan_interval: unknown[] | null;
+  /** Bukti persetujuan peserta (db/10); null untuk ujian sebelum fitur ini. */
+  persetujuan_pada: string | null;
+  persetujuan_versi: string | null;
 }
 
 /** Hasil ujian yang sudah selesai, dengan filter opsional. Paling banyak 1000 baris terbaru. */
@@ -153,7 +156,8 @@ export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | 
       `SELECT TOP (1000) id AS ujian_id, sesi_id, nama_sesi, CONVERT(CHAR(10), tanggal, 23) AS tanggal, jenis_tes,
               CASE WHEN kelompok_id IS NULL THEN 'INDIVIDU' ELSE 'KELOMPOK' END AS mode,
               email, nama, status, CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
-              jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir, ringkasan_interval
+              jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir, ringkasan_interval,
+              CONVERT(VARCHAR(19), persetujuan_pada, 120) AS persetujuan_pada, persetujuan_versi
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE ${SELESAI}
           AND (@jenis IS NULL OR jenis_tes = @jenis)

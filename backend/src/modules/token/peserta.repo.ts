@@ -24,10 +24,12 @@ export async function masuk(
   sesiHash: Buffer,
   jenisTes: JenisTes | null,
   nama: string | null,
+  persetujuanVersi: string,
 ): Promise<UjianPeserta | null> {
   const pool = await ambilPool();
   const hasil = await pool
     .request()
+    .input('versi', sql.VarChar(20), persetujuanVersi)
     .input('email', sql.NVarChar(150), email)
     .input('hash', sql.Char(64), tokenHash)
     .input('sesiHash', sql.VarBinary(32), sesiHash)
@@ -38,6 +40,7 @@ export async function masuk(
       // (token tidak terpakai). Nama dari peserta hanya mengisi nama yang belum diisi HC.
       `UPDATE u
           SET status = 'BERJALAN', sesi_peserta_hash = @sesiHash, sesi_peserta_aktif = SYSDATETIME(),
+              persetujuan_pada = SYSDATETIME(), persetujuan_versi = @versi,
               nama = CASE WHEN (u.nama IS NULL OR u.nama = '') AND @nama IS NOT NULL THEN @nama ELSE u.nama END
        OUTPUT inserted.id, inserted.jenis_tes
          FROM dbo.HCIS_Psikotes_Ujian u

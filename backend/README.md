@@ -77,6 +77,7 @@ Rute peserta:
 | `PUT /api/admin/ujian/:id/nama` | Body `{ "nama" }`. Koreksi nama peserta |
 | `GET /api/admin/template-bawaan?mode=kelompok` | Template email bawaan sesi serentak (`config/undangan-kelompok.json`). Penanda: `{nama_sesi}`, `{kuota}`, `{tautan}`, `{daftar_token}`. |
 
+- Persetujuan peserta (`db/10`, `config/persetujuan.json`): balasan `/api/peserta/token` memuat teks persetujuan. `/masuk` dan `/masuk-kelompok` wajib menyertakan `"setuju": true` dan `"persetujuan_versi"` sesuai teks yang berlaku; tanpa itu 400, versi usang 409, dan token tidak terpakai. Waktu dan versi disimpan di catatan ujian. Mengubah teks = naikkan `versi` (maksimal 20 karakter).
 - Token individu (20 karakter) dan kelompok (10 karakter) dibedakan dari panjangnya. Huruf besar/kecil, spasi, dan tanda hubung diabaikan.
 - Satu peserta serentak = satu catatan ujian dengan timer sendiri, tanpa email dan tanpa token sendiri. Penutupan otomatis, koreksi, dan hasil sama dengan individu.
 - Sesi serentak tidak bisa ditambah peserta individu atau dibuatkan token individu (409).

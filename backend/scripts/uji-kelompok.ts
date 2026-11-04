@@ -10,6 +10,7 @@ import { randomBytes } from 'node:crypto';
 import { muatTes } from '../src/config/tes.js';
 import { tutupPool } from '../src/db/pool.js';
 import * as repo from '../src/modules/token/kelompok.repo.js';
+import { muatPersetujuan } from '../src/modules/token/persetujuan.js';
 import { buatTokenKelompok, hashTokenPeserta, normalisasiTokenApaSaja } from '../src/modules/token/token.js';
 import { templateBawaan } from '../src/modules/token/undangan.js';
 
@@ -27,7 +28,7 @@ const tgl = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const hashDari = (t: string): string => hashTokenPeserta(normalisasiTokenApaSaja(t)!.token);
 const klaim = (token: string, jenis: 'TIU5' | 'TIU6', nama: string) =>
-  repo.klaimKelompok(hashDari(token), jenis, nama, randomBytes(32));
+  repo.klaimKelompok(hashDari(token), jenis, nama, randomBytes(32), muatPersetujuan().versi);
 
 async function postToken(token: string): Promise<number> {
   const r = await fetch(`${API}/api/peserta/token`, {
@@ -124,6 +125,13 @@ async function main(): Promise<void> {
   const satu = (await repo.pesertaKelompok(idTiu5))[0];
   await repo.ubahNama(satu.ujian_id, 'Peserta Uji Diubah');
   periksa('ubah nama tersimpan', (await repo.pesertaKelompok(idTiu5)).some((p) => p.nama === 'Peserta Uji Diubah'));
+
+  // 7. Bukti persetujuan tersimpan di setiap catatan ujian kelompok.
+  const versi = muatPersetujuan().versi;
+  periksa(
+    'persetujuan (waktu dan versi) tersimpan untuk semua peserta',
+    (await repo.pesertaKelompok(idTiu5)).every((p) => p.persetujuan_pada !== null && p.persetujuan_versi === versi),
+  );
 
   void idTiu6;
   console.log(gagal === 0 ? '\nSemua uji lolos.' : `\n${gagal} uji GAGAL.`);

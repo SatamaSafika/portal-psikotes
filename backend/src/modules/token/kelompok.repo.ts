@@ -175,6 +175,9 @@ export interface PesertaKelompok {
   status: string;
   /** Ada peserta lain di token ini dengan nama sama (tidak ditolak, hanya ditandai). */
   nama_kembar: boolean;
+  /** Waktu peserta memilih "Saya Setuju" (db/10). */
+  persetujuan_pada: string | null;
+  persetujuan_versi: string | null;
 }
 
 /** Peserta yang sudah masuk lewat satu token kelompok, urut nama. */
@@ -185,7 +188,8 @@ export async function pesertaKelompok(kelompokId: number): Promise<PesertaKelomp
     .input('id', sql.Int, kelompokId)
     .query<PesertaKelompok>(
       `SELECT id AS ujian_id, nama, CONVERT(VARCHAR(19), dibuat_pada, 120) AS masuk_pada, status,
-              CAST(CASE WHEN COUNT(*) OVER (PARTITION BY LOWER(LTRIM(RTRIM(nama)))) > 1 THEN 1 ELSE 0 END AS BIT) AS nama_kembar
+              CAST(CASE WHEN COUNT(*) OVER (PARTITION BY LOWER(LTRIM(RTRIM(nama)))) > 1 THEN 1 ELSE 0 END AS BIT) AS nama_kembar,
+              CONVERT(VARCHAR(19), persetujuan_pada, 120) AS persetujuan_pada, persetujuan_versi
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE kelompok_id = @id
         ORDER BY nama, id`,
@@ -226,10 +230,12 @@ export async function klaimKelompok(
   jenis: JenisTes,
   nama: string,
   sesiHash: Buffer,
+  persetujuanVersi: string,
 ): Promise<{ id: number; jenis_tes: JenisTes } | null> {
   const pool = await ambilPool();
   const hasil = await pool
     .request()
+    .input('versi', sql.VarChar(20), persetujuanVersi)
     .input('hash', sql.Char(64), tokenHash)
     .input('jenis', sql.VarChar(10), jenis)
     .input('nama', sql.NVarChar(100), nama)
@@ -249,10 +255,10 @@ export async function klaimKelompok(
        END;
        INSERT INTO dbo.HCIS_Psikotes_Ujian
          (nama_sesi, jenis_tes, tanggal, waktu_buka, waktu_tutup, bank_versi, email, nama, token_hash, status,
-          berlaku_sampai, sesi_id, kelompok_id, sesi_peserta_hash, sesi_peserta_aktif)
+          berlaku_sampai, sesi_id, kelompok_id, sesi_peserta_hash, sesi_peserta_aktif, persetujuan_pada, persetujuan_versi)
        OUTPUT inserted.id, inserted.jenis_tes
        SELECT s.nama_sesi, k.jenis_tes, k.tanggal, k.waktu_buka, k.waktu_tutup, s.bank_versi, NULL, @nama, NULL, 'BERJALAN',
-              ${TUTUP_K}, s.id, k.id, @sesiHash, SYSDATETIME()
+              ${TUTUP_K}, s.id, k.id, @sesiHash, SYSDATETIME(), SYSDATETIME(), @versi
          FROM dbo.HCIS_Psikotes_Kelompok k
          JOIN dbo.HCIS_Psikotes_Sesi s ON s.id = k.sesi_id
         WHERE k.id = (SELECT id FROM @klaim);
