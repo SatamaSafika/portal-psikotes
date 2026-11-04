@@ -26,3 +26,29 @@ export function normalisasiToken(masukan: string): string | null {
 export function hashTokenPeserta(tokenNormal: string): string {
   return createHash('sha256').update(tokenNormal).digest('hex');
 }
+
+// ---------- token kelompok (sesi serentak, Part 8b) ----------
+
+/** 10 karakter (sekitar 50 bit): pendek supaya mudah diketik satu ruangan, tetap tidak mungkin ditebak. */
+const PANJANG_KELOMPOK = 10;
+
+/** Token kelompok, tampil XXXXX-XXXXX. Huruf yang sama dengan token individu (tanpa I, L, O, U). */
+export function buatTokenKelompok(): string {
+  let isi = '';
+  for (let i = 0; i < PANJANG_KELOMPOK; i++) isi += HURUF[randomInt(HURUF.length)];
+  return `${isi.slice(0, 5)}-${isi.slice(5)}`;
+}
+
+export type JenisToken = 'INDIVIDU' | 'KELOMPOK';
+
+/**
+ * Menyeragamkan token apa pun yang diketik peserta. Jenisnya ditentukan dari panjang setelah dinormalisasi
+ * (individu 20, kelompok 10), jadi kedua jenis tidak pernah tertukar. Null bila bentuknya pasti salah.
+ */
+export function normalisasiTokenApaSaja(masukan: string): { jenis: JenisToken; token: string } | null {
+  if (typeof masukan !== 'string' || masukan.length > 64) return null;
+  const bersih = masukan.toUpperCase().replace(/[\s-]/g, '');
+  if (bersih.length !== PANJANG && bersih.length !== PANJANG_KELOMPOK) return null;
+  for (const c of bersih) if (!HURUF.includes(c)) return null;
+  return { jenis: bersih.length === PANJANG ? 'INDIVIDU' : 'KELOMPOK', token: bersih };
+}

@@ -1,0 +1,5 @@
+{
+  "_catatan": "Template bawaan email token kelompok (sesi serentak, Part 8b), dikirim ke penerima (pengawas, guru, atau panitia), bukan ke peserta. Netral, tanpa nama dan logo perusahaan (CLAUDE.md aturan keras 10). Tanpa kalimat larangan membagikan token, karena token memang dibagikan ke peserta yang hadir. HC dapat mengedit per sesi. Wajib memuat {daftar_token}. Penanda yang dikenal: {nama_sesi}, {kuota}, {tautan}, {daftar_token}.",
+  "subjek": "Token psikotes untuk kelompok Anda",
+  "isi": "Halo,\n\nBerikut token psikotes untuk sesi {nama_sesi}. Setiap token berlaku untuk maksimal {kuota} orang dan hanya aktif pada jadwal tesnya.\n\n{daftar_token}\n\nBagikan token tiap tes kepada peserta yang hadir pada jadwalnya. Peserta membuka {tautan}, memilih tes, memasukkan token, lalu menulis nama lengkapnya. Hindari mengumumkan token sebelum tes dimulai.\n"
+}
