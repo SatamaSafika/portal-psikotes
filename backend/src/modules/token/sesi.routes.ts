@@ -6,7 +6,7 @@ import { adminAktif, wajibAdmin } from '../admin/wajib-admin.js';
 import * as repo from './sesi.repo.js';
 import { GalatPermintaan, buatSesi, detailSesi, tambahPeserta, tokenBaru } from './sesi.service.js';
 import { validasiPeserta, validasiSesi } from './sesi.validasi.js';
-import { validasiTemplate, type Template } from './undangan.js';
+import { templateBawaan, validasiTemplate, type Template } from './undangan.js';
 
 function idDari(req: Request): number | null {
   const id = String(req.params.id ?? '');
@@ -116,6 +116,26 @@ export function ruteSesiAdmin(konfig: KonfigurasiAplikasi): Router {
     } catch (e) {
       tanganiGalat(res, e);
     }
+  });
+
+  // HC menekan tombol kirim undangan (mailto). Email di body, bukan di URL.
+  rute.post('/sesi/:id/undangan-dikirim', wajibAdmin, async (req, res) => {
+    const id = idDari(req);
+    const v = validasiPeserta([{ email: (req.body as Record<string, unknown> | undefined)?.email }]);
+    if (v.galat.length > 0) {
+      res.status(400).json({ pesan: 'Email tidak valid' });
+      return;
+    }
+    if (id === null || (await repo.tandaiUndanganDikirim(id, v.peserta[0].email)) === 0) {
+      res.status(404).json({ pesan: 'Peserta tidak ditemukan di sesi ini' });
+      return;
+    }
+    res.status(204).end();
+  });
+
+  // Template bawaan, untuk diedit HC sebelum membuat sesi.
+  rute.get('/template-bawaan', wajibAdmin, (_req, res) => {
+    res.json(templateBawaan());
   });
 
   rute.post('/ujian/:id/cabut', wajibAdmin, async (req, res) => {

@@ -765,6 +765,385 @@ h1.judul {
   padding-bottom: 48px;
 }
 
+// ---------- Dashboard HC ----------
+
+.kepala-admin {
+  background: var(--navy);
+  color: #fff;
+  border-bottom: 3px solid var(--oranye);
+}
+
+.kepala-admin-isi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 52px;
+  font-size: 1.05rem;
+}
+
+.akun-admin {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tombol-keluar {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab-admin {
+  background: #fff;
+  border-bottom: 1px solid var(--garis);
+
+  .wadah {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  a {
+    padding: 14px 16px 12px;
+    color: var(--teks-redup);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+
+    &.aktif {
+      color: var(--navy);
+      background: var(--biru-muda);
+      border-bottom-color: var(--oranye);
+      border-radius: 8px 8px 0 0;
+    }
+  }
+}
+
+.judul-kartu {
+  font-size: 1.15rem;
+  margin: 0 0 12px;
+}
+
+.kartu-angka {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+
+  strong {
+    display: block;
+    color: var(--oranye);
+    font-size: 2.2rem;
+    line-height: 1.2;
+  }
+}
+
+.kartu + .kartu,
+.kolom-kanan > * + * {
+  margin-top: 20px;
+}
+
+.tabel-gulir {
+  overflow-x: auto;
+}
+
+.tabel {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+
+  th {
+    text-align: left;
+    color: var(--teks-redup);
+    font-size: 0.82rem;
+    border-bottom: 2px solid var(--oranye);
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--garis);
+    vertical-align: top;
+  }
+
+  tr.terpilih td {
+    background: var(--biru-muda);
+  }
+
+  .token {
+    font-family: ui-monospace, Consolas, monospace;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+}
+
+.tabel-rapat td {
+  padding: 4px 12px;
+}
+
+.baris-jumlah td {
+  font-weight: 700;
+  border-top: 2px solid var(--garis);
+}
+
+.sel-aksi {
+  white-space: nowrap;
+
+  .tombol-tautan {
+    padding: 2px 6px;
+  }
+}
+
+.lencana {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--biru-muda);
+  color: var(--navy);
+
+  &.BERJALAN {
+    background: var(--oranye-muda);
+    color: #7a3b0c;
+  }
+
+  &.SELESAI,
+  &.DIKIRIM,
+  &.WAKTU_HABIS {
+    background: var(--benar-muda);
+    color: var(--benar);
+  }
+
+  &.DICABUT,
+  &.KEDALUWARSA {
+    background: var(--salah-muda);
+    color: var(--salah);
+  }
+}
+
+.tata-token {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.kelompok {
+  border: 1px solid var(--garis);
+  border-radius: 8px;
+  padding: 8px 14px 4px;
+  margin: 0 0 18px;
+
+  legend {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0 6px;
+  }
+}
+
+.baris-jadwal {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--garis);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.centang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+// Kolom kiri sempit (380 px): tanggal satu baris penuh, jam buka dan tutup berdampingan di bawahnya.
+.isian-jadwal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+
+  label {
+    min-width: 0;
+  }
+
+  label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--teks-redup);
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 6px;
+    border: 1px solid var(--kontrol);
+    border-radius: 6px;
+  }
+}
+
+// Isi kolom grid boleh menyusut; tanpa ini isian yang lebar meluber ke kolom sebelah.
+.tata-token > * {
+  min-width: 0;
+}
+
+.isian select,
+.isian textarea {
+  width: 100%;
+  font: inherit;
+  padding: 10px 14px;
+  border: 1px solid var(--kontrol);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.filter-hasil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .isian {
+    margin: 0;
+    min-width: 200px;
+  }
+}
+
+.pratinjau-email {
+  border: 1px solid var(--garis);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.kepala-email {
+  background: var(--latar);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--garis);
+  font-size: 0.92rem;
+}
+
+.isi-email {
+  padding: 16px;
+  margin: 0;
+}
+
+.grid-jawaban {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sel-jawaban {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 42px;
+  padding: 4px 6px;
+  border: 1px solid var(--garis);
+  border-radius: 6px;
+  font-weight: 700;
+  color: var(--teks-redup);
+
+  small {
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  &.benar {
+    background: var(--benar-muda);
+    border-color: var(--benar);
+    color: var(--benar);
+  }
+
+  &.salah {
+    background: var(--salah-muda);
+    border-color: var(--salah);
+    color: var(--salah);
+  }
+}
+
+.legenda-grafik {
+  display: flex;
+  gap: 18px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+
+  span {
+    display: inline-block;
+    width: 14px;
+    height: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+}
+
+.grafik {
+  width: 100%;
+  max-width: 760px;
+  display: block;
+
+  .label-sumbu {
+    font-size: 10px;
+    fill: var(--teks-redup);
+  }
+}
+
+@media (max-width: 900px) {
+  .tata-token {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kartu-angka {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Cetak (Ekspor PDF lewat dialog cetak browser): sembunyikan navigasi dan tombol.
+@media print {
+  .kepala-admin,
+  .tab-admin,
+  .kaki,
+  .tanpa-cetak,
+  .tombol-tautan {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .kartu {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .isi-halaman {
+    padding: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .dua-kolom {
     grid-template-columns: 1fr;

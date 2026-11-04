@@ -56,6 +56,29 @@ export function kunciKoran(lajur: Pick<LajurKoran, 'lajur' | 'angka'>[]): string
   return kunci;
 }
 
+/** Kunci per nomor untuk satu jenis tes (indeks 0 = nomor 1). Hanya untuk server. */
+export function kunciUntuk(jenis: JenisTes, bank: { soal: BankSoal; koran: { lajur: LajurKoran[] } }, tes: KonfigurasiTes): string[] {
+  if (jenis === 'TIU5') return kunciTiu5(bank.soal);
+  if (jenis === 'TIU6') return kunciTiu6(bank.soal, tes.tes.TIU6.butir_per_soal);
+  return kunciKoran(bank.koran.lajur);
+}
+
+/**
+ * Jawaban per nomor dengan tanda benar/salah, TANPA kunci (untuk "Lihat jawaban" admin).
+ * Kosong: benar = null. Nomor 1 sampai jumlah kunci, berurutan.
+ */
+export function tandaiJawaban(
+  jawaban: BarisJawaban[],
+  kunci: string[],
+): { nomor: number; jawaban: string | null; benar: boolean | null; waktu_ms: number | null }[] {
+  const per = new Map(jawaban.map((j) => [j.nomor, j]));
+  return kunci.map((k, i) => {
+    const j = per.get(i + 1);
+    const isi = j?.jawaban ?? null;
+    return { nomor: i + 1, jawaban: isi, benar: isi === null || isi === '' ? null : isi === k, waktu_ms: j?.waktu_ms ?? null };
+  });
+}
+
 // ---------- nilai ----------
 
 /**

@@ -1,0 +1,174 @@
+<div class="tata-token">
+  <!-- Kiri: buat sesi -->
+  <form class="kartu" (submit)="buatSesi($event)" novalidate>
+    <h2 class="judul-kartu">Buat sesi tes</h2>
+    <label class="isian">
+      <span>Nama sesi</span>
+      <input [value]="namaSesi()" (input)="namaSesi.set(nilai($event))" placeholder="Contoh: Sesi pagi" />
+    </label>
+
+    <fieldset class="kelompok">
+      <legend>Tes dan jadwal (setiap tes punya jadwal sendiri)</legend>
+      @for (t of daftarTes; track t) {
+        @let j = jadwal()[t];
+        <div class="baris-jadwal">
+          <label class="centang">
+            <input type="checkbox" [checked]="j.aktif" (change)="ubahJadwal(t, 'aktif', centang($event))" /> {{ label[t] }}
+          </label>
+          @if (j.aktif) {
+            <div class="isian-jadwal">
+              <label><span>Tanggal</span><input type="date" [value]="j.tanggal" (input)="ubahJadwal(t, 'tanggal', nilai($event))" /></label>
+              <label><span>Buka</span><input type="time" [value]="j.buka" (input)="ubahJadwal(t, 'buka', nilai($event))" /></label>
+              <label><span>Tutup</span><input type="time" [value]="j.tutup" (input)="ubahJadwal(t, 'tutup', nilai($event))" /></label>
+            </div>
+          }
+        </div>
+      }
+    </fieldset>
+
+    <label class="isian">
+      <span>Peserta (satu per baris: email, atau email, nama)</span>
+      <textarea rows="5" [value]="pesertaTeks()" (input)="pesertaTeks.set(nilai($event))"
+                placeholder="peserta1@contoh.test, Nama Peserta"></textarea>
+    </label>
+
+    <button type="button" class="tombol-tautan" (click)="ubahTemplateBaru.set(!ubahTemplateBaru())">
+      {{ ubahTemplateBaru() ? '▾ Pakai template ini' : '▸ Ubah template email untuk sesi ini' }}
+    </button>
+    @if (ubahTemplateBaru()) {
+      <label class="isian"><span>Subjek</span>
+        <input [value]="template().subjek" (input)="template.set({ subjek: nilai($event), isi: template().isi })" /></label>
+      <label class="isian"><span>Isi (wajib memuat {{ '{' }}daftar_token{{ '}' }})</span>
+        <textarea rows="9" [value]="template().isi" (input)="template.set({ subjek: template().subjek, isi: nilai($event) })"></textarea></label>
+      <p class="teks-redup teks-kecil">Penanda: {{ '{' }}nama{{ '}' }}, {{ '{' }}tautan{{ '}' }}, {{ '{' }}daftar_token{{ '}' }} (nama tes, jadwal, dan token tiap tes).</p>
+    }
+
+    <p class="teks-redup teks-kecil">
+      Token dibuat per peserta untuk setiap tes, sekali pakai, dan hanya berlaku pada jadwal tes itu.
+      Undangan semua tes seorang peserta digabung dalam satu email.
+    </p>
+    @for (g of galatBuat(); track g) {
+      <div class="kotak-galat" role="alert" style="margin-bottom: 6px">{{ g }}</div>
+    }
+    <button class="tombol tombol-navy tombol-penuh" type="submit" [disabled]="membuat()">
+      {{ membuat() ? 'Membuat...' : 'Buat sesi dan token' }}
+    </button>
+  </form>
+
+  <!-- Kanan: sesi terpilih -->
+  <div class="kolom-kanan">
+    @if (pesan()) {
+      <div class="kotak-benar" role="status">{{ pesan() }}</div>
+    }
+    @if (galat()) {
+      <div class="kotak-galat" role="alert">{{ galat() }}</div>
+    }
+
+    <div class="kartu">
+      <label class="isian" style="margin: 0">
+        <span>Sesi</span>
+        <select [value]="sesiId() ?? ''" (change)="pilihSesi(+nilai($event))">
+          @for (s of daftarSesi(); track s.id) {
+            <option [value]="s.id">{{ s.nama_sesi }} · {{ s.tanggal }} · {{ s.jumlah_peserta }} peserta</option>
+          } @empty {
+            <option value="">Belum ada sesi</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (detail(); as d) {
+      <div class="kartu">
+        <div class="judul-baris">
+          <h2 class="judul-kartu">Undangan peserta</h2>
+          @if (belumTerkirim().length > 0) {
+            <button type="button" class="tombol tombol-navy" (click)="kirimBerikutnya()">
+              Buka undangan berikutnya ({{ belumTerkirim().length }} tersisa)
+            </button>
+          }
+        </div>
+        <div class="tabel-gulir">
+          <table class="tabel">
+            <thead><tr><th>Peserta</th><th>Email</th><th>Tes diundang</th><th>Undangan</th></tr></thead>
+            <tbody>
+              @for (b of barisUndangan(); track b.email) {
+                <tr>
+                  <td>{{ b.nama ?? '—' }}</td>
+                  <td>{{ b.email }}</td>
+                  <td>{{ b.tes.map(tesLabel).join(', ') }}</td>
+                  <td class="sel-aksi">
+                    @if (b.dikirimPada) {
+                      <span class="lencana SELESAI">Dibuka {{ b.dikirimPada.slice(11, 16) }}</span>
+                    }
+                    @if (b.siapKirim) {
+                      <button type="button" class="tombol-tautan" (click)="kirim(b)">{{ b.dikirimPada ? 'Buka lagi' : 'Kirim undangan' }}</button>
+                    } @else if (b.adaBelumDipakai) {
+                      <button type="button" class="tombol-tautan" (click)="kirim(b)">Buat token baru dan kirim</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="teks-redup teks-kecil">
+          Tombol membuka email di Outlook dengan isi siap kirim; tekan Send di Outlook. Satu email per peserta berisi semua tes,
+          masing-masing dengan jadwal dan token sendiri. Token hanya tersedia sesaat setelah dibuat; setelah halaman dimuat ulang,
+          kirim ulang berarti membuat token baru (token lama yang belum dipakai tidak berlaku lagi).
+        </p>
+      </div>
+
+      <div class="kartu">
+        <h2 class="judul-kartu">Token dan jadwal per tes</h2>
+        <div class="tabel-gulir">
+          <table class="tabel">
+            <thead><tr><th>Token</th><th>Peserta</th><th>Tes</th><th>Jadwal</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              @for (u of d.ujian; track u.ujian_id) {
+                <tr>
+                  <td class="token">{{ tokenDari(u.ujian_id) ?? '••••' }}</td>
+                  <td>{{ u.nama ?? u.email }}</td>
+                  <td>{{ label[u.jenis_tes] }}</td>
+                  <td>{{ u.tanggal }} {{ u.waktu_buka }}–{{ u.waktu_tutup }}</td>
+                  <td><span [class]="'lencana ' + u.status">{{ labelStatus[u.status] ?? u.status }}</span></td>
+                  <td>
+                    @if (bisaDicabut(u.status)) {
+                      <button type="button" class="tombol-tautan" (click)="cabut(u.ujian_id, u.email, u.jenis_tes)">Cabut</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="teks-redup teks-kecil">Token tersimpan sebagai hash; nilai token hanya terlihat sesaat setelah dibuat.</p>
+      </div>
+
+      @if (pratinjau(); as p) {
+        <div class="kartu">
+          <div class="judul-baris">
+            <h2 class="judul-kartu">Pratinjau email undangan</h2>
+            <button type="button" class="tombol-tautan" (click)="ubahTemplateSesi.set(!ubahTemplateSesi())">
+              {{ ubahTemplateSesi() ? 'Batal' : 'Ubah template sesi' }}
+            </button>
+          </div>
+          @if (ubahTemplateSesi()) {
+            <label class="isian"><span>Subjek</span>
+              <input [value]="templateSesi().subjek" (input)="templateSesi.set({ subjek: nilai($event), isi: templateSesi().isi })" /></label>
+            <label class="isian"><span>Isi</span>
+              <textarea rows="9" [value]="templateSesi().isi" (input)="templateSesi.set({ subjek: templateSesi().subjek, isi: nilai($event) })"></textarea></label>
+            <button type="button" class="tombol tombol-navy" (click)="simpanTemplateSesi()">Simpan template</button>
+          } @else {
+            <div class="pratinjau-email">
+              <div class="kepala-email">
+                <div><strong>Kepada:</strong> {{ p.kepada }}</div>
+                <div><strong>Subjek:</strong> {{ p.subjek }}</div>
+              </div>
+              <div class="instruksi isi-email">{{ p.isi }}</div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

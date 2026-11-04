@@ -12,6 +12,7 @@ Perintah lain: `npm run build` (hasil di `dist/`), `npm test` (tes unit Vitest).
 
 ## Struktur
 ```
+src/app/admin/        dashboard HC di /admin (dimuat terpisah): login, overview, token dan jadwal, hasil, grafik SVG
 src/app/core/         akses API, keadaan pengerjaan, hitung mundur, antrean simpan otomatis, navigasi
 src/app/halaman/      pilih tes, verifikasi, instruksi, latihan, kerjakan, kirim, selesai
 src/app/tata-letak/   header (stepper) dan footer netral

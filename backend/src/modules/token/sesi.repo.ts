@@ -59,6 +59,8 @@ export interface UjianAdmin {
   /** Koran: 22 interval { dikerjakan, benar, salah }. */
   ringkasan_interval: unknown[] | null;
   aturan_versi: string | null;
+  /** Saat HC membuka undangan di aplikasi email (db/08). */
+  undangan_dikirim_pada: string | null;
 }
 
 // Kolom sesi sebagai teks: tanggal YYYY-MM-DD, jam HH:MM.
@@ -195,7 +197,8 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
               CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
               CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
               jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir,
-              ringkasan_interval, aturan_versi
+              ringkasan_interval, aturan_versi,
+              CONVERT(VARCHAR(19), undangan_dikirim_pada, 120) AS undangan_dikirim_pada
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE sesi_id = @id
         ORDER BY email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
@@ -204,6 +207,17 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
     ...u,
     ringkasan_interval: typeof u.ringkasan_interval === 'string' ? (JSON.parse(u.ringkasan_interval) as unknown[]) : null,
   }));
+}
+
+/** Tandai undangan satu peserta di satu sesi sudah dibuka di aplikasi email. Jumlah baris yang ditandai. */
+export async function tandaiUndanganDikirim(sesiId: number, email: string): Promise<number> {
+  const pool = await ambilPool();
+  const hasil = await pool
+    .request()
+    .input('sesiId', sql.Int, sesiId)
+    .input('email', sql.NVarChar(150), email)
+    .query('UPDATE dbo.HCIS_Psikotes_Ujian SET undangan_dikirim_pada = SYSDATETIME() WHERE sesi_id = @sesiId AND email = @email');
+  return hasil.rowsAffected[0];
 }
 
 export async function simpanTemplate(id: number, t: Template): Promise<boolean> {

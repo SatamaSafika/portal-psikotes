@@ -14,7 +14,7 @@
     "bank:periksa": "tsx scripts/periksa-bank.ts",
     "buat-koran": "tsx scripts/buat-koran.ts",
     "hasil:hitung-ulang": "tsx scripts/hitung-ulang.ts",
-    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts test/token.test.ts test/pengerjaan.test.ts test/koreksi.test.ts"
+    "test": "tsx --test test/csv.test.ts test/bank.test.ts test/skoring.test.ts test/token.test.ts test/pengerjaan.test.ts test/koreksi.test.ts test/hasil.test.ts"
   },
   "dependencies": {
     "argon2": "^0.45.1",
