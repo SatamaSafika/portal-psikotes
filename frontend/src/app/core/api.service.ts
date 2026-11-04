@@ -11,8 +11,19 @@ const DASAR = '/api/peserta';
 export class ApiPeserta {
   private readonly http = inject(HttpClient);
 
+  /** Langkah 1: periksa token tanpa memakainya. Mode menentukan isian langkah 2. */
+  cekToken(token: string, jenis_tes: JenisTes): Promise<{ mode: 'INDIVIDU' | 'KELOMPOK' }> {
+    return firstValueFrom(this.http.post<{ mode: 'INDIVIDU' | 'KELOMPOK' }>(`${DASAR}/token`, { token, jenis_tes }));
+  }
+
+  /** Langkah 2 individu: token, email, nama. */
   masuk(data: { email: string; token: string; jenis_tes: JenisTes; nama: string }): Promise<{ jenis_tes: JenisTes }> {
     return firstValueFrom(this.http.post<{ jenis_tes: JenisTes }>(`${DASAR}/masuk`, data));
+  }
+
+  /** Langkah 2 kelompok: token dan nama saja (klaim kuota di server). */
+  masukKelompok(data: { token: string; jenis_tes: JenisTes; nama: string }): Promise<{ jenis_tes: JenisTes }> {
+    return firstValueFrom(this.http.post<{ jenis_tes: JenisTes }>(`${DASAR}/masuk-kelompok`, data));
   }
 
   saya(): Promise<InfoUjian> {
