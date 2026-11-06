@@ -18,7 +18,7 @@ Urutan stepper di header: 1 Pilih tes > 2 Verifikasi > 3 Instruksi > 4 Latihan >
 | 1 Pilih tes | Main | Tiga kartu: TIU 5, TIU 6, Tes Koran / Kraepelin. Tombol mengarah ke verifikasi. |
 | 2 Verifikasi | Token | Dua langkah. Langkah 1: token saja. Langkah 2 sesuai mode token: individu = nama dan email, serentak = nama saja, keduanya didahului persetujuan peserta. Lihat bagian 6 dan 6a. |
 | 3 Instruksi TIU | Instruksi | Durasi dan jumlah soal dari server. |
-| 3b Instruksi Koran | KoranInstruksi | 7 menit 20 detik, 13 halaman, aturan berurutan. |
+| 3b Instruksi Koran | KoranInstruksi | 9 menit 32 detik, 13 halaman, aturan berurutan. |
 | 4 Latihan TIU 5 | Simulasi | 2 soal latihan, kunci langsung tampil setelah menjawab. Tidak dinilai, tidak disimpan. |
 | 4 Latihan TIU 6 | Simulasi6 | 2 soal latihan x 5 butir B/S, kunci tampil setelah semua butir terisi. |
 | 4a-4c Latihan Koran | KoranContoh1, KoranContoh2, KoranLatihan | Contoh 1 (hasil <= 9), contoh 2 (hasil > 9, tulis satuan), lalu uji coba 6 kotak. Kunci tampil setelah tombol "Selesai uji coba". |
@@ -42,28 +42,28 @@ Urutan stepper di header: 1 Pilih tes > 2 Verifikasi > 3 Instruksi > 4 Latihan >
 - 13 halaman x 4 lajur. Satu lajur 20 digit angka (1-9) dengan 19 kotak jawaban di antaranya, total 988 jawaban. Di prototipe angka dibangkitkan acak untuk tampilan; di aplikasi nyata angka datang dari server.
 - **Ketat berurutan**: hanya satu kotak aktif (putih, garis oranye). Kotak di atasnya terkunci, kotak di bawahnya redup. Tidak bisa dilewati, tidak bisa mundur, tidak bisa mengubah jawaban lama, tidak bisa kembali ke halaman sebelumnya.
 - Input: satu digit saja (hasil dua digit = tulis satuannya). Karakter selain angka dibuang, hanya digit terakhir yang diambil.
-- Enter pada kotak berisi memindah fokus ke kotak berikutnya. Enter pada kotak kosong tidak melakukan apa-apa.
+- Revisi HC 5 Nov 2026: tanpa Enter. Satu angka langsung terkunci dan fokus pindah ke kotak berikutnya, tidak bisa diganti. Board prototipe masih menggambarkan perilaku lama.
 - Layar sempit (<= 640 px): kotak berpindah otomatis setelah satu digit terisi.
-- Tombol "Halaman berikutnya" nonaktif (redup) sampai kotak terakhir halaman terisi. Di halaman 13 tombolnya menjadi kirim.
-- Revisi HC 4 Nov 2026: setelah halaman penuh, Enter sekali lagi juga memindah ke halaman berikutnya (kecuali halaman 13: kirim hanya lewat tombol). Di atas lajur ada kotak peringatan: setelah Enter jawaban terkunci dan kursor tidak dapat naik ke kotak di atasnya. Keterangan yang sama ada di instruksi dan uji coba.
+- Halaman berganti otomatis setelah kotak terakhir halaman terisi; tidak ada tombol "Halaman berikutnya". Kotak terakhir halaman 13 membuka layar konfirmasi kirim.
+- Di atas lajur ada kotak peringatan: satu angka langsung terkunci dan tidak dapat diubah. Keterangan yang sama ada di instruksi dan uji coba, termasuk pesan agar hanya mengetik angka terakhir.
 - Tidak ada indikator benar/salah di tes sebenarnya (hanya di uji coba).
-- Header: "Sisa waktu" 07:20 (440 detik), "Halaman x dari 13", "Terjawab n dari 988 soal".
-- Setiap jawaban perlu membawa penanda waktu ke server karena Koran dilacak per 20 detik (22 interval). Rincian format ada di backend Part 4-5.
+- Header: "Sisa waktu" 09:32 (572 detik), "Halaman x dari 13", "Terjawab n dari 988 soal".
+- Setiap jawaban perlu membawa penanda waktu ke server karena Koran dilacak per 26 detik (22 interval). Rincian format ada di backend Part 4-5.
 - Fokus otomatis ke kotak aktif setiap kali berpindah. Pastikan di Angular ini ditangani eksplisit, jangan hanya mengandalkan tabindex.
 - Latihan Koran memakai data di `frontend/src/app/koran/latihan.ts` (contoh1, contoh2, ujiCoba). Angkanya sudah sama dengan prototipe, jadi **berkas itu dipertahankan**.
 
 ## 5. Dashboard HC
 Header navy "Portal Psikotes · Dashboard HC", "Admin HC" di kanan, tiga tab.
-- **Overview**: tiga kartu (peserta selesai hari ini, token aktif, sesi tes aktif) dan tabel jadwal hari ini (sesi, jenis tes, jumlah peserta, waktu buka, status: Berjalan/Selesai).
+- **Overview**: tiga kartu (total peserta selesai, peserta selesai hari ini, peserta sedang mengerjakan; revisi HC 5 Nov 2026) dan tabel jadwal hari ini (sesi, jenis tes, jumlah peserta, waktu buka, status: Berjalan/Selesai).
 - **Token dan jadwal**: formulir "Buat sesi tes" (nama sesi, jenis tes, tanggal, waktu buka/tutup, email peserta satu per baris). Satu peserta bisa punya beberapa tes, tiap tes dengan token dan jadwalnya sendiri. Kartu "Undangan peserta": satu email per peserta berisi semua tes + token + jadwal. Tombol "Kirim undangan" per peserta, berubah jadi "Kirim ulang" setelah terkirim, dan "Kirim semua undangan yang belum terkirim". Tabel "Token dan jadwal per tes" dengan status Terpakai/Belum dipakai/Kedaluwarsa. Pratinjau email di bawahnya.
-- **Hasil dan laporan**: filter jenis tes, sesi, tanggal; tabel (peserta, tes, benar, salah, dijawab, kategori, skor akhir); tombol "Lihat jawaban"; ekspor Excel/PDF; untuk Koran grafik 22 interval (dikerjakan, benar, salah) dan tombol "Lihat tabel 22 interval".
+- **Hasil dan laporan** (revisi HC 5 Nov 2026): filter jenis tes, sesi, tanggal; satu baris per peserta per sesi (peserta, sesi, tes diikuti, ringkasan hasil); aksi Review (Laporan Peserta di panel kanan), Cetak PDF, dan Detail jawaban (jawaban per nomor dan grafik serta tabel 22 interval, terpisah dari Review); ekspor Excel (per tes) dan PDF (satu peserta per halaman). Laporan Peserta: identitas, hasil tiap tes, grafik Koran, catatan HC yang tidak disimpan.
 - **Mode sesi (Part 8b)**: pada "Buat sesi tes" ada pilihan **Individu** atau **Serentak (kelompok)**. Mode individu tidak berubah. Mode serentak: nama sesi, jumlah peserta X, satu email penerima (pengawas, guru, atau panitia), dan daftar tes (1 sampai 3) dengan jadwal masing-masing. Sistem membuat satu token kelompok per tes.
 - **Token kelompok** (tampilan serentak): tabel per token dengan tes, sesi, jadwal, "terpakai n dari X" (dengan bilah), status (Belum buka, Aktif, Kuota penuh, Jadwal selesai, Dicabut), dan aksi: Lihat peserta, Tambah kuota (+1), Token baru, Cabut. Token mentah tidak ditampilkan di tabel (hanya hash tersimpan), hanya muncul sekali di pratinjau email setelah dibuat.
 - **Peserta yang sudah masuk**: diurutkan menurut nama, status (Mengerjakan, Selesai, Waktu habis), dan waktu persetujuan (Part 8c). Nama kembar tidak ditolak, hanya ditandai. Admin dapat mengubah nama (salah ketik).
 - **Hasil dan ekspor** memuat kolom waktu persetujuan dan versi teks persetujuan (Part 8c).
 - **Email token kelompok**: satu email ke penerima berisi token semua tes, jadwal, dan kuota X. Templat bawaan terpisah dari undangan individu: tidak memuat larangan membagikan token, dan menyarankan token tidak diumumkan sebelum tes dimulai.
 - **Overview**: tabel jadwal punya kolom Mode. Untuk serentak, jumlah peserta ditulis "n dari X". Token serentak dihitung satu per tes.
-- **Hasil**: kolom Sesi ditambahkan, diurutkan per sesi lalu nama. Nama yang penulisannya beda (Budi Santoso vs Budi S.) tampil sebagai dua peserta. Tidak ada penggabungan otomatis lintas tes.
+- **Hasil**: kolom Sesi ditambahkan, diurutkan per sesi lalu nama. Peserta serentak digabung menurut nama di sesi yang sama. Nama yang penulisannya beda (Budi Santoso vs Budi S.) tampil sebagai dua peserta. Dua catatan bernama sama untuk tes yang sama tidak digabung dan ditandai.
 - Email dikirim lewat `mailto` (pembuka klien email), bukan SMTP. Alamat pengirim dan domain belum diputuskan (tampil `[alamat pengirim, menunggu keputusan HC]`).
 - Hanya admin HC yang melihat hasil. Peserta tidak pernah melihat skor.
 

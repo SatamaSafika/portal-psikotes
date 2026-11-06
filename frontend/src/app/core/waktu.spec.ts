@@ -3,7 +3,7 @@ import { HitungMundur, formatDurasi, formatSisa } from './waktu';
 describe('waktu', () => {
   it('format sisa mm:ss, tidak pernah negatif', () => {
     expect(formatSisa(600)).toBe('10:00');
-    expect(formatSisa(440)).toBe('07:20');
+    expect(formatSisa(572)).toBe('09:32');
     expect(formatSisa(59.9)).toBe('00:59');
     expect(formatSisa(0)).toBe('00:00');
     expect(formatSisa(-5)).toBe('00:00');
@@ -11,7 +11,7 @@ describe('waktu', () => {
 
   it('format durasi', () => {
     expect(formatDurasi(600)).toBe('10 menit');
-    expect(formatDurasi(440)).toBe('7 menit 20 detik');
+    expect(formatDurasi(572)).toBe('9 menit 32 detik');
     expect(formatDurasi(45)).toBe('45 detik');
   });
 

@@ -3,18 +3,15 @@ import { Router } from '@angular/router';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { LajurKoran } from './lajur-koran';
 
-const LAYAR_SEMPIT = '(max-width: 640px)';
-
 /**
  * Tes Koran sebenarnya: ketat satu per satu dari atas ke bawah, lajur 1 sampai 4, halaman 1 sampai 13.
- * Hanya satu kotak aktif. Enter pada kotak berisi mengunci jawaban (dengan waktu_ms) dan pindah ke kotak
- * berikutnya; di layar sempit satu digit langsung mengunci. Tidak bisa kembali ke halaman sebelumnya.
- * Tidak ada indikator benar/salah.
+ * Hanya satu kotak aktif. Satu angka langsung terkunci (dengan waktu_ms) dan pindah ke kotak berikutnya, tanpa Enter;
+ * kotak terakhir sebuah halaman langsung membuka halaman berikutnya (revisi HC 5 November 2026).
+ * Kotak terakhir halaman 13 membuka layar konfirmasi kirim. Tidak ada indikator benar/salah.
  */
 @Component({
   selector: 'app-kerjakan-koran',
   imports: [LajurKoran],
-  host: { '(document:keydown.enter)': 'enterHalaman($event)' },
   template: `
     @if (susunan(); as s) {
       <div class="wadah area-koran">
@@ -23,34 +20,23 @@ const LAYAR_SEMPIT = '(max-width: 640px)';
           <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
         </div>
         <div class="kotak-peringatan peringatan-koran" role="note">
-          <strong>Perhatian:</strong> setelah Anda menekan Enter, jawaban terkunci dan kursor tidak dapat kembali ke kotak
-          di atasnya. Periksa angka sebelum menekan Enter. Halaman sebelumnya juga tidak dapat dibuka lagi.
+          <strong>Perhatian:</strong> satu angka yang Anda ketik langsung terkunci dan tidak dapat diubah. Kursor pindah otomatis
+          ke kotak berikutnya, tanpa menekan Enter, dan halaman yang sudah lewat tidak dapat dibuka lagi.
         </div>
         <div class="kertas-koran">
           @for (l of lajurTampil(); track l.lajur) {
-            <app-lajur-koran [judul]="'Lajur ' + l.posisi" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif"
-                             [isiAktif]="isiAktif()" (ketik)="ketik($event)" (enter)="kunci()" />
+            <app-lajur-koran [judul]="'Lajur ' + l.posisi" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif" (ketik)="ketik($event)" />
           }
         </div>
         <div class="kaki-koran">
-          @if (halamanPenuh() && !halamanTerakhir()) {
-            <p class="kotak-info" role="status">
-              Semua kotak di halaman ini sudah terisi. Tekan <strong>Enter</strong> atau tombol Halaman berikutnya untuk lanjut.
-            </p>
-          }
           <p class="teks-redup teks-kecil">
-            Jumlahkan dua angka yang mengapit kotak, tulis digit terakhirnya. Isi satu kotak, lalu tekan <strong>Enter</strong>
-            untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati, dan jawaban yang sudah ditinggalkan tidak dapat diubah.
-            Di layar kecil, kotak pindah otomatis setelah Anda mengisi angka. Setelah semua kotak di halaman ini terisi,
-            @if (halamanTerakhir()) {
-              tekan tombol Kirim jawaban.
-            } @else {
-              tekan Enter sekali lagi atau tombol Halaman berikutnya.
-            }
+            Jumlahkan dua angka yang mengapit kotak, lalu ketik angka terakhirnya saja: untuk hasil 12, ketik 2.
+            Kotak tidak dapat dilewati. Setelah kotak terakhir di halaman ini terisi, halaman berikutnya terbuka otomatis.
           </p>
-          <button type="button" class="tombol tombol-navy" [disabled]="!halamanPenuh()" (click)="berikutnya()">
-            {{ halamanTerakhir() ? 'Kirim jawaban' : 'Halaman berikutnya' }}
-          </button>
+          <!-- Hanya setelah kembali dari layar konfirmasi atau memuat ulang: semua kotak sudah terisi. -->
+          @if (selesaiSemua()) {
+            <button type="button" class="tombol tombol-navy" (click)="keKonfirmasi()">Kirim jawaban</button>
+          }
         </div>
       </div>
     }
@@ -69,15 +55,11 @@ export class KerjakanKoran {
   });
   protected readonly nomorAktif = computed(() => this.terakhir() + 1);
   protected readonly halaman = signal(1);
-  protected readonly isiAktif = signal('');
-
-  protected readonly halamanTerakhir = computed(() => this.halaman() === (this.susunan()?.soal.halaman ?? 0));
-  /** Semua kotak di halaman ini sudah terisi. */
-  protected readonly halamanPenuh = computed(() => {
+  /** Semua kotak tes sudah terisi. */
+  protected readonly selesaiSemua = computed(() => {
     const s = this.susunan();
-    return !!s && this.terakhir() >= s.nomorTerakhirHalaman(this.halaman());
+    return !!s && this.terakhir() >= s.total;
   });
-
   protected readonly lajurTampil = computed(() => {
     const s = this.susunan();
     const soal = this.pengerjaan.soalKoran();
@@ -107,45 +89,24 @@ export class KerjakanKoran {
     });
   }
 
+  /** Satu angka: kunci kotak aktif, lalu pindah halaman bila kotak itu yang terakhir di halamannya. */
   protected ketik(digit: string): void {
-    this.isiAktif.set(digit);
-    if (digit && window.matchMedia(LAYAR_SEMPIT).matches) this.kunci();
-  }
-
-  /** Enter: kunci isi kotak aktif. Kotak kosong tidak berpindah. */
-  protected kunci(): void {
-    const digit = this.isiAktif();
     const s = this.susunan();
-    if (!digit || !s) return;
+    if (!s) return;
     const nomor = this.nomorAktif();
-    // Kotak aktif harus ada di halaman ini (halaman penuh menunggu tombol halaman berikutnya).
-    if (nomor > s.nomorTerakhirHalaman(this.halaman()) || nomor > s.total) return;
-    if (this.pengerjaan.jawabKoran(nomor, digit)) this.isiAktif.set('');
-  }
-
-  /**
-   * Enter saat halaman penuh = pindah ke halaman berikutnya (permintaan HC). Tetap aksi manual peserta:
-   * Enter yang mengunci kotak terakhir tidak ikut memindah halaman (sasarannya kotak input), jadi perlu Enter kedua.
-   * Diabaikan bila fokus di tombol (Enter sudah menekan tombol itu) atau tombol ditahan (auto-repeat).
-   * Halaman terakhir tidak: kirim jawaban tetap lewat tombol supaya tidak terkirim tanpa sengaja.
-   */
-  protected enterHalaman(e: Event): void {
-    const k = e as KeyboardEvent;
-    const sasaran = k.target as HTMLElement | null;
-    if (k.repeat || sasaran instanceof HTMLInputElement || sasaran instanceof HTMLButtonElement) return;
-    if (!this.halamanPenuh() || this.halamanTerakhir()) return;
-    k.preventDefault();
-    void this.berikutnya();
-  }
-
-  protected async berikutnya(): Promise<void> {
-    if (!this.halamanPenuh()) return;
+    if (nomor > s.total || !this.pengerjaan.jawabKoran(nomor, digit)) return;
+    if (nomor < s.nomorTerakhirHalaman(this.halaman())) return;
     this.pengerjaan.simpanKoranSekarang();
-    if (this.halamanTerakhir()) {
-      await this.router.navigateByUrl('/tes/kirim');
+    if (nomor === s.total) {
+      void this.keKonfirmasi();
       return;
     }
     this.halaman.update((h) => h + 1);
     window.scrollTo({ top: 0 });
+  }
+
+  protected async keKonfirmasi(): Promise<void> {
+    this.pengerjaan.simpanKoranSekarang();
+    await this.router.navigateByUrl('/tes/kirim');
   }
 }

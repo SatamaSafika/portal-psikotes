@@ -1254,7 +1254,185 @@ h1.judul {
 }
 
 // Cetak (Ekspor PDF lewat dialog cetak browser): sembunyikan navigasi dan tombol.
+// ---------- hasil dan Laporan Peserta ----------
+
+.tata-hasil {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+
+  &.ada-review {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+  }
+}
+
+.sel-tes .lencana {
+  margin: 0 4px 4px 0;
+}
+
+.pilih-tes-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .aktif {
+    background: var(--navy);
+    color: #fff;
+  }
+}
+
+app-laporan-peserta {
+  display: block;
+}
+
+.laporan {
+  background: #fff;
+  color: var(--teks);
+  border: 1px solid var(--garis);
+  padding: 20px;
+  font-size: 0.82rem;
+}
+
+.laporan-kepala {
+  color: var(--navy);
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--oranye);
+  padding-bottom: 6px;
+}
+
+.laporan-judul,
+.laporan-subjudul {
+  color: var(--navy);
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.laporan-judul {
+  font-size: 1.2rem;
+  margin: 16px 0 2px;
+}
+
+.laporan-subjudul {
+  font-size: 0.8rem;
+  margin: 0 0 12px;
+}
+
+.laporan-identitas {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 2px 10px;
+  background: var(--latar);
+  padding: 8px 12px;
+  margin: 0 0 12px;
+
+  dt {
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.laporan-bagian {
+  margin-bottom: 12px;
+  break-inside: avoid;
+
+  h3 {
+    background: var(--biru-muda);
+    color: var(--navy);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    margin: 0 0 6px;
+  }
+
+  .grafik {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.laporan-tabel {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+
+  th {
+    font-weight: 400;
+    border-bottom: 1px solid var(--garis);
+  }
+
+  td {
+    padding: 3px 0;
+    font-weight: 600;
+  }
+
+  th + th,
+  td + td {
+    border-left: 1px solid var(--garis);
+  }
+}
+
+.laporan-catatan-kecil {
+  color: var(--teks-redup);
+  font-size: 0.75rem;
+  margin: 4px 0 0;
+}
+
+.laporan-isian {
+  width: 100%;
+  font: inherit;
+  padding: 6px;
+  border: 1px solid var(--kontrol);
+  border-radius: 6px;
+}
+
+// Catatan terisi tercetak utuh; bila kosong menjadi garis untuk ditulis tangan.
+.laporan-catatan-cetak {
+  white-space: pre-wrap;
+  min-height: 60px;
+
+  span {
+    display: block;
+    height: 22px;
+    border-bottom: 1px solid var(--garis);
+  }
+}
+
+.laporan-kaki {
+  border-top: 2px solid var(--oranye);
+  color: var(--navy);
+  font-size: 0.72rem;
+  text-align: center;
+  padding-top: 6px;
+}
+
+.area-cetak,
+.hanya-cetak {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .tata-hasil.ada-review {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// Cetak: hanya Laporan Peserta, dirancang untuk A4. Margin halaman 0 supaya browser tidak menambah tanggal dan alamat
+// di tepi kertas; jarak tepi kertas diatur oleh padding .laporan. Satuan pt/mm supaya ukuran sama di semua layar.
 @media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
   .kepala-admin,
   .tab-admin,
   .kaki,
@@ -1263,17 +1441,137 @@ h1.judul {
     display: none !important;
   }
 
+  html,
   body {
     background: #fff;
+    min-height: 0;
   }
 
-  .kartu {
-    border: 1px solid #ccc;
-    break-inside: avoid;
+  // Pembungkus dashboard tidak boleh menyempitkan laporan.
+  .halaman {
+    display: block;
+    min-height: 0;
   }
 
   .isi-halaman {
     padding: 0;
+  }
+
+  .wadah {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .area-cetak,
+  .hanya-cetak {
+    display: block;
+  }
+
+  // Satu peserta per halaman, tanpa halaman kosong di akhir.
+  app-laporan-peserta:not(:last-child) {
+    break-after: page;
+  }
+
+  // Tinggi sedikit di bawah 297 mm supaya pembulatan browser tidak membuat halaman kosong.
+  .laporan {
+    display: flex;
+    flex-direction: column;
+    min-height: 296mm;
+    border: none;
+    padding: 11mm 16mm 9mm;
+    font-size: 10.5pt;
+    line-height: 1.4;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .laporan-kepala {
+    font-size: 11pt;
+    letter-spacing: 0.04em;
+    padding-bottom: 2mm;
+  }
+
+  .laporan-judul {
+    font-size: 17pt;
+    margin: 4mm 0 0.5mm;
+  }
+
+  .laporan-subjudul {
+    font-size: 10pt;
+    letter-spacing: 0.04em;
+    margin: 0 0 3.5mm;
+  }
+
+  .laporan-identitas {
+    grid-template-columns: 27mm 1fr 27mm 1fr;
+    gap: 1mm 3mm;
+    padding: 3mm 4mm;
+    margin: 0 0 4.5mm;
+  }
+
+  .laporan-bagian {
+    margin-bottom: 4.5mm;
+
+    h3 {
+      font-size: 10.5pt;
+      padding: 1.5mm 3mm;
+      margin: 0 0 2mm;
+    }
+
+    .grafik {
+      max-width: none;
+      margin-top: 1mm;
+
+      .label-sumbu {
+        font-size: 12.5px;
+      }
+    }
+
+    .legenda-grafik {
+      font-size: 9pt;
+      margin: 2mm 0 0;
+    }
+  }
+
+  .laporan-tabel {
+    border: 1px solid var(--garis);
+
+    th {
+      font-size: 9.5pt;
+      color: var(--teks-redup);
+      background: var(--latar);
+      padding: 1mm;
+    }
+
+    td {
+      font-size: 12pt;
+      padding: 1.3mm 1mm;
+    }
+  }
+
+  .laporan-catatan-kecil {
+    font-size: 9pt;
+    margin-top: 1.5mm;
+  }
+
+  // Catatan mengisi sisa halaman, kaki selalu di bawah kertas.
+  .laporan-bagian:last-of-type {
+    flex: 1;
+    margin-bottom: 4mm;
+  }
+
+  .laporan-catatan-cetak {
+    min-height: 21mm;
+
+    span {
+      height: 7mm;
+    }
+  }
+
+  .laporan-kaki {
+    font-size: 9pt;
+    padding-top: 2mm;
   }
 }
 

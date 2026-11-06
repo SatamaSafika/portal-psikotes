@@ -23,7 +23,7 @@ Sumber: HC, disampaikan pemilik proyek (29 Oktober 2026), dan dikonfirmasi lagi 
 | --- | --- | --- | --- | --- |
 | TIU 5 | 10 menit (600 detik) | 30 soal | total benar | jumlah benar |
 | TIU 6 | 10 menit (600 detik) | 40 butir (8 Soal x 5 butir) | total benar | jumlah benar, dinilai per butir |
-| Koran | 7 menit 20 detik (440 detik) | 13 halaman x 4 lajur x 20 angka = 1040 angka, 988 penjumlahan (19 per lajur, lihat catatan). Angka dibuat acak sekali oleh pemilik proyek (disetujui HC) | total benar dibagi 22 (N), N dibulatkan | jumlah benar |
+| Koran | 9 menit 32 detik (572 detik, revisi HC 5 November 2026) | 13 halaman x 4 lajur x 20 angka = 1040 angka, 988 penjumlahan (19 per lajur, lihat catatan). Angka dibuat acak sekali oleh pemilik proyek (disetujui HC) | total benar dibagi 22 (N), N dibulatkan | jumlah benar |
 
 **Tracking Koran per 20 detik** (permintaan HC, 2 November 2026): untuk bahan grafik per peserta. 440 detik dibagi interval 20 detik = 22 interval. Interval ke-k mencakup detik [20 x (k-1), 20 x k), jadi jawaban pada detik tepat 440 tidak dihitung. Tiap interval menampilkan jumlah dikerjakan (benar + salah), jumlah benar, dan jumlah salah. Jumlah 22 interval harus sama dengan total jawaban, total benar, dan total salah. Tidak mengubah aturan skor di bawah. Interpretasi grafik oleh HC, bukan oleh sistem. Grafik hanya untuk admin HC, tidak tampil ke peserta.
 
@@ -49,7 +49,7 @@ Catatan penerapan:
 - TIU 5 menyebut kategori ketiga "Cukup", TIU 6 dan Koran menyebut "Rata-Rata". Ditulis apa adanya sesuai HC.
 - Koran: N = total benar / 22, dibulatkan ke bilangan bulat terdekat, setengah ke atas, sebelum dicocokkan dengan tabel (disetujui HC, 29 Oktober 2026). Hitung dengan bilangan bulat: N = (total benar + 11) / 22 dengan pembagian bulat ke bawah, tanpa float. Ambang total benar: 121, 231, 341, 451 (benar 121 berarti N = 5,5 menjadi 6, masuk Kurang).
 - TIU 6: 40 butir, dinilai per butir (dikonfirmasi). Satu Soal (satu gambar) berisi 5 butir, jadi 8 Soal.
-- Durasi Koran 7 menit 20 detik (dikonfirmasi).
+- Durasi Koran 9 menit 32 detik (revisi HC 5 November 2026; sebelumnya 7 menit 20 detik).
 - Koran: 13 halaman, 4 lajur per halaman, 20 angka per lajur (dari pemilik proyek). Jawaban adalah digit terakhir dari jumlah dua angka bersebelahan, jadi 20 angka menghasilkan 19 jawaban per lajur, total 52 x 19 = 988. **Perlu verifikasi**: apakah HC menghitung 19 atau 20 jawaban per lajur. Angka dibuat sekali, disimpan di bank, sama untuk semua peserta.
 - Penjelasan jawaban hanya untuk latihan TIU 5 (keputusan pemilik proyek). Latihan TIU 6 dan semua soal tanpa penjelasan.
 - Koran dikerjakan ketat satu per satu dari atas ke bawah: setiap kotak harus terisi sebelum lanjut, tidak bisa melompat, tidak bisa kembali atau mengubah (keputusan pemilik proyek, 2 November 2026). Jadi pada Koran "dikerjakan" = jumlah kotak yang terisi, dan tidak ada kotak kosong di tengah. TIU 5 dan TIU 6 tetap boleh melewati dan mengubah jawaban sebelum kirim.
@@ -224,6 +224,15 @@ Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat AP
 - [x] Tes Koran: saat semua kotak satu halaman terisi, Enter (kedua) memindah ke halaman berikutnya, selain tombol. Enter yang mengunci kotak terakhir tidak ikut memindah halaman. Halaman 13: kirim tetap lewat tombol lalu layar konfirmasi "Kirim jawaban sekarang?" (dikonfirmasi pemilik proyek, 4 November 2026).
 - [x] Tes Koran: keterangan bahwa setelah Enter jawaban terkunci dan kursor tidak dapat naik ke kotak di atasnya, di layar tes, uji coba, dan instruksi.
 
+## Revisi HC (5 November 2026, disampaikan pemilik proyek)
+Menggantikan aturan lama di Part 4, 5, 7, 8, dan revisi Enter 4 November. Butir lama di atas tetap sebagai riwayat. Tanpa DDL.
+- [ ] Koran: interval 26 detik x 22, durasi 572 detik = 9 menit 32 detik (26 x 22, dikonfirmasi pemilik proyek 5 November 2026). Versi aturan `v2-2026-11-05`. Rumus N tidak berubah. Setelah diterapkan, jalankan `npm run hasil:hitung-ulang` supaya grafik hasil lama memakai interval baru.
+- [ ] Koran: satu angka langsung terkunci dan pindah kotak tanpa Enter, di semua layar dan uji coba. Halaman berganti otomatis. Kotak terakhir halaman 13 membuka layar konfirmasi kirim.
+- [ ] Overview: total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (status BERJALAN, sudah mulai, batas waktu belum lewat), dihitung per orang per sesi.
+- [ ] Hasil dan laporan: satu baris per peserta per sesi dengan Review, Cetak PDF, dan Detail jawaban (per nomor dan per 26 detik, terpisah dari Review). Laporan Peserta memuat identitas, hasil tiap tes, grafik Koran, dan catatan HC yang tercetak tetapi tidak disimpan. Ekspor PDF mencetak semua peserta sesuai filter, satu per halaman. Ekspor Excel tetap per tes.
+- [ ] Serentak digabung menurut nama di sesi yang sama; dua catatan bernama sama untuk tes yang sama tidak digabung dan ditandai.
+Perlu verifikasi HC: angka pada contoh laporan tidak konsisten (benar dan salah Koran tampak tertukar, TIU 6 benar 26 tertulis Cukup padahal Baik menurut `skoring.json`). Laporan memakai hitungan sistem.
+
 ## Part 9. Pengujian dan gladi demo (M)
 - Daftar uji keamanan (lihat bawah) dan uji alur penuh.
 - `npm audit`, perbaiki kerentanan berat.
@@ -256,6 +265,6 @@ Selesai kalau: seluruh daftar uji lolos dan gladi berjalan tanpa campur tangan m
 - [ ] `.env`, `materi_rahasia/`, `backend/bank/` tidak ada di `git ls-files`.
 - [ ] [REVISI] Tidak ada teks "Bakrie" atau "Autoparts" di kode frontend yang tampil ke pengguna, aset, judul halaman, dan template email bawaan (cari dengan grep tanpa membaca isi bank soal). Instruksi dan gambar bank soal diperiksa manual oleh pemilik proyek (Part 2).
 - [ ] [REVISI] Peserta tidak bisa mengambil data waktu jawaban atau ringkasan interval lewat API.
-- [ ] [REVISI] Waktu jawaban Koran yang tidak masuk akal (negatif, mundur, melewati 440 detik) ditolak atau ditandai.
+- [ ] [REVISI] Waktu jawaban Koran yang tidak masuk akal (negatif, mundur, melewati durasi Koran) ditolak atau ditandai.
 - [ ] [REVISI] Jawaban Koran yang mengubah kotak yang sudah dijawab, melompat nomor, atau kosong ditolak lewat API (tidak hanya dikunci di layar).
 - [ ] [REVISI] Ringkasan 22 interval selalu berjumlah 22 dan jumlahnya sama dengan total jawaban.

@@ -6,7 +6,7 @@ import type { Ringkasan } from './admin-model';
 
 const LABEL_JADWAL = { BELUM_MULAI: 'Belum mulai', BERJALAN: 'Berjalan', SELESAI: 'Selesai' } as const;
 
-/** Overview: ringkasan hari ini menurut jam server, diperbarui tiap menit. */
+/** Overview: tiga angka peserta (dihitung per orang) dan jadwal hari ini menurut jam server, diperbarui tiap menit. */
 @Component({
   selector: 'app-admin-overview',
   template: `
@@ -16,9 +16,17 @@ const LABEL_JADWAL = { BELUM_MULAI: 'Belum mulai', BERJALAN: 'Berjalan', SELESAI
     }
     @if (data(); as d) {
       <div class="kartu-angka">
-        <div class="kartu"><span class="teks-redup">Peserta selesai hari ini</span><strong>{{ d.selesai_hari_ini }}</strong></div>
-        <div class="kartu"><span class="teks-redup">Token aktif</span><strong>{{ d.token_aktif }}</strong></div>
-        <div class="kartu"><span class="teks-redup">Sesi tes aktif</span><strong>{{ d.sesi_aktif }}</strong></div>
+        <div class="kartu">
+          <span class="teks-redup">Total peserta selesai</span><strong>{{ d.total_selesai }}</strong>
+          <span class="teks-redup teks-kecil">Data tersimpan (dihapus 4 bulan setelah tes)</span>
+        </div>
+        <div class="kartu">
+          <span class="teks-redup">Peserta selesai hari ini</span><strong>{{ d.selesai_hari_ini }}</strong>
+        </div>
+        <div class="kartu">
+          <span class="teks-redup">Peserta sedang mengerjakan</span><strong>{{ d.sedang_mengerjakan }}</strong>
+          <span class="teks-redup teks-kecil">Timer tes sedang berjalan</span>
+        </div>
       </div>
       <div class="kartu">
         <h2 class="judul-kartu">Jadwal hari ini</h2>

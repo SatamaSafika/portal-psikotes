@@ -25,4 +25,4 @@ src/styles.scss       token desain dari prototipe (warna, kartu, tombol)
 - Timer dihitung dari sisa waktu server dan disinkronkan ulang tiap 30 detik. Saat habis, jawaban dikirim otomatis.
 - Jawaban TIU disimpan otomatis (jeda singkat, dicoba lagi bila gagal). Kirim manual hanya bila semua jawaban tersimpan.
 - Peserta tidak pernah melihat skor.
-- Koran: hanya satu kotak aktif (satu-satunya `<input>`), Enter mengunci, tidak bisa kembali atau melompat. Susunan halaman, lajur, dan angka selalu dari server. `waktu_ms` tiap jawaban dari waktu berjalan server, tidak pernah mundur; jawaban dikirim berurutan.
+- Koran: hanya satu kotak aktif (satu-satunya `<input>`), satu angka langsung terkunci tanpa Enter, halaman berganti otomatis, tidak bisa kembali atau melompat. Susunan halaman, lajur, dan angka selalu dari server. `waktu_ms` tiap jawaban dari waktu berjalan server, tidak pernah mundur; jawaban dikirim berurutan.

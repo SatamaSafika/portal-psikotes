@@ -136,9 +136,9 @@ export interface Template {
 }
 
 export interface Ringkasan {
+  total_selesai: number;
   selesai_hari_ini: number;
-  token_aktif: number;
-  sesi_aktif: number;
+  sedang_mengerjakan: number;
   jadwal_hari_ini: {
     sesi_id: number;
     nama_sesi: string;
@@ -174,6 +174,22 @@ export interface BarisHasil {
   /** Bukti persetujuan; null untuk ujian sebelum fitur persetujuan. */
   persetujuan_pada: string | null;
   persetujuan_versi: string | null;
+}
+
+/** Satu baris tabel hasil: semua tes seorang peserta dalam satu sesi. */
+export interface PesertaHasil {
+  kunci: string;
+  nama: string;
+  email: string | null;
+  sesi_id: number | null;
+  nama_sesi: string;
+  mode: ModeSesi;
+  /** Tanggal tes yang berbeda, urut (YYYY-MM-DD). */
+  tanggal: string[];
+  /** Hanya tes yang sudah selesai, urut baku. */
+  tes: BarisHasil[];
+  /** Ada catatan lain dengan nama sama untuk tes yang sama di sesi ini, jadi tidak digabung otomatis. */
+  nama_sama: boolean;
 }
 
 export interface JawabanNomor {

@@ -32,7 +32,7 @@ describe('susunan Koran (dari konfigurasi server)', () => {
   it('halaman setelah refresh mengikuti nomor terakhir tersimpan', () => {
     expect(S.halamanPulih(0)).toBe(1);
     expect(S.halamanPulih(75)).toBe(1);
-    expect(S.halamanPulih(76)).toBe(1); // halaman 1 penuh: tetap di halaman 1, tombol berikutnya aktif
+    expect(S.halamanPulih(76)).toBe(2); // halaman 1 penuh: langsung halaman 2
     expect(S.halamanPulih(77)).toBe(2);
     expect(S.halamanPulih(988)).toBe(13);
   });

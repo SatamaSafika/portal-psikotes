@@ -1,6 +1,7 @@
 // Rute hasil untuk admin HC: ringkasan hari ini, tabel hasil, dan jawaban per nomor (tanpa kunci).
 // Semua wajib sesi admin. Peserta tidak punya rute hasil.
 import { Router, type Request } from 'express';
+import { muatSkoring } from '../../config/skoring.js';
 import { muatTes } from '../../config/tes.js';
 import { wajibAdmin } from '../admin/wajib-admin.js';
 import { kunciUntuk, tandaiJawaban } from '../skoring/koreksi.js';
@@ -26,7 +27,9 @@ export function ruteHasilAdmin(): Router {
       res.status(400).json({ pesan: 'Filter tidak valid' });
       return;
     }
-    res.json({ hasil: await repo.daftarHasil(f) });
+    const hasil = await repo.daftarHasil(f);
+    // Panjang interval dari skoring.json untuk label grafik dan tabel Koran.
+    res.json({ hasil, interval_detik: muatSkoring().KORAN.interval_detik, terpotong: hasil.length === repo.BATAS_HASIL });
   });
 
   // Jawaban per nomor dengan tanda benar/salah. Kunci tidak dikirim (CLAUDE.md aturan keras 3).

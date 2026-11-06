@@ -16,7 +16,7 @@ import type { Interval } from './admin-model';
     </ul>
     @let s = skala();
     <svg viewBox="0 0 760 260" class="grafik" role="img"
-         [attr.aria-label]="'Grafik ' + interval().length + ' interval: dikerjakan, benar, dan salah per 20 detik'">
+         [attr.aria-label]="'Grafik ' + interval().length + ' interval: dikerjakan, benar, dan salah per ' + detik() + ' detik'">
       @for (g of s.gridY; track g.label) {
         <line x1="44" x2="744" [attr.y1]="g.y" [attr.y2]="g.y" stroke="#EAEEF3" />
         <text x="36" [attr.y]="g.y + 4" text-anchor="end" class="label-sumbu">{{ g.label }}</text>
@@ -39,10 +39,12 @@ import type { Interval } from './admin-model';
       }
     </svg>
 
-    <button type="button" class="tombol-tautan" (click)="tabelTerbuka.set(!tabelTerbuka())" [attr.aria-expanded]="tabelTerbuka()">
-      {{ tabelTerbuka() ? '▾' : '▸' }} Lihat tabel {{ interval().length }} interval
-    </button>
-    @if (tabelTerbuka()) {
+    @if (denganTabel()) {
+      <button type="button" class="tombol-tautan" (click)="tabelTerbuka.set(!tabelTerbuka())" [attr.aria-expanded]="tabelTerbuka()">
+        {{ tabelTerbuka() ? '▾' : '▸' }} Lihat tabel {{ interval().length }} interval
+      </button>
+    }
+    @if (denganTabel() && tabelTerbuka()) {
       <div class="tabel-gulir">
         <table class="tabel tabel-rapat">
           <thead><tr><th>Interval</th><th>Detik</th><th>Dikerjakan</th><th>Benar</th><th>Salah</th></tr></thead>
@@ -60,8 +62,10 @@ import type { Interval } from './admin-model';
 })
 export class GrafikInterval {
   readonly interval = input.required<Interval[]>();
-  /** Panjang interval (detik), sesuai interval_detik di skoring.json. */
-  readonly detik = input(20);
+  /** Panjang interval (detik) dari server, sesuai interval_detik di skoring.json. */
+  readonly detik = input.required<number>();
+  /** false di Laporan Peserta: grafik saja. */
+  readonly denganTabel = input(true);
   protected readonly skala = computed(() => skalaGrafik(this.interval()));
   protected readonly tabelTerbuka = signal(false);
   protected readonly jumlah = computed(() =>

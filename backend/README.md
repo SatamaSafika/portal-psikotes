@@ -104,14 +104,14 @@ Rute peserta (wajib sesi peserta):
 ## Koreksi dan hasil
 - Hasil dihitung otomatis saat ujian dikirim, dan setiap 15 detik untuk ujian `DIKIRIM`/`WAKTU_HABIS` yang belum punya hasil. Peserta tidak bisa melihat hasil.
 - Skor mentah = jumlah benar, tanpa penalti. TIU 6 per butir. Koran: kunci = digit terakhir dari jumlah dua angka bersebelahan; N = benar / 22 dibulatkan setengah ke atas (bilangan bulat); kategori Koran memakai N.
-- Koran: ringkasan `interval_detik` (20 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah 440 detik tidak dihitung di skor maupun interval.
+- Koran: ringkasan `interval_detik` (26 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah durasi Koran (572 detik) tidak dihitung di skor maupun interval.
 - Admin melihat hasil per token di `GET /api/admin/sesi/:id` (benar, salah, dijawab, N, kategori, skor akhir, ringkasan interval, versi aturan, `undangan_dikirim_pada`).
 
 ## Dashboard HC (rute admin tambahan, wajib login admin)
 | Rute | Hasil |
 | --- | --- |
-| `GET /api/admin/ringkasan` | Peserta selesai hari ini, token aktif, sesi aktif, jadwal hari ini (menurut jam server) |
-| `GET /api/admin/hasil?jenis=&sesi=&tanggal=` | Hasil ujian yang sudah selesai, filter opsional, maksimal 1000 baris |
+| `GET /api/admin/ringkasan` | Total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (timer berjalan), semua per orang per sesi, dan jadwal hari ini (menurut jam server) |
+| `GET /api/admin/hasil?jenis=&sesi=&tanggal=` | Hasil ujian yang sudah selesai, filter opsional, maksimal 5000 baris. Balasan: `hasil`, `interval_detik`, `terpotong` |
 | `GET /api/admin/ujian/:id/jawaban` | Jawaban per nomor dengan `benar` (true/false/null), tanpa kunci |
 | `GET /api/admin/template-bawaan` | Template email bawaan untuk diedit sebelum membuat sesi |
 | `POST /api/admin/sesi/:id/undangan-dikirim` | Body `{ "email" }`. Tandai undangan peserta sudah dibuka di aplikasi email (`db/08`) |

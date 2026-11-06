@@ -1,11 +1,11 @@
 {
   "_catatan": "Aturan dari HC, disampaikan pemilik proyek pada 29 Oktober 2026 (perlu dokumen tertulis HC). Batas 'min' inklusif, 'maks_eksklusif' tidak termasuk (null = tanpa batas atas). Tanpa penalti: hanya jumlah benar.",
-  "versi": "v1-2026-10-29",
+  "versi": "v2-2026-11-05",
   "dikonfirmasi_hc": "lisan, via pemilik proyek (29 Oktober 2026). Pembulatan N Koran dan retensi disetujui HC atas usulan pemilik proyek.",
   "durasi_detik": {
     "TIU5": 600,
     "TIU6": 600,
-    "KORAN": 440
+    "KORAN": 572
   },
   "TIU5": {
     "masukan": "total_benar",
@@ -80,8 +80,8 @@
   "KORAN": {
     "masukan": "total_benar",
     "pembagi": 22,
-    "interval_detik": 20,
-    "_catatan_interval": "Tracking per peserta untuk grafik admin HC (permintaan HC, 2 November 2026). Jumlah interval = durasi_detik.KORAN / interval_detik = 440 / 20 = 22. Interval ke-k = waktu jawaban [interval x (k-1), interval x k).",
+    "interval_detik": 26,
+    "_catatan_interval": "Tracking per peserta untuk grafik admin HC (permintaan HC 2 November 2026, direvisi HC 5 November 2026 menjadi 26 detik). Jumlah interval = durasi_detik.KORAN / interval_detik = 572 / 26 = 22. Interval ke-k = waktu jawaban [interval x (k-1), interval x k).",
     "_catatan": "N = total_benar / pembagi dibulatkan ke bilangan bulat terdekat, setengah ke atas (disetujui HC). Rumus bulat tanpa float: N = floor((total_benar + 11) / 22). Ambang total benar: 121, 231, 341, 451.",
     "kategori_dan_skor": [
       {

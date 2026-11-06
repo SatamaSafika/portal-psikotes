@@ -1,103 +1,137 @@
-<div class="judul-baris">
-  <h1 class="judul">Hasil dan laporan</h1>
-  <div class="baris-tombol tanpa-cetak" style="margin-top: 0">
-    <button type="button" class="tombol tombol-garis" [disabled]="hasil().length === 0" (click)="eksporCsv()">Ekspor Excel</button>
-    <button type="button" class="tombol tombol-garis" (click)="cetak()">Ekspor PDF</button>
-  </div>
-</div>
-
-@if (galat()) {
-  <div class="kotak-galat" role="alert">{{ galat() }}</div>
-}
-
-<div class="kartu filter-hasil tanpa-cetak">
-  <label class="isian"><span>Jenis tes</span>
-    <select [value]="jenis()" (change)="ubahFilter('jenis', nilai($event))">
-      <option value="">Semua tes</option>
-      @for (t of daftarTes; track t) { <option [value]="t">{{ label[t] }}</option> }
-    </select>
-  </label>
-  <label class="isian"><span>Sesi</span>
-    <select [value]="sesi()" (change)="ubahFilter('sesi', nilai($event))">
-      <option value="">Semua sesi</option>
-      @for (s of daftarSesi(); track s.id) { <option [value]="s.id">{{ s.nama_sesi }} · {{ s.tanggal }}</option> }
-    </select>
-  </label>
-  <label class="isian"><span>Tanggal tes</span>
-    <input type="date" [value]="tanggal()" (change)="ubahFilter('tanggal', nilai($event))" />
-  </label>
-</div>
-
-<div class="kartu">
-  <div class="tabel-gulir">
-    <table class="tabel">
-      <thead>
-        <tr><th>Peserta</th><th>Tes</th><th>Sesi</th><th>Benar</th><th>Salah</th><th>Dijawab</th><th>N</th><th>Kategori</th><th>Skor akhir</th><th class="tanpa-cetak"></th></tr>
-      </thead>
-      <tbody>
-        @for (h of hasil(); track h.ujian_id) {
-          <tr [class.terpilih]="jawabanUntuk()?.ujian_id === h.ujian_id">
-            <td>{{ h.nama ?? h.email }}<div class="teks-redup teks-kecil">{{ h.nama ? (h.email ?? '') : '' }}</div></td>
-            <td>{{ label[h.jenis_tes] }}@if (h.status === 'WAKTU_HABIS') {<div class="teks-redup teks-kecil">waktu habis</div>}</td>
-            <td>{{ h.nama_sesi }}<div class="teks-redup teks-kecil">{{ h.tanggal }}{{ h.mode === 'KELOMPOK' ? ' · serentak' : '' }}</div></td>
-            <td>{{ h.jumlah_benar ?? '—' }}</td>
-            <td>{{ h.jumlah_salah ?? '—' }}</td>
-            <td>{{ h.jumlah_dijawab ?? '—' }}</td>
-            <td>{{ h.n_koran ?? '' }}</td>
-            <td>{{ h.kategori ?? 'Belum dihitung' }}</td>
-            <td><strong>{{ h.skor_akhir ?? '—' }}</strong></td>
-            <td class="tanpa-cetak sel-aksi">
-              <button type="button" class="tombol-tautan" (click)="lihatJawaban(h)">Lihat jawaban</button>
-              @if (h.jenis_tes === 'KORAN') {
-                <button type="button" class="tombol-tautan" (click)="koranDipilih.set(h.ujian_id)">Grafik</button>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="10" class="teks-redup">{{ memuat() ? 'Memuat...' : 'Belum ada hasil untuk filter ini.' }}</td></tr>
-        }
-      </tbody>
-    </table>
-  </div>
-  <p class="teks-redup teks-kecil">
-    Kategori dan skor akhir mengikuti aturan skoring yang dikonfirmasi HC. Untuk Koran, kategori memakai N = benar / 22
-    (dibulatkan). Jawaban tes tersimpan sehingga skor dapat dihitung ulang bila aturan berubah. Jawaban latihan tidak disimpan.
-  </p>
-</div>
-
-@if (jawabanUntuk(); as h) {
-  <div class="kartu">
-    <div class="judul-baris">
-      <h2 class="judul-kartu">Jawaban {{ h.nama ?? h.email }} · {{ label[h.jenis_tes] }}</h2>
-      <button type="button" class="tombol-tautan tanpa-cetak" (click)="tutupJawaban()">Tutup</button>
+<div class="tanpa-cetak">
+  <div class="judul-baris">
+    <h1 class="judul">Hasil dan laporan</h1>
+    <div class="baris-tombol" style="margin-top: 0">
+      <button type="button" class="tombol tombol-garis" [disabled]="peserta().length === 0" (click)="eksporCsv()">Ekspor Excel</button>
+      <button type="button" class="tombol tombol-garis" [disabled]="peserta().length === 0" (click)="cetak(peserta())">Ekspor PDF</button>
     </div>
-    <p class="teks-redup teks-kecil">
-      Benar {{ ringkasJawaban().benar }}, salah {{ ringkasJawaban().salah }}, kosong {{ ringkasJawaban().kosong }}.
-      Kunci tidak ditampilkan.
-      @if (h.jenis_tes === 'KORAN') { Hanya kotak yang dikerjakan yang ditampilkan. }
-      @if (h.jenis_tes === 'TIU6') { Nomor TIU 6 = (Soal - 1) x 5 + butir. }
-    </p>
-    <div class="grid-jawaban">
-      @for (j of jawabanTampil(); track j.nomor) {
-        <span class="sel-jawaban" [class.benar]="j.benar === true" [class.salah]="j.benar === false"
-              [attr.title]="j.waktu_ms !== null ? 'detik ' + (j.waktu_ms / 1000).toFixed(1) : null">
-          <small>{{ j.nomor }}</small>{{ j.jawaban ?? '–' }}
-        </span>
+  </div>
+
+  @if (galat()) {
+    <div class="kotak-galat" role="alert">{{ galat() }}</div>
+  }
+  @if (terpotong()) {
+    <div class="kotak-peringatan" role="status">Data terlalu banyak dan hanya yang terbaru ditampilkan. Pilih satu sesi agar lengkap.</div>
+  }
+
+  <div class="tata-hasil" [class.ada-review]="review()">
+    <div class="kolom-kanan">
+      <div class="kartu filter-hasil">
+        <label class="isian"><span>Jenis tes</span>
+          <select [value]="jenis()" (change)="jenis.set($any(nilai($event)))">
+            <option value="">Semua tes</option>
+            @for (t of daftarTes; track t) { <option [value]="t">{{ label[t] }}</option> }
+          </select>
+        </label>
+        <label class="isian"><span>Sesi</span>
+          <select [value]="sesi()" (change)="ubahSesi(nilai($event))">
+            <option value="">Semua sesi</option>
+            @for (s of daftarSesi(); track s.id) { <option [value]="s.id">{{ s.nama_sesi }} · {{ s.tanggal }}</option> }
+          </select>
+        </label>
+        <label class="isian"><span>Tanggal tes</span>
+          <input type="date" [value]="tanggal()" (change)="tanggal.set(nilai($event))" />
+        </label>
+      </div>
+
+      <div class="kartu">
+        <div class="tabel-gulir">
+          <table class="tabel">
+            <thead><tr><th>Peserta</th><th>Sesi</th><th>Tes diikuti</th><th>Ringkasan hasil</th><th>Aksi</th></tr></thead>
+            <tbody>
+              @for (p of peserta(); track p.kunci) {
+                <tr [class.terpilih]="review()?.kunci === p.kunci || detail()?.kunci === p.kunci">
+                  <td>
+                    <strong>{{ p.nama }}</strong>
+                    @if (p.email) { <div class="teks-redup teks-kecil">{{ p.email }}</div> }
+                    @if (p.nama_sama) {
+                      <span class="lencana BELUM_MULAI" title="Ada catatan lain dengan nama sama untuk tes yang sama, jadi tidak digabung. Perbaiki lewat Ubah nama.">nama sama</span>
+                    }
+                  </td>
+                  <td>{{ p.nama_sesi }}<div class="teks-redup teks-kecil">{{ p.tanggal.join(', ') }}{{ p.mode === 'KELOMPOK' ? ' · serentak' : '' }}</div></td>
+                  <td class="sel-tes">
+                    @for (t of p.tes; track t.ujian_id) { <span class="lencana">{{ label[t.jenis_tes] }}</span> }
+                  </td>
+                  <td>{{ ringkas(p) }}</td>
+                  <td class="sel-aksi">
+                    <button type="button" class="tombol-tautan" (click)="bukaReview(p)">Review</button>
+                    <button type="button" class="tombol-tautan" (click)="cetak([p])">Cetak PDF</button>
+                    <button type="button" class="tombol-tautan" (click)="bukaDetail(p)">Detail jawaban</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="teks-redup">{{ memuat() ? 'Memuat...' : 'Belum ada hasil untuk filter ini.' }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="teks-redup teks-kecil">
+          Satu baris per peserta per sesi, hanya tes yang sudah selesai. Peserta serentak digabung menurut nama di sesi yang sama;
+          nama yang penulisannya beda tampil sebagai dua baris dan bisa diperbaiki lewat Ubah nama di menu Token dan jadwal.
+          Kategori dan skor akhir mengikuti aturan skoring yang dikonfirmasi HC. Untuk Koran, kategori memakai N = benar / 22 (dibulatkan).
+        </p>
+      </div>
+
+      @if (detail(); as p) {
+        <div class="kartu">
+          <div class="judul-baris">
+            <h2 class="judul-kartu">Detail jawaban · {{ p.nama }}</h2>
+            <button type="button" class="tombol-tautan" (click)="tutupDetail()">Tutup</button>
+          </div>
+          <div class="pilih-tes-detail">
+            @for (t of p.tes; track t.ujian_id) {
+              <button type="button" class="tombol tombol-garis" [class.aktif]="detailTes()?.ujian_id === t.ujian_id" (click)="pilihTesDetail(t)">
+                {{ label[t.jenis_tes] }}
+              </button>
+            }
+          </div>
+          @if (detailTes(); as h) {
+            <p class="teks-redup teks-kecil">
+              Benar {{ ringkasJawaban().benar }}, salah {{ ringkasJawaban().salah }}, kosong {{ ringkasJawaban().kosong }}.
+              Kunci tidak ditampilkan.
+              @if (h.jenis_tes === 'KORAN') { Hanya kotak yang dikerjakan yang ditampilkan. }
+              @if (h.jenis_tes === 'TIU6') { Nomor TIU 6 = (Soal - 1) x 5 + butir. }
+            </p>
+            <div class="grid-jawaban">
+              @for (j of jawabanTampil(); track j.nomor) {
+                <span class="sel-jawaban" [class.benar]="j.benar === true" [class.salah]="j.benar === false"
+                      [attr.title]="j.waktu_ms !== null ? 'detik ' + (j.waktu_ms / 1000).toFixed(1) : null">
+                  <small>{{ j.nomor }}</small>{{ j.jawaban ?? '–' }}
+                </span>
+              }
+            </div>
+            @if (h.jenis_tes === 'KORAN' && h.ringkasan_interval) {
+              <h3 class="judul-kartu" style="margin-top: 20px">Tracking per {{ intervalDetik() }} detik</h3>
+              <app-grafik-interval [interval]="h.ringkasan_interval" [detik]="intervalDetik()" />
+              <p class="teks-redup teks-kecil">
+                Dikerjakan = benar + salah pada interval tersebut. Interval 1 = detik 0 sampai kurang dari {{ intervalDetik() }} sejak tes dimulai.
+                Peserta tidak melihat data ini. Interpretasi grafik oleh HC.
+              </p>
+            }
+          }
+        </div>
       }
     </div>
-  </div>
-}
 
-@if (barisKoran(); as k) {
-  <div class="kartu">
-    <div class="judul-baris">
-      <h2 class="judul-kartu">Tes Koran: tracking per 20 detik</h2>
-      <span class="teks-redup teks-kecil">{{ k.nama ?? k.email }} · {{ k.ringkasan_interval!.length }} interval · hanya terlihat oleh admin HC</span>
-    </div>
-    <app-grafik-interval [interval]="k.ringkasan_interval!" />
-    <p class="teks-redup teks-kecil">
-      Dikerjakan = benar + salah pada interval tersebut. Interval 1 = detik 0 sampai kurang dari 20 sejak tes dimulai.
-      Peserta tidak melihat data ini. Interpretasi grafik oleh HC.
-    </p>
+    @if (review(); as p) {
+      <aside class="kartu-polos panel-review">
+        <div class="judul-baris">
+          <h2 class="judul-kartu">Preview laporan</h2>
+          <div class="baris-tombol" style="margin-top: 0">
+            <button type="button" class="tombol tombol-garis" (click)="cetak([p])">Cetak / Simpan PDF</button>
+            <button type="button" class="tombol-tautan" (click)="tutupReview()">Tutup</button>
+          </div>
+        </div>
+        <app-laporan-peserta [peserta]="p" [intervalDetik]="intervalDetik()" [catatan]="catatanUntuk(p)" [bisaDiisi]="true"
+                             (ubahCatatan)="ubahCatatan(p, $event)" />
+      </aside>
+    }
   </div>
-}
+</div>
+
+<!-- Hanya tampil saat mencetak. Satu peserta per halaman. -->
+<div class="area-cetak">
+  @for (p of cetakan(); track p.kunci) {
+    <app-laporan-peserta [peserta]="p" [intervalDetik]="intervalDetik()" [catatan]="catatanUntuk(p)" />
+  }
+</div>

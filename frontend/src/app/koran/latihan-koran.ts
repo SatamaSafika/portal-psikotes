@@ -1,11 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
-import { saringDigit } from '../core/koran';
 import { LATIHAN_KORAN, kunciKoran } from './latihan';
 import { LajurKoran, type TandaKotak } from './lajur-koran';
-
-const LAYAR_SEMPIT = '(max-width: 640px)';
 
 /** "2 + 3 = 5, tulis 5" untuk setiap kotak contoh. */
 function keterangan(angka: number[]): string[] {
@@ -37,12 +34,11 @@ export class LatihanKoran {
   protected readonly ketContoh1 = keterangan(this.contoh1);
   protected readonly ketContoh2 = keterangan(this.contoh2);
 
-  // Uji coba: aturan sama dengan tes (berurutan, Enter, satu digit).
+  // Uji coba: aturan sama dengan tes (berurutan, satu digit langsung terkunci).
   protected readonly ujiCoba = LATIHAN_KORAN.ujiCoba;
   private readonly kunciUji = kunciKoran(this.ujiCoba).map(String);
   protected readonly isiUji = signal<(string | null)[]>(this.kunciUji.map(() => null));
   protected readonly aktifUji = signal(0);
-  protected readonly isiAktif = signal('');
   protected readonly ujiSelesai = signal(false);
   protected readonly tandaUji = computed<TandaKotak[]>(() =>
     this.ujiSelesai() ? this.isiUji().map((x, i) => (x === this.kunciUji[i] ? 'benar' : 'salah')) : [],
@@ -50,17 +46,11 @@ export class LatihanKoran {
   protected readonly jumlahBenar = computed(() => this.tandaUji().filter((t) => t === 'benar').length);
   protected readonly kunciTampil = this.kunciUji.join(', ');
 
+  /** Satu angka langsung terkunci dan pindah ke kotak berikutnya, sama dengan tes. */
   protected ketik(digit: string): void {
-    this.isiAktif.set(saringDigit(digit));
-    if (digit && window.matchMedia(LAYAR_SEMPIT).matches) this.kunci();
-  }
-
-  protected kunci(): void {
-    const digit = this.isiAktif();
     const i = this.aktifUji();
-    if (!digit || i < 0 || this.ujiSelesai()) return;
+    if (i < 0 || this.ujiSelesai()) return;
     this.isiUji.update((x) => x.map((v, k) => (k === i ? digit : v)));
-    this.isiAktif.set('');
     this.aktifUji.set(i + 1 < this.kunciUji.length ? i + 1 : -1);
   }
 
@@ -72,7 +62,6 @@ export class LatihanKoran {
   protected ulangiUji(): void {
     this.isiUji.set(this.kunciUji.map(() => null));
     this.aktifUji.set(0);
-    this.isiAktif.set('');
     this.ujiSelesai.set(false);
   }
 

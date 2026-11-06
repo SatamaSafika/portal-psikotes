@@ -103,12 +103,9 @@ export class ApiAdmin {
     return firstValueFrom(this.http.put<{ nama: string }>(`${DASAR}/ujian/${ujianId}/nama`, { nama }));
   }
 
-  hasil(filter: { jenis: JenisTes | ''; sesi: string; tanggal: string }): Promise<{ hasil: BarisHasil[] }> {
-    let p = new HttpParams();
-    if (filter.jenis) p = p.set('jenis', filter.jenis);
-    if (filter.sesi) p = p.set('sesi', filter.sesi);
-    if (filter.tanggal) p = p.set('tanggal', filter.tanggal);
-    return this.get('/hasil', p);
+  /** Filter jenis tes dan tanggal diterapkan di layar per peserta, supaya laporan tetap memuat semua tesnya. */
+  hasil(sesi: string): Promise<{ hasil: BarisHasil[]; interval_detik: number; terpotong: boolean }> {
+    return this.get('/hasil', sesi ? new HttpParams().set('sesi', sesi) : undefined);
   }
   jawabanUjian(ujianId: number): Promise<{ jenis_tes: JenisTes; jawaban: JawabanNomor[] }> {
     return this.get(`/ujian/${ujianId}/jawaban`);

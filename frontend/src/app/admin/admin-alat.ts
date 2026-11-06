@@ -1,5 +1,6 @@
 // Logika murni dashboard HC: daftar peserta dari teks, skala grafik 22 interval, dan CSV untuk Excel.
-import type { Interval } from './admin-model';
+import { DAFTAR_TES, LABEL_TES } from '../core/model';
+import type { BarisHasil, Interval, PesertaHasil } from './admin-model';
 
 // ---------- daftar peserta ----------
 
@@ -57,6 +58,57 @@ export function uraiEmail(teks: string): string | null {
 export function persenKuota(terpakai: number, kuota: number): number {
   if (kuota <= 0) return 0;
   return Math.min(100, Math.max(0, Math.round((terpakai / kuota) * 100)));
+}
+
+// ---------- hasil per peserta ----------
+
+const normalNama = (nama: string | null): string => (nama ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+function buatPeserta(kunci: string, tes: BarisHasil[], namaSama: boolean): PesertaHasil {
+  const a = tes[0];
+  return {
+    kunci,
+    nama: a.nama ?? a.email ?? '—',
+    email: a.email,
+    sesi_id: a.sesi_id,
+    nama_sesi: a.nama_sesi,
+    mode: a.mode,
+    tanggal: [...new Set(tes.map((t) => t.tanggal))].sort(),
+    tes: [...tes].sort((x, y) => DAFTAR_TES.indexOf(x.jenis_tes) - DAFTAR_TES.indexOf(y.jenis_tes)),
+    nama_sama: namaSama,
+  };
+}
+
+/**
+ * Satu baris per peserta per sesi. Individu dikenali dari email. Serentak tidak punya email, jadi dikenali dari nama:
+ * bila nama yang sama punya dua catatan untuk tes yang sama, mereka bisa dua orang berbeda, jadi tidak digabung supaya
+ * hasilnya tidak tercampur di laporan (HC memperbaikinya lewat Ubah nama). Urutan mengikuti urutan baris dari server.
+ */
+export function kelompokkanPeserta(baris: BarisHasil[]): PesertaHasil[] {
+  const per = new Map<string, BarisHasil[]>();
+  for (const b of baris) {
+    const sesi = b.sesi_id ?? b.nama_sesi;
+    const kunci = b.email ? `i|${sesi}|${b.email.toLowerCase()}` : `k|${sesi}|${normalNama(b.nama)}`;
+    per.set(kunci, [...(per.get(kunci) ?? []), b]);
+  }
+  const hasil: PesertaHasil[] = [];
+  for (const [kunci, tes] of per) {
+    const ganda = new Set(tes.map((t) => t.jenis_tes)).size < tes.length;
+    if (ganda) hasil.push(...tes.map((t) => buatPeserta(`${kunci}|${t.ujian_id}`, [t], true)));
+    else hasil.push(buatPeserta(kunci, tes, false));
+  }
+  return hasil;
+}
+
+/** "TIU 5: Baik · TIU 6: Cukup · Koran: Rata-Rata" */
+export function ringkasHasil(p: PesertaHasil): string {
+  return p.tes.map((t) => `${t.jenis_tes === 'KORAN' ? 'Koran' : LABEL_TES[t.jenis_tes]}: ${t.kategori ?? 'belum dihitung'}`).join(' · ');
+}
+
+/** "2026-11-10" menjadi "10 November 2026". */
+export function formatTanggal(tanggal: string): string {
+  const [t, b, h] = tanggal.split('-').map(Number);
+  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(t, b - 1, h)));
 }
 
 // ---------- grafik ----------

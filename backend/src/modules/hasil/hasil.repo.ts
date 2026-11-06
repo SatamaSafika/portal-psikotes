@@ -60,11 +60,18 @@ const BUKA = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), u.wa
 const BUKA_K = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), k.waktu_buka), CAST(k.tanggal AS DATETIME2(0)))`;
 const TUTUP_K = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), k.waktu_tutup), CAST(k.tanggal AS DATETIME2(0)))`;
 
+/**
+ * Satu orang dalam satu sesi: email (individu) atau nama (serentak, tanpa email). Peserta yang mengerjakan 3 tes dihitung 1.
+ * Dua peserta serentak dengan nama sama di satu sesi terhitung 1 karena tidak ada penanda lain.
+ */
+const ORANG = `CONCAT(sesi_id, '|', COALESCE(email, LOWER(LTRIM(RTRIM(nama)))))`;
+
 export interface Ringkasan {
+  /** Semua peserta selesai yang datanya masih tersimpan (data dihapus 4 bulan setelah tes). */
+  total_selesai: number;
   selesai_hari_ini: number;
-  /** Token individu yang belum dipakai ditambah token kelompok yang masih bisa dipakai (satu per tes). */
-  token_aktif: number;
-  sesi_aktif: number;
+  /** Timer tes sedang berjalan. Peserta yang masih di instruksi atau latihan belum dihitung. */
+  sedang_mengerjakan: number;
   jadwal_hari_ini: {
     sesi_id: number;
     nama_sesi: string;
@@ -85,18 +92,11 @@ export async function ringkasanHariIni(): Promise<Ringkasan> {
   const pool = await ambilPool();
   const angka = await pool.request().query<Omit<Ringkasan, 'jadwal_hari_ini'>>(
     `SELECT
-       (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Ujian
+       (SELECT COUNT(DISTINCT ${ORANG}) FROM dbo.HCIS_Psikotes_Ujian WHERE ${SELESAI}) AS total_selesai,
+       (SELECT COUNT(DISTINCT ${ORANG}) FROM dbo.HCIS_Psikotes_Ujian
          WHERE ${SELESAI} AND CAST(selesai_pada AS DATE) = CAST(SYSDATETIME() AS DATE)) AS selesai_hari_ini,
-       (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Ujian
-         WHERE kelompok_id IS NULL AND status = 'BELUM_DIPAKAI' AND berlaku_sampai > SYSDATETIME())
-       + (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Kelompok k
-           WHERE k.dicabut_pada IS NULL AND k.terpakai < k.kuota AND SYSDATETIME() < ${TUTUP_K}) AS token_aktif,
-       (SELECT COUNT(DISTINCT x.sesi_id) FROM (
-          SELECT u.sesi_id FROM dbo.HCIS_Psikotes_Ujian u
-           WHERE u.kelompok_id IS NULL AND u.sesi_id IS NOT NULL AND SYSDATETIME() >= ${BUKA} AND SYSDATETIME() < u.berlaku_sampai
-          UNION ALL
-          SELECT k.sesi_id FROM dbo.HCIS_Psikotes_Kelompok k
-           WHERE k.dicabut_pada IS NULL AND SYSDATETIME() >= ${BUKA_K} AND SYSDATETIME() < ${TUTUP_K}) x) AS sesi_aktif`,
+       (SELECT COUNT(DISTINCT ${ORANG}) FROM dbo.HCIS_Psikotes_Ujian
+         WHERE status = 'BERJALAN' AND mulai_pada IS NOT NULL AND batas_selesai > SYSDATETIME()) AS sedang_mengerjakan`,
   );
   const jadwal = await pool.request().query<Ringkasan['jadwal_hari_ini'][number]>(
     `SELECT u.sesi_id, u.nama_sesi, u.jenis_tes, 'INDIVIDU' AS mode, COUNT(*) AS jumlah_peserta, CAST(NULL AS INT) AS kuota,
@@ -144,7 +144,10 @@ export interface BarisHasil {
   persetujuan_versi: string | null;
 }
 
-/** Hasil ujian yang sudah selesai, dengan filter opsional. Paling banyak 1000 baris terbaru. */
+/** Batas baris supaya laporan per peserta tidak kehilangan tes pada pemakaian normal; rute memberi tahu bila terpotong. */
+export const BATAS_HASIL = 5000;
+
+/** Hasil ujian yang sudah selesai, dengan filter opsional. Paling banyak BATAS_HASIL baris terbaru. */
 export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | null; tanggal: string | null }): Promise<BarisHasil[]> {
   const pool = await ambilPool();
   const hasil = await pool
@@ -153,7 +156,7 @@ export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | 
     .input('sesiId', sql.Int, f.sesiId)
     .input('tanggal', sql.VarChar(10), f.tanggal)
     .query<BarisHasil>(
-      `SELECT TOP (1000) id AS ujian_id, sesi_id, nama_sesi, CONVERT(CHAR(10), tanggal, 23) AS tanggal, jenis_tes,
+      `SELECT TOP (${BATAS_HASIL}) id AS ujian_id, sesi_id, nama_sesi, CONVERT(CHAR(10), tanggal, 23) AS tanggal, jenis_tes,
               CASE WHEN kelompok_id IS NULL THEN 'INDIVIDU' ELSE 'KELOMPOK' END AS mode,
               email, nama, status, CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
               jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir, ringkasan_interval,

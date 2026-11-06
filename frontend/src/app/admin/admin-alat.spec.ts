@@ -1,7 +1,59 @@
 // Data DUMMY (domain contoh.test).
 import { tampilToken } from '../halaman/verifikasi';
-import { batasAtas, buatCsv, persenKuota, skalaGrafik, uraiEmail, uraiKuota, uraiPeserta } from './admin-alat';
-import type { Interval } from './admin-model';
+import type { JenisTes } from '../core/model';
+import {
+  batasAtas,
+  buatCsv,
+  formatTanggal,
+  kelompokkanPeserta,
+  persenKuota,
+  ringkasHasil,
+  skalaGrafik,
+  uraiEmail,
+  uraiKuota,
+  uraiPeserta,
+} from './admin-alat';
+import type { BarisHasil, Interval } from './admin-model';
+
+describe('hasil per peserta', () => {
+  const baris = (ujian_id: number, jenis_tes: JenisTes, ubah: Partial<BarisHasil>): BarisHasil => ({
+    ujian_id, sesi_id: 1, nama_sesi: 'Sesi Uji', tanggal: '2026-11-10', jenis_tes, mode: 'KELOMPOK', email: null, nama: 'Peserta Satu',
+    status: 'DIKIRIM', selesai_pada: null, jumlah_benar: 1, jumlah_salah: 0, jumlah_dijawab: 1, n_koran: null, kategori: 'Baik', skor_akhir: 4,
+    ringkasan_interval: null, persetujuan_pada: null, persetujuan_versi: null, ...ubah,
+  });
+
+  it('serentak: nama sama di satu sesi jadi satu baris, urut baku, huruf besar dan spasi diabaikan', () => {
+    const r = kelompokkanPeserta([baris(1, 'KORAN', { kategori: 'Rata-Rata' }), baris(2, 'TIU5', { nama: ' peserta  SATU ' })]);
+    expect(r.length).toBe(1);
+    expect(r[0].tes.map((t) => t.jenis_tes)).toEqual(['TIU5', 'KORAN']);
+    expect(r[0].nama_sama).toBe(false);
+    expect(ringkasHasil(r[0])).toBe('TIU 5: Baik · Koran: Rata-Rata');
+  });
+
+  it('serentak: dua catatan bernama sama untuk tes yang sama tidak digabung', () => {
+    const r = kelompokkanPeserta([baris(1, 'TIU5', {}), baris(2, 'TIU5', {}), baris(3, 'TIU6', {})]);
+    expect(r.length).toBe(3);
+    expect(r.every((p) => p.nama_sama)).toBe(true);
+    expect(new Set(r.map((p) => p.kunci)).size).toBe(3);
+  });
+
+  it('nama sama di sesi lain atau email berbeda tetap dua peserta', () => {
+    expect(kelompokkanPeserta([baris(1, 'TIU5', {}), baris(2, 'TIU6', { sesi_id: 2 })]).length).toBe(2);
+    const individu = { mode: 'INDIVIDU' as const };
+    const r = kelompokkanPeserta([
+      baris(1, 'TIU5', { ...individu, email: 'a@contoh.test' }),
+      baris(2, 'TIU6', { ...individu, email: 'A@contoh.test' }),
+      baris(3, 'TIU5', { ...individu, email: 'b@contoh.test' }),
+    ]);
+    expect(r.map((p) => p.tes.length)).toEqual([2, 1]);
+  });
+
+  it('tanggal tes berbeda dicatat urut; format tanggal Indonesia', () => {
+    const r = kelompokkanPeserta([baris(1, 'TIU6', { tanggal: '2026-11-11' }), baris(2, 'TIU5', {})]);
+    expect(r[0].tanggal).toEqual(['2026-11-10', '2026-11-11']);
+    expect(formatTanggal('2026-11-10')).toBe('10 November 2026');
+  });
+});
 
 describe('sesi serentak', () => {
   it('kuota bilangan bulat 1 sampai 1000', () => {
