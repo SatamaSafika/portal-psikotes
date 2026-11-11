@@ -2,10 +2,11 @@
 
 Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), M (sekitar satu hari), L (lebih dari satu hari). Ukuran adalah perkiraan kasar, bukan janji.
 
-## Status (2 November 2026)
-- Selesai: Part 0, Part 1 (commit `b62a6ed`), Part 2 (commit `bcadab0`), Part 3 (commit `8349343`, revisi jadwal per tes `4e43b8f`), Part 4 (commit `0f08f52`), Part 5 (commit `65b2fa2`), Part 6 (commit `4555a19`), Part 7, semua di cabang `fika`. Backend lengkap; frontend peserta TIU 5, TIU 6, dan Koran selesai.
-- Berikutnya: Part 8 (Dashboard HC).
-- Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran per 20 detik, landing page tanpa deskripsi) memengaruhi Part 3 sampai Part 10. Kode Part 0 sampai 2 tidak perlu diubah, kecuali pemeriksaan bahan bank soal oleh pemilik proyek (lihat Part 2).
+## Status (10 November 2026)
+- Selesai dan di-commit di cabang `fika`: Part 0 sampai Part 8 (Dashboard HC `fd807ab`), Part 8b sesi serentak (`3ced5b4` sampai `cd75911`), Part 8c persetujuan peserta (`a7dc76b`, `f6893d4`), revisi UI HC 4 November (`4853c4c`), revisi HC 5 November (`f4befa5`).
+- Belum di-commit, menunggu uji di kantor: Redesign UI/UX dan perbaikan fungsi (9 November), Refinement visual akhir (9 November), dan Penerapan gaya prototipe v50 (10 November; gaya visual v50 menggantikan arah visual 9 November). Lihat bagian-bagian itu di bawah.
+- Berikutnya: uji di kantor untuk perubahan 9 dan 10 November, lalu Part 9 (pengujian dan gladi demo).
+- Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran, landing page tanpa deskripsi) dan 5 November 2026 (Koran 26 detik x 22, tanpa Enter; laporan per peserta) berlaku untuk semua part berikutnya.
 
 Aturan kerja di setiap part:
 1. Mulai dari Plan mode di Claude Code: minta rencana dulu, baca, baru izinkan menulis kode.
@@ -226,12 +227,63 @@ Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat AP
 
 ## Revisi HC (5 November 2026, disampaikan pemilik proyek)
 Menggantikan aturan lama di Part 4, 5, 7, 8, dan revisi Enter 4 November. Butir lama di atas tetap sebagai riwayat. Tanpa DDL.
-- [ ] Koran: interval 26 detik x 22, durasi 572 detik = 9 menit 32 detik (26 x 22, dikonfirmasi pemilik proyek 5 November 2026). Versi aturan `v2-2026-11-05`. Rumus N tidak berubah. Setelah diterapkan, jalankan `npm run hasil:hitung-ulang` supaya grafik hasil lama memakai interval baru.
-- [ ] Koran: satu angka langsung terkunci dan pindah kotak tanpa Enter, di semua layar dan uji coba. Halaman berganti otomatis. Kotak terakhir halaman 13 membuka layar konfirmasi kirim.
-- [ ] Overview: total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (status BERJALAN, sudah mulai, batas waktu belum lewat), dihitung per orang per sesi.
-- [ ] Hasil dan laporan: satu baris per peserta per sesi dengan Review, Cetak PDF, dan Detail jawaban (per nomor dan per 26 detik, terpisah dari Review). Laporan Peserta memuat identitas, hasil tiap tes, grafik Koran, dan catatan HC yang tercetak tetapi tidak disimpan. Ekspor PDF mencetak semua peserta sesuai filter, satu per halaman. Ekspor Excel tetap per tes.
-- [ ] Serentak digabung menurut nama di sesi yang sama; dua catatan bernama sama untuk tes yang sama tidak digabung dan ditandai.
+- [X] Koran: interval 26 detik x 22, durasi 572 detik = 9 menit 32 detik (26 x 22, dikonfirmasi pemilik proyek 5 November 2026). Versi aturan `v2-2026-11-05`. Rumus N tidak berubah. Setelah diterapkan, jalankan `npm run hasil:hitung-ulang` supaya grafik hasil lama memakai interval baru.
+- [X] Koran: satu angka langsung terkunci dan pindah kotak tanpa Enter, di semua layar dan uji coba. Halaman berganti otomatis. Kotak terakhir halaman 13 membuka layar konfirmasi kirim.
+- [X] Overview: total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (status BERJALAN, sudah mulai, batas waktu belum lewat), dihitung per orang per sesi.
+- [X] Hasil dan laporan: satu baris per peserta per sesi dengan Review, Cetak PDF, dan Detail jawaban (per nomor dan per 26 detik, terpisah dari Review). Laporan Peserta memuat identitas, hasil tiap tes, grafik Koran, dan catatan HC yang tercetak tetapi tidak disimpan. Ekspor PDF mencetak semua peserta sesuai filter, satu per halaman. Ekspor Excel tetap per tes.
+- [X] Serentak digabung menurut nama di sesi yang sama; dua catatan bernama sama untuk tes yang sama tidak digabung dan ditandai.
 Perlu verifikasi HC: angka pada contoh laporan tidak konsisten (benar dan salah Koran tampak tertukar, TIU 6 benar 26 tertulis Cukup padahal Baik menurut `skoring.json`). Laporan memakai hitungan sistem.
+
+## Redesign UI/UX dan perbaikan fungsi (9 November 2026, permintaan pemilik proyek)
+Tanpa DDL. Hanya warna dan tipografi korporat; nama dan logo perusahaan tetap tidak dipakai (aturan keras 10).
+- [ ] Token desain: navy `#193F69`, oranye `#CB642B`. Ikon Lucide (`lucide`; `lucide-angular` belum mendukung Angular 22). Halaman HC lebar maksimum 1440 px. (Font Lato, latar, dan warna teks diganti oleh Refinement visual akhir di bawah.)
+- [X] Halaman pilih tes: tes yang sudah dikirim dari tab ini tampil redup dengan penanda Selesai dan tombol "Sudah dikerjakan" (sessionStorage, tanpa identitas; token tetap sekali pakai di server). Tautan "Peserta lain memakai komputer ini" menghapus penanda.
+- [X] Instruksi TIU: "Klik kembali jawaban yang dipilih untuk membatalkan pilihan. Anda juga dapat melewati soal dan menjawabnya kembali nanti."
+- [X] ~~Tes Koran: satu lajur muat dalam layar 1366 x 768 tanpa menggulir.~~ Diganti permintaan berikutnya (9 November): lajur tidak dipaksa muat satu layar, keterbacaan lebih utama.
+- [X] Tes Koran (refinement 9 November): teks instruksi panjang di bawah lajur dihapus; baris 36 px dengan angka lebih besar; setiap kotak tepat di tengah dua angka dengan kurung penghubung (A+B, B+C); kotak terisi navy solid, kotak aktif putih bersorot oranye; kotak aktif tetap digulir otomatis ke tampilan.
+- [ ] Warna lebih tegas (9 November): header tes navy solid dengan timer oranye solid (merah saat hampir habis); peringatan Koran navy; navigasi soal TIU dan pilihan terpilih solid; pesan galat dan berhasil solid.
+- [X] Template email hanya diedit di formulir Buat sesi tes; tombol "Ubah template sesi" di kartu pratinjau dihapus (rute backend tetap ada untuk kompatibilitas).
+- [X] TIU 5 dan TIU 6: urutan soal acak per catatan ujian, deterministik dari id ujian, jenis tes, dan versi bank (sama saat dimuat ulang atau dilanjutkan, tanpa kolom baru). Jawaban, kunci, dan skoring tetap memakai nomor soal asli. TIU 6 diacak per Soal (butir tetap di Soal-nya).
+- [X] Latihan Koran: uji coba menjadi dua lajur (lajur kedua hanya di latihan; tes utama tidak berubah).
+- [X] Ekspor Excel `.xlsx` (menggantikan CSV) mengikuti filter aktif: lembar Rekap Peserta, detail per jenis tes, dan Keterangan; AutoFilter, baris judul beku, format tanggal, lebar kolom otomatis. Dibuat tanpa dependensi (ZIP + SpreadsheetML), diuji terbuka di Excel 16. Teks diawali `=` tetap teks (aman dari injeksi rumus).
+
+## Refinement visual akhir (9 November 2026, permintaan pemilik proyek)
+Tanpa perubahan logika, API, database, timer, pengacakan, skoring, atau penyimpanan. Diaudit dengan tangkapan layar semua halaman (server tiruan data dummy di luar repo).
+- [ ] Font: Raleway (judul, angka tegak) dan Inter (antarmuka), menggantikan Lato.
+- [ ] Panel datar radius 4 px tanpa bayangan; kepala tabel slate netral; status teks bertitik warna; latar warm neutral.
+- [ ] Overview: satu strip KPI bersekat (sedang mengerjakan, selesai hari ini, total selesai) menggantikan tiga kartu berikon.
+- [ ] Hasil dan laporan: filter sebagai toolbar; kolom "Hasil per tes" (kode tes, skor 1-5, kategori berwarna menurut skor) menggantikan kolom badge dan ringkasan teks; aksi Review, Cetak, Jawaban dalam satu baris.
+- [ ] Halaman awal: nomor urut 01-03 menggantikan ikon; tab admin tanpa ikon dekoratif; TIU 5 pilihan 1-5 berjajar; gambar soal tanpa bingkai ganda; teks bantu Token dan jadwal diringkas.
+
+Catatan 10 November: arah visual bagian ini (panel datar, warm neutral) digantikan Penerapan gaya prototipe v50 di bawah. Yang tetap: font Raleway dan Inter, strip KPI tiga angka, kolom Hasil per tes, nomor 01-03, pilihan TIU 5 berjajar.
+
+## Penerapan gaya prototipe v50 (10 November 2026, permintaan pemilik proyek)
+Acuan `docs/prototipe/PROTOTIPE_SPEC.md` bagian 7 sampai 13 dan `STYLE_UI.md`. Tampilan saja: tanpa perubahan logika, route, API, database, timer, skoring, validasi token, teks persetujuan, atau `koran/latihan.ts`. Diaudit dengan tangkapan layar semua halaman dan keadaan (server tiruan data dummy di luar repo), lebar 1440, 1366 x 768, 1920, dan 600 px.
+- [ ] Tahap 1-2, token dan komponen bersama: `styles.scss` dipecah menjadi `src/styles/_token, _dasar, _komponen, _peserta, _tes, _admin, _laporan`. Latar gradien biru muda, kartu kaca, tombol pil, chip label, ubin ikon, langkah bernomor, lencana dan kategori berupa pil. Komponen baru di `src/app/bersama/`: tanda produk (generik, bukan logo perusahaan), ilustrasi SVG (halaman awal, selesai, masuk admin), chip Catatan dengan tooltip (hover dan fokus keyboard), avatar inisial. Efek 7b (hover tombol, ubin, fade-up) mati bila `prefers-reduced-motion`. Font Raleway 500 dan 800 ditambah (tetap di-host sendiri).
+- [ ] Tahap 3, peserta pra-tes: hero halaman awal dengan ilustrasi dan tiga ubin ber-ikon; verifikasi langkah 1 (sekitar 620 px) dan langkah 2 dua kolom (persetujuan kiri, identitas kanan; "Tidak Setuju" tampil sebagai pesan merah); instruksi dengan langkah bernomor; latihan TIU 5 pilihan berjajar; uji coba Koran per kartu lajur; kirim dengan ubin ikon; selesai dengan ilustrasi centang.
+- [ ] Tahap 4, halaman tes tetap tenang (tanpa efek): header navy membulat, status "Jawaban tersimpan" di kepala kartu soal, instruksi TIU 6 bergaris kiri, navigasi TIU 6 empat kolom. Koran: banner aturan dan posisi halaman satu baris, baris 24 px; diukur di 1366 x 768 satu lajur berakhir di 647 px (tanpa gulir). Prototipe menyebut sekitar 27 px, tetapi dengan 27 px masih perlu gulir sekitar 100 px.
+- [ ] Tahap 5, dashboard HC: masuk admin dua panel; header terang dan tab kartu; Overview strip kaca tiga KPI; Token dan jadwal tiga kolom (formulir lengket 340 px; pratinjau email di kanan pada layar >= 1700 px, wadah 1680 px; jadwal ringkas "Sel, 10 Nov 08:00–10:00"; templat email di `<details>`; umpan balik berupa toast yang ditutup manual); Hasil dengan kartu ringkasan (dihitung dari baris tampil, nama kategori dari data), Cari nama, avatar, kolom Tanggal; panel Laporan menambah tombol Detail jawaban. Penjelasan panjang dipindah ke chip Catatan, teksnya tidak dihapus.
+- [ ] Tahap 6, verifikasi: kontras WCAG AA diukur untuk semua pasangan warna teks; fokus keyboard terlihat (outline oranye); `prefers-reduced-motion` mematikan transisi dan animasi; responsif sampai 600 px (tabel HC digulir ke samping, kolom bertumpuk). Build dan 56 tes unit lolos.
+
+Perbedaan dari prototipe dan alasannya:
+- Warna digelapkan karena kontras di bawah AA: teks sekunder `#5E7391` -> `#50647F`; latar tombol oranye `#CB642B` -> `#B85A26` (teks putih 3,9 -> 4,6:1; `#CB642B` tetap untuk aksen); teks chip `#2F6FD6` -> `#2560C0`; batas kontrol (field, kotak Koran, pilihan, navigasi soal) `#CFDBEC` -> `#7A8DA8` (1,4 -> 3,4:1, WCAG 1.4.11).
+- Halaman awal (permintaan pemilik proyek 11 November): tanpa tombol "Mulai dengan token" (token selalu terikat tes yang dipilih). Subteks kartu tanpa angka ("Pilihan ganda", "Benar atau salah", "Penjumlahan cepat"): belum ada API publik sebelum token, dan durasi atau jumlah soal tidak boleh ditulis permanen di front-end. Kartu selalu satu baris (ditumpuk di bawah 620 px); hover atau fokus menjadikan "Pilih tes" pil oranye `#B0541F`; perangkat sentuh selalu menampilkan pil. Nomor 01-03 dekoratif (`aria-hidden`, `#8FA3C0`). Paragraf hero mengikuti prototipe v50 (menggantikan "landing tanpa deskripsi" 2 November; perlu verifikasi HC).
+- Laporan Peserta dan Detail jawaban tetap panel di halaman Hasil, bukan halaman terpisah (route tidak diubah). Tata letak cetak A4 tidak diubah.
+- Chip "Perlu perhatian" tidak dipasang: kriteria belum diputuskan HC.
+- Cacat prototipe yang dirapikan: pil "Waktu terukur" (teks mepet, titik dekoratif tertindih, teks bisa diseleksi); header, isi, dan footer HC tidak sejajar kiri; jadwal "Tutup" terpisah di baris sendiri; pratinjau email lebih sempit dari kartu lain; Detail jawaban Koran menulis jumlah kosong padahal hanya kotak terisi yang tampil; garis grafik "Dikerjakan" berbeda warna dari legendanya; berkas `aset/ilustrasi-main.svg` terpotong (diambil utuh dari `html/Main.dc.html`); ikon kunci Lucide terpasang terputar 180 derajat dari prototipe.
+- Kurung penghubung di kiri kotak Koran (9 November) dihapus mengikuti prototipe v50.
+- Perbaikan 11 November: panel Review terbuka = aksi tabel Hasil berupa ikon saja (label untuk pembaca layar dan tooltip); jarak penjelasan di Contoh lajur Koran; tinggi baris Koran mengikuti tinggi layar (24 px di 1366 x 768, sampai 38 px di layar tinggi; selalu muat satu lajur).
+- Grafik tracking Koran (permintaan pemilik proyek 10 November: warna navy dan merah tua sulit dibedakan): hanya warna yang diganti, bentuk grafik tetap. Dikerjakan biru `#2F6FD6`, Benar hijau `#1E8A4E`, Salah oranye `#D9480F`. Berlaku di Detail jawaban dan Laporan Peserta (layar dan cetak).
+
+Belum diverifikasi: tampilan di laptop kantor 1366 x 768 dengan browser peserta (tinggi viewport sebenarnya), performa efek di laptop spesifikasi rendah, pembaca layar.
+
+## Revisi HC (10 November 2026, disampaikan pemilik proyek 11 November)
+Tampilan saja, tanpa perubahan backend, route, atau database.
+- [ ] Laporan Peserta: kolom N Tes Koran dihapus (N tetap di Excel). Format mengikuti contoh dokumen pemilik proyek: kepala biru berjarak huruf dengan garis navy, identitas dua pasang per baris (cetak), judul bagian pita navy, tabel bergaris dengan baris judul biru muda, kategori berwarna menurut skor akhir. Cetak A4 tetap satu halaman per peserta (diuji lewat cetak PDF).
+- [ ] Halaman awal peserta: urutan kartu Koran, TIU 5, TIU 6.
+- [ ] Portal peserta memakai Tes 1 (Koran), Tes 2 (TIU 5), Tes 3 (TIU 6): halaman awal, verifikasi, instruksi, latihan, pengerjaan, kirim. Dashboard HC tetap TIU 5, TIU 6, Tes Koran. Konstanta di `frontend/src/app/core/model.ts` (`DAFTAR_TES_PESERTA`, `LABEL_TES_PESERTA`).
+- Perlu keputusan: email undangan individu (dibuat backend, `undangan.ts`) masih menulis "TIU 5", "TIU 6", "Tes Koran" di daftar token, sehingga tidak cocok dengan "Tes 1-3" di portal. Teks instruksi dari bank soal juga perlu dicek pemilik proyek (AI tidak membaca bank). Alamat halaman token tetap memuat kode tes (`/masuk/KORAN`), karena route tidak diubah.
+- Perlu klarifikasi: catatan "daftarin form" pada notulen.
 
 ## Part 9. Pengujian dan gladi demo (M)
 - Daftar uji keamanan (lihat bawah) dan uji alur penuh.

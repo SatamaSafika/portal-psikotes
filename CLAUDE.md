@@ -46,6 +46,11 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 - Hasil dan laporan: satu baris per peserta per sesi, Review dan cetak Laporan Peserta, tombol Detail jawaban terpisah. Peserta serentak digabung menurut nama di sesi yang sama; bila ada dua catatan bernama sama untuk tes yang sama, tidak digabung dan ditandai. Catatan HC tidak disimpan.
 - Overview: total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (timer berjalan), dihitung per orang.
 
+## Revisi HC (10 November 2026, disampaikan pemilik proyek)
+- Laporan Peserta (dokumen hasil): kolom N Tes Koran tidak ditampilkan. N tetap dihitung dan tetap ada di ekspor Excel. Format dokumen mengikuti contoh dari pemilik proyek (11 November 2026).
+- Portal peserta: kartu Tes Koran paling kiri (cenderung dikerjakan lebih awal). Urutan peserta: Koran, TIU 5, TIU 6.
+- Portal peserta: nama tes diganti Tes 1 (Koran), Tes 2 (TIU 5), Tes 3 (TIU 6). Dashboard HC tetap memakai TIU 5, TIU 6, Tes Koran untuk monitoring dan penilaian.
+
 ## Belum dikonfirmasi HC
 - Belum ada. Catatan: aturan di atas disampaikan lewat pemilik proyek dan belum berupa dokumen tertulis HC.
 
