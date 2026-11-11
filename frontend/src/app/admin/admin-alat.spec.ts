@@ -5,6 +5,7 @@ import {
   batasAtas,
   buatCsv,
   formatTanggal,
+  jadwalSingkat,
   kelompokkanPeserta,
   persenKuota,
   ringkasHasil,
@@ -136,5 +137,15 @@ describe('CSV untuk Excel', () => {
 
   it('nilai yang tampak seperti rumus tidak dijalankan Excel', () => {
     expect(buatCsv(['x'], [['=1+1'], ['-5'], ['@a']])).toBe("﻿x\r\n'=1+1\r\n'-5\r\n'@a\r\n");
+  });
+});
+
+describe('jadwal ringkas', () => {
+  it('hari singkat, tanggal, bulan singkat, lalu jam', () => {
+    expect(jadwalSingkat('2026-11-10', '08:00', '10:00')).toBe('Sel, 10 Nov 08:00–10:00');
+  });
+
+  it('tanggal tidak sah tetap tampil apa adanya', () => {
+    expect(jadwalSingkat('', '08:00', '10:00')).toBe(' 08:00–10:00');
   });
 });

@@ -1,7 +1,8 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ApiPeserta, pesanGalat, statusGalat, type Persetujuan } from '../core/api.service';
-import { DAFTAR_TES, LABEL_TES, type JenisTes } from '../core/model';
+import { Ikon } from '../core/ikon';
+import { DAFTAR_TES, LABEL_TES_PESERTA, type JenisTes } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { KakiPortal } from '../tata-letak/kaki-portal';
 import { KepalaPortal } from '../tata-letak/kepala-portal';
@@ -25,14 +26,15 @@ export function tampilToken(masukan: string): string {
  */
 @Component({
   selector: 'app-verifikasi',
-  imports: [RouterLink, KepalaPortal, KakiPortal],
+  imports: [RouterLink, KepalaPortal, KakiPortal, Ikon],
   template: `
     <div class="halaman">
       <app-kepala-portal [langkah]="2" />
       <main class="isi-halaman">
-        <div class="wadah wadah-sempit">
-          <span class="label-tes">{{ labelTes() }}</span>
-          <h1 class="judul">Verifikasi token dan identitas</h1>
+        <div class="wadah" [class.wadah-token]="mode() === null" [class.wadah-identitas]="mode() !== null">
+          <span class="ubin-ikon besar"><app-ikon class="ikon-cermin" nama="key" [ukuran]="28" /></span>
+          <span class="label-tes label-verifikasi">{{ labelTes() }}</span>
+          <h1 class="judul judul-verifikasi">Verifikasi token dan identitas</h1>
           <p class="teks-redup">
             @switch (mode()) {
               @case ('KELOMPOK') { Token ini dipakai bersama satu kelompok. Tulis nama lengkap Anda dengan benar, karena hasil tes dicatat atas nama ini. }
@@ -42,13 +44,13 @@ export function tampilToken(masukan: string): string {
           </p>
 
           @if (mode() === null) {
-            <form class="kartu" (submit)="cekToken($event)" novalidate>
-              <label class="isian">
+            <form class="kaca kartu-verifikasi" (submit)="cekToken($event)" novalidate>
+              <label class="isian isian-token">
                 <span>Token</span>
                 <input name="token" autocomplete="off" spellcheck="false" autocapitalize="characters"
-                       [value]="token()" (input)="token.set(nilai($event))" />
+                       aria-describedby="petunjuk-token" [value]="token()" (input)="token.set(nilai($event))" />
               </label>
-              <p class="teks-redup teks-kecil" style="margin-top: -10px">Huruf besar atau kecil sama saja. Tanda hubung boleh diabaikan.</p>
+              <p id="petunjuk-token" class="teks-redup teks-kecil petunjuk-isian">Huruf besar atau kecil sama saja. Tanda hubung boleh diabaikan.</p>
               @if (galat()) {
                 <div class="kotak-galat" role="alert">{{ galat() }}</div>
               }
@@ -58,11 +60,12 @@ export function tampilToken(masukan: string): string {
               </div>
             </form>
           } @else {
-            <form class="kartu" (submit)="masuk($event)" novalidate>
-              <div class="kotak-info baris-token">
+            <form class="kaca kartu-verifikasi" (submit)="masuk($event)" novalidate>
+              <div class="baris-token">
                 <span>Token <strong class="token-teks">{{ tokenTampil() }}</strong> diterima</span>
                 <button type="button" class="tombol-tautan" (click)="gantiToken()">Ganti token</button>
               </div>
+              <div class="kolom-verifikasi">
               @if (persetujuan(); as p) {
                 <fieldset class="persetujuan">
                   <legend>{{ p.judul }} <span class="wajib" aria-hidden="true">*</span></legend>
@@ -82,10 +85,11 @@ export function tampilToken(masukan: string): string {
                     {{ p.label_tidak_setuju }}
                   </label>
                   @if (setuju() === false) {
-                    <div class="kotak-peringatan" role="status">{{ wajibSetuju }}</div>
+                    <div class="kotak-galat" role="alert">{{ wajibSetuju }}</div>
                   }
                 </fieldset>
               }
+              <div class="isian-identitas">
               <label class="isian">
                 <span>Nama lengkap</span>
                 <input name="nama" autocomplete="name" placeholder="Sesuai data pendaftaran"
@@ -102,13 +106,15 @@ export function tampilToken(masukan: string): string {
                 Setelah tes dimulai, waktu berjalan dan tidak dapat dihentikan. Pastikan koneksi internet stabil.
               </div>
               @if (galat()) {
-                <div class="kotak-galat" role="alert" style="margin-top: 12px">{{ galat() }}</div>
+                <div class="kotak-galat galat-identitas" role="alert">{{ galat() }}</div>
               }
               <div class="baris-tombol">
                 <button class="tombol tombol-utama" type="submit" [disabled]="memproses() || setuju() !== true">
                   {{ memproses() ? 'Memeriksa...' : 'Verifikasi dan lanjut' }}
                 </button>
                 <a class="tombol-tautan" routerLink="/">Kembali</a>
+              </div>
+              </div>
               </div>
             </form>
           }
@@ -139,7 +145,7 @@ export class Verifikasi implements OnInit {
   protected readonly wajibSetuju = WAJIB_SETUJU;
 
   protected labelTes(): string {
-    return LABEL_TES[this.tes() as JenisTes] ?? '';
+    return LABEL_TES_PESERTA[this.tes() as JenisTes] ?? '';
   }
 
   async ngOnInit(): Promise<void> {

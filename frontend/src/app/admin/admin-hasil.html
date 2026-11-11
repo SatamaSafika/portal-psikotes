@@ -1,10 +1,12 @@
+<!--
+  Hasil dan laporan (prototipe v50, HcHasil): ringkasan, filter, tabel satu baris per peserta per sesi.
+  Review membuka Laporan Peserta di panel kanan; Jawaban membuka Detail jawaban di bawah tabel.
+  Chip "Perlu perhatian" di prototipe tidak dipasang: kriterianya belum diputuskan HC.
+-->
 <div class="tanpa-cetak">
-  <div class="judul-baris">
+  <div class="kepala-halaman">
     <h1 class="judul">Hasil dan laporan</h1>
-    <div class="baris-tombol" style="margin-top: 0">
-      <button type="button" class="tombol tombol-garis" [disabled]="peserta().length === 0" (click)="eksporCsv()">Ekspor Excel</button>
-      <button type="button" class="tombol tombol-garis" [disabled]="peserta().length === 0" (click)="cetak(peserta())">Ekspor PDF</button>
-    </div>
+    <span class="teks-redup">Satu baris per peserta per sesi</span>
   </div>
 
   @if (galat()) {
@@ -14,49 +16,121 @@
     <div class="kotak-peringatan" role="status">Data terlalu banyak dan hanya yang terbaru ditampilkan. Pilih satu sesi agar lengkap.</div>
   }
 
+  <!-- Ringkasan: dihitung dari baris yang tampil (mengikuti filter). -->
+  @let r = ringkasan();
+  <section class="ringkasan-hasil" aria-label="Ringkasan hasil">
+    <div class="kaca ringkasan-angka">
+      <span class="ubin-ikon kecil"><app-ikon nama="users" [ukuran]="22" /></span>
+      <div>
+        <span class="kpi-label">Peserta</span>
+        <strong>{{ r.peserta }}</strong>
+        <span class="kpi-ket">dalam {{ r.sesi }} sesi</span>
+      </div>
+    </div>
+    <div class="kaca ringkasan-angka">
+      <span class="ubin-ikon kecil"><app-ikon nama="file" [ukuran]="22" /></span>
+      <div>
+        <span class="kpi-label">Hasil tes</span>
+        <strong>{{ r.hasil }}</strong>
+        <span class="kpi-ket">{{ r.jenis || '—' }}</span>
+      </div>
+    </div>
+    <div class="kaca ringkasan-sebaran">
+      <span class="kpi-label">Sebaran kategori ({{ r.dinilai }} hasil)</span>
+      @if (r.dinilai > 0) {
+        <div class="bilah-sebaran" role="img"
+             [attr.aria-label]="'Sebaran kategori: ' + r.uraian">
+          @for (x of r.sebaran; track x.skor) {
+            <span [attr.data-skor]="x.skor" [style.flex-grow]="x.jumlah"></span>
+          }
+        </div>
+        <ul class="legenda-sebaran">
+          @for (x of r.sebaran; track x.skor) {
+            <li [attr.data-skor]="x.skor">{{ x.label }} {{ x.jumlah }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="teks-redup teks-kecil">Belum ada hasil.</p>
+      }
+    </div>
+  </section>
+
+  <div class="kaca filter-hasil" role="search">
+    <label class="isian"><span>Sesi</span>
+      <select [value]="sesi()" (change)="ubahSesi(nilai($event))">
+        <option value="">Semua sesi</option>
+        @for (s of daftarSesi(); track s.id) { <option [value]="s.id">{{ s.nama_sesi }} · {{ s.tanggal }}</option> }
+      </select>
+    </label>
+    <label class="isian"><span>Jenis tes</span>
+      <select [value]="jenis()" (change)="jenis.set($any(nilai($event)))">
+        <option value="">Semua tes</option>
+        @for (t of daftarTes; track t) { <option [value]="t">{{ label[t] }}</option> }
+      </select>
+    </label>
+    <label class="isian"><span>Tanggal tes</span>
+      <input type="date" [value]="tanggal()" (change)="tanggal.set(nilai($event))" />
+    </label>
+    <label class="isian isian-cari"><span>Cari nama</span>
+      <input type="search" [value]="cari()" (input)="cari.set(nilai($event))" placeholder="Nama peserta" />
+    </label>
+    <div class="aksi-ekspor">
+      <button type="button" class="tombol tombol-navy" [disabled]="peserta().length === 0" (click)="eksporExcel()">
+        <app-ikon nama="file-spreadsheet" />Ekspor Excel (.xlsx)
+      </button>
+      <button type="button" class="tombol tombol-garis-navy" [disabled]="peserta().length === 0" (click)="cetak(peserta())">
+        <app-ikon nama="printer" />Ekspor PDF
+      </button>
+    </div>
+  </div>
+
   <div class="tata-hasil" [class.ada-review]="review()">
     <div class="kolom-kanan">
-      <div class="kartu filter-hasil">
-        <label class="isian"><span>Jenis tes</span>
-          <select [value]="jenis()" (change)="jenis.set($any(nilai($event)))">
-            <option value="">Semua tes</option>
-            @for (t of daftarTes; track t) { <option [value]="t">{{ label[t] }}</option> }
-          </select>
-        </label>
-        <label class="isian"><span>Sesi</span>
-          <select [value]="sesi()" (change)="ubahSesi(nilai($event))">
-            <option value="">Semua sesi</option>
-            @for (s of daftarSesi(); track s.id) { <option [value]="s.id">{{ s.nama_sesi }} · {{ s.tanggal }}</option> }
-          </select>
-        </label>
-        <label class="isian"><span>Tanggal tes</span>
-          <input type="date" [value]="tanggal()" (change)="tanggal.set(nilai($event))" />
-        </label>
-      </div>
-
-      <div class="kartu">
+      <div class="kartu kartu-tabel">
+        <div class="kepala-kartu">
+          <span class="teks-redup" role="status">{{ memuat() ? 'Memuat...' : peserta().length + ' peserta' }}</span>
+        </div>
         <div class="tabel-gulir">
-          <table class="tabel">
-            <thead><tr><th>Peserta</th><th>Sesi</th><th>Tes diikuti</th><th>Ringkasan hasil</th><th>Aksi</th></tr></thead>
+          <table class="tabel tabel-hasil">
+            <colgroup>
+              <col class="kolom-peserta" /><col class="kolom-sesi" /><col /><col class="kolom-tanggal" /><col class="kolom-aksi" />
+            </colgroup>
+            <thead><tr><th>Peserta</th><th>Sesi</th><th>Hasil per tes (kode, skor 1-5)</th><th>Tanggal</th><th>Aksi</th></tr></thead>
             <tbody>
               @for (p of peserta(); track p.kunci) {
                 <tr [class.terpilih]="review()?.kunci === p.kunci || detail()?.kunci === p.kunci">
                   <td>
-                    <strong>{{ p.nama }}</strong>
-                    @if (p.email) { <div class="teks-redup teks-kecil">{{ p.email }}</div> }
-                    @if (p.nama_sama) {
-                      <span class="lencana BELUM_MULAI" title="Ada catatan lain dengan nama sama untuk tes yang sama, jadi tidak digabung. Perbaiki lewat Ubah nama.">nama sama</span>
-                    }
+                    <div class="sel-peserta">
+                      <app-avatar [nama]="p.nama" />
+                      <div>
+                        <strong>{{ p.nama }}</strong>
+                        @if (p.email) { <div class="teks-redup teks-kecil">{{ p.email }}</div> }
+                        @if (p.nama_sama) {
+                          <div class="tanda-nama">Nama sama untuk tes sama, tidak digabung</div>
+                        }
+                      </div>
+                    </div>
                   </td>
-                  <td>{{ p.nama_sesi }}<div class="teks-redup teks-kecil">{{ p.tanggal.join(', ') }}{{ p.mode === 'KELOMPOK' ? ' · serentak' : '' }}</div></td>
-                  <td class="sel-tes">
-                    @for (t of p.tes; track t.ujian_id) { <span class="lencana">{{ label[t.jenis_tes] }}</span> }
+                  <td>{{ p.nama_sesi }}<div class="teks-redup teks-kecil">{{ p.mode === 'KELOMPOK' ? 'Serentak' : 'Individu' }}</div></td>
+                  <td>
+                    <!-- Kategori diwarnai menurut skor akhir (1-5 dari skoring.json), bukan nama kategori. -->
+                    <ul class="hasil-tes">
+                      @for (t of p.tes; track t.ujian_id) {
+                        <li>
+                          <span class="hasil-kode">{{ singkat[t.jenis_tes] }}</span>
+                          <span class="hasil-kategori" [attr.data-skor]="t.skor_akhir">{{ t.kategori ?? 'Belum dihitung' }}</span>
+                          <span class="hasil-skor" [attr.aria-label]="'Skor akhir ' + (t.skor_akhir ?? '-')">{{ t.skor_akhir ?? '—' }}</span>
+                        </li>
+                      }
+                    </ul>
                   </td>
-                  <td>{{ ringkas(p) }}</td>
-                  <td class="sel-aksi">
-                    <button type="button" class="tombol-tautan" (click)="bukaReview(p)">Review</button>
-                    <button type="button" class="tombol-tautan" (click)="cetak([p])">Cetak PDF</button>
-                    <button type="button" class="tombol-tautan" (click)="bukaDetail(p)">Detail jawaban</button>
+                  <td class="sel-tanggal">{{ tanggalTampil(p) }}</td>
+                  <td>
+                    <div class="grup-aksi">
+                      <button type="button" class="tombol-aksi tombol-aksi-utama" title="Review" aria-label="Review" (click)="bukaReview(p)"><app-ikon nama="eye" [ukuran]="16" /><span class="label-aksi">Review</span></button>
+                      <button type="button" class="tombol-aksi" title="Cetak PDF" (click)="cetak([p])" [attr.aria-label]="'Cetak PDF ' + p.nama"><app-ikon nama="printer" [ukuran]="16" /><span class="label-aksi">Cetak PDF</span></button>
+                      <button type="button" class="tombol-aksi" title="Jawaban" aria-label="Jawaban" (click)="bukaDetail(p)"><app-ikon nama="file-text" [ukuran]="16" /><span class="label-aksi">Jawaban</span></button>
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -65,33 +139,38 @@
             </tbody>
           </table>
         </div>
-        <p class="teks-redup teks-kecil">
-          Satu baris per peserta per sesi, hanya tes yang sudah selesai. Peserta serentak digabung menurut nama di sesi yang sama;
-          nama yang penulisannya beda tampil sebagai dua baris dan bisa diperbaiki lewat Ubah nama di menu Token dan jadwal.
-          Kategori dan skor akhir mengikuti aturan skoring yang dikonfirmasi HC. Untuk Koran, kategori memakai N = benar / 22 (dibulatkan).
-        </p>
+        <app-catatan class="catatan-bawah">
+          Satu baris per peserta per sesi, hanya tes yang selesai. Skor akhir 1 sampai 5 menurut aturan skoring HC; Koran memakai N = benar / 22.
+          Peserta serentak digabung menurut nama dalam sesi yang sama; nama sama untuk tes yang sama tidak digabung dan ditandai.
+          Filter, Cari nama, Ekspor Excel, dan Ekspor PDF memakai baris yang sedang tampil.
+        </app-catatan>
       </div>
 
       @if (detail(); as p) {
         <div class="kartu">
-          <div class="judul-baris">
+          <div class="kepala-kartu">
             <h2 class="judul-kartu">Detail jawaban · {{ p.nama }}</h2>
             <button type="button" class="tombol-tautan" (click)="tutupDetail()">Tutup</button>
           </div>
-          <div class="pilih-tes-detail">
+          <div class="pilih-tes-detail" role="tablist" aria-label="Pilih tes">
             @for (t of p.tes; track t.ujian_id) {
-              <button type="button" class="tombol tombol-garis" [class.aktif]="detailTes()?.ujian_id === t.ujian_id" (click)="pilihTesDetail(t)">
+              <button type="button" role="tab" class="tombol-aksi" [class.aktif]="detailTes()?.ujian_id === t.ujian_id"
+                      [attr.aria-selected]="detailTes()?.ujian_id === t.ujian_id" (click)="pilihTesDetail(t)">
                 {{ label[t.jenis_tes] }}
               </button>
             }
           </div>
           @if (detailTes(); as h) {
-            <p class="teks-redup teks-kecil">
-              Benar {{ ringkasJawaban().benar }}, salah {{ ringkasJawaban().salah }}, kosong {{ ringkasJawaban().kosong }}.
-              Kunci tidak ditampilkan.
-              @if (h.jenis_tes === 'KORAN') { Hanya kotak yang dikerjakan yang ditampilkan. }
-              @if (h.jenis_tes === 'TIU6') { Nomor TIU 6 = (Soal - 1) x 5 + butir. }
-            </p>
+            <div class="ringkas-jawaban">
+              <strong>
+                Benar {{ ringkasJawaban().benar }}, salah {{ ringkasJawaban().salah }}@if (h.jenis_tes !== 'KORAN') {, kosong {{ ringkasJawaban().kosong }}}.
+              </strong>
+              <app-catatan>
+                Kunci tidak ditampilkan. Hijau = benar, merah = salah, abu = kosong.
+                @if (h.jenis_tes === 'KORAN') { Hanya kotak yang dikerjakan yang ditampilkan, jadi kotak kosong tidak dihitung di sini. }
+                @if (h.jenis_tes === 'TIU6') { Nomor TIU 6 = (Soal - 1) x 5 + butir. }
+              </app-catatan>
+            </div>
             <div class="grid-jawaban">
               @for (j of jawabanTampil(); track j.nomor) {
                 <span class="sel-jawaban" [class.benar]="j.benar === true" [class.salah]="j.benar === false"
@@ -101,12 +180,12 @@
               }
             </div>
             @if (h.jenis_tes === 'KORAN' && h.ringkasan_interval) {
-              <h3 class="judul-kartu" style="margin-top: 20px">Tracking per {{ intervalDetik() }} detik</h3>
+              <h3 class="judul-kartu judul-tracking">Tracking per {{ intervalDetik() }} detik</h3>
               <app-grafik-interval [interval]="h.ringkasan_interval" [detik]="intervalDetik()" />
-              <p class="teks-redup teks-kecil">
+              <app-catatan class="catatan-bawah">
                 Dikerjakan = benar + salah pada interval tersebut. Interval 1 = detik 0 sampai kurang dari {{ intervalDetik() }} sejak tes dimulai.
                 Peserta tidak melihat data ini. Interpretasi grafik oleh HC.
-              </p>
+              </app-catatan>
             }
           }
         </div>
@@ -115,11 +194,12 @@
 
     @if (review(); as p) {
       <aside class="kartu-polos panel-review">
-        <div class="judul-baris">
-          <h2 class="judul-kartu">Preview laporan</h2>
-          <div class="baris-tombol" style="margin-top: 0">
-            <button type="button" class="tombol tombol-garis" (click)="cetak([p])">Cetak / Simpan PDF</button>
-            <button type="button" class="tombol-tautan" (click)="tutupReview()">Tutup</button>
+        <div class="kepala-kartu">
+          <h2 class="judul-kartu">Laporan peserta</h2>
+          <div class="grup-aksi">
+            <button type="button" class="tombol-aksi tombol-aksi-utama" (click)="cetak([p])"><app-ikon nama="printer" [ukuran]="16" />Cetak PDF</button>
+            <button type="button" class="tombol-aksi" (click)="bukaDetail(p)"><app-ikon nama="file-text" [ukuran]="16" />Detail jawaban</button>
+            <button type="button" class="tombol-aksi" (click)="tutupReview()">Tutup</button>
           </div>
         </div>
         <app-laporan-peserta [peserta]="p" [intervalDetik]="intervalDetik()" [catatan]="catatanUntuk(p)" [bisaDiisi]="true"

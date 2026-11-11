@@ -111,6 +111,16 @@ export function formatTanggal(tanggal: string): string {
   return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(t, b - 1, h)));
 }
 
+/** Jadwal ringkas untuk tabel: "Sel, 10 Nov 08:00–10:00". Tanggal YYYY-MM-DD, jam HH:MM. */
+export function jadwalSingkat(tanggal: string, buka: string, tutup: string): string {
+  const [t, b, h] = tanggal.split('-').map(Number);
+  if (!t || !b || !h) return `${tanggal} ${buka}–${tutup}`;
+  const hari = new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(t, b - 1, h)))
+    .replace(/\./g, '');
+  return `${hari} ${buka}–${tutup}`;
+}
+
 // ---------- grafik ----------
 
 export interface UkuranGrafik {

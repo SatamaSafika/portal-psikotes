@@ -4,10 +4,23 @@ export type JenisTes = 'TIU5' | 'TIU6' | 'KORAN';
 
 export const DAFTAR_TES: JenisTes[] = ['TIU5', 'TIU6', 'KORAN'];
 
+/** Nama tes untuk dashboard HC (monitoring dan penilaian). Jangan dipakai di halaman peserta. */
 export const LABEL_TES: Record<JenisTes, string> = {
   TIU5: 'TIU 5',
   TIU6: 'TIU 6',
   KORAN: 'Tes Koran / Kraepelin',
+};
+
+/**
+ * Revisi HC 10 November 2026: di portal peserta nama tes diganti Tes 1, Tes 2, Tes 3, dan Tes Koran
+ * tampil paling kiri (cenderung dikerjakan lebih awal). Dashboard HC tetap memakai LABEL_TES.
+ */
+export const DAFTAR_TES_PESERTA: JenisTes[] = ['KORAN', 'TIU5', 'TIU6'];
+
+export const LABEL_TES_PESERTA: Record<JenisTes, string> = {
+  KORAN: 'Tes 1',
+  TIU5: 'Tes 2',
+  TIU6: 'Tes 3',
 };
 
 export const BUTIR_PER_SOAL_TIU6 = 5;

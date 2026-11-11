@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ApiPeserta, pesanGalat } from '../core/api.service';
-import { BUTIR_PER_SOAL_TIU6, LABEL_TES, type HasilPeriksa, type ItemLatihan } from '../core/model';
+import { BUTIR_PER_SOAL_TIU6, LABEL_TES_PESERTA, type HasilPeriksa, type ItemLatihan } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { LatihanKoran } from '../koran/latihan-koran';
 import { KakiPortal } from '../tata-letak/kaki-portal';
@@ -28,7 +28,7 @@ export class Latihan implements OnInit {
   protected readonly butir = Array.from({ length: BUTIR_PER_SOAL_TIU6 }, (_, i) => i + 1);
 
   protected readonly jenis = computed(() => this.pengerjaan.info()?.jenis_tes ?? null);
-  protected readonly labelTes = computed(() => (this.jenis() ? LABEL_TES[this.jenis()!] : ''));
+  protected readonly labelTes = computed(() => (this.jenis() ? LABEL_TES_PESERTA[this.jenis()!] : ''));
   protected readonly instruksi = computed(() => this.pengerjaan.latihan()?.instruksi ?? null);
   protected readonly daftar = computed<ItemLatihan[]>(() => this.pengerjaan.latihan()?.latihan ?? []);
   protected readonly indeks = signal(0);

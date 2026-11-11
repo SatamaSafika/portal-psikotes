@@ -12,7 +12,8 @@ const JUDUL_TES: Record<JenisTes, string> = {
 
 /**
  * Laporan Peserta: dokumen individual untuk Review dan cetak. Memuat identitas, hasil tiap tes yang selesai,
- * grafik Koran, dan catatan HC. Catatan tidak disimpan: ikut tercetak lalu hilang saat halaman dimuat ulang.
+ * grafik Koran, dan catatan HC. Kolom N Koran tidak ditampilkan (revisi HC 10 November 2026; N tetap di Excel).
+ * Format mengikuti contoh dokumen dari pemilik proyek (11 November 2026). Catatan tidak disimpan: ikut tercetak lalu hilang saat halaman dimuat ulang.
  * Tanpa kunci jawaban. Hanya untuk admin HC.
  */
 @Component({
@@ -41,15 +42,13 @@ const JUDUL_TES: Record<JenisTes, string> = {
             <thead>
               <tr>
                 <th>{{ t.jenis_tes === 'KORAN' ? 'Dikerjakan' : 'Dijawab' }}</th><th>Benar</th><th>Salah</th>
-                @if (t.jenis_tes === 'KORAN') { <th>N</th> }
                 <th>Kategori</th><th>Skor akhir</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>{{ t.jumlah_dijawab ?? '—' }}</td><td>{{ t.jumlah_benar ?? '—' }}</td><td>{{ t.jumlah_salah ?? '—' }}</td>
-                @if (t.jenis_tes === 'KORAN') { <td>{{ t.n_koran ?? '—' }}</td> }
-                <td><strong>{{ t.kategori ?? 'Belum dihitung' }}</strong></td><td><strong>{{ t.skor_akhir ?? '—' }}</strong></td>
+                <td class="laporan-kategori" [attr.data-skor]="t.skor_akhir">{{ t.kategori ?? 'Belum dihitung' }}</td><td>{{ t.skor_akhir ?? '—' }}</td>
               </tr>
             </tbody>
           </table>

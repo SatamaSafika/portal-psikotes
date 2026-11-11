@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
-import { LATIHAN_KORAN, kunciKoran } from './latihan';
+import { LAJUR_UJI_COBA, LATIHAN_KORAN, kunciKoran } from './latihan';
 import { LajurKoran, type TandaKotak } from './lajur-koran';
 
 /** "2 + 3 = 5, tulis 5" untuk setiap kotak contoh. */
@@ -13,7 +13,8 @@ function keterangan(angka: number[]): string[] {
 }
 
 /**
- * Latihan Koran: contoh 1 (hasil 9 atau kurang), contoh 2 (hasil lebih dari 9), uji coba satu lajur.
+ * Latihan Koran: contoh 1 (hasil 9 atau kurang), contoh 2 (hasil lebih dari 9), uji coba dua lajur.
+ * Lajur kedua hanya ada di latihan; susunan dan aturan tes utama tidak berubah.
  * Angka latihan dari latihan.ts (bukan bank soal), jadi kuncinya boleh dihitung di browser.
  * Tidak dinilai, tidak disimpan, tidak dicatat waktunya.
  */
@@ -34,9 +35,10 @@ export class LatihanKoran {
   protected readonly ketContoh1 = keterangan(this.contoh1);
   protected readonly ketContoh2 = keterangan(this.contoh2);
 
-  // Uji coba: aturan sama dengan tes (berurutan, satu digit langsung terkunci).
-  protected readonly ujiCoba = LATIHAN_KORAN.ujiCoba;
-  private readonly kunciUji = kunciKoran(this.ujiCoba).map(String);
+  // Uji coba dua lajur: aturan sama dengan tes (berurutan dari lajur 1 ke lajur 2, satu digit langsung terkunci).
+  // Indeks kotak dihitung datar di semua lajur, seperti nomor pada tes.
+  private readonly kunciPerLajur = LAJUR_UJI_COBA.map((angka) => kunciKoran(angka).map(String));
+  private readonly kunciUji = this.kunciPerLajur.flat();
   protected readonly isiUji = signal<(string | null)[]>(this.kunciUji.map(() => null));
   protected readonly aktifUji = signal(0);
   protected readonly ujiSelesai = signal(false);
@@ -44,7 +46,25 @@ export class LatihanKoran {
     this.ujiSelesai() ? this.isiUji().map((x, i) => (x === this.kunciUji[i] ? 'benar' : 'salah')) : [],
   );
   protected readonly jumlahBenar = computed(() => this.tandaUji().filter((t) => t === 'benar').length);
-  protected readonly kunciTampil = this.kunciUji.join(', ');
+  protected readonly kunciTampil = this.kunciPerLajur.map((k, i) => `lajur ${i + 1}: ${k.join(', ')}`).join('; ');
+
+  /** Tampilan per lajur: angka, isi, kotak aktif lokal, dan tanda benar/salah setelah selesai. */
+  protected readonly lajurUji = computed(() => {
+    let awal = 0;
+    return LAJUR_UJI_COBA.map((angka, i) => {
+      const n = angka.length - 1;
+      const aktif = this.aktifUji() - awal;
+      const lajur = {
+        judul: `Lajur uji coba ${i + 1}`,
+        angka,
+        isi: this.isiUji().slice(awal, awal + n),
+        aktif: aktif >= 0 && aktif < n ? aktif : -1,
+        tanda: this.tandaUji().slice(awal, awal + n),
+      };
+      awal += n;
+      return lajur;
+    });
+  });
 
   /** Satu angka langsung terkunci dan pindah ke kotak berikutnya, sama dengan tes. */
   protected ketik(digit: string): void {

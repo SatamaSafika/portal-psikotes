@@ -1,0 +1,79 @@
+// Token desain prototipe v50 (PROTOTIPE_SPEC.md bagian 7): lembut, kartu kaca, tombol pil.
+// Tanpa nama dan logo perusahaan (CLAUDE.md aturan keras 10): hanya warna dan tipografi.
+// Kontras diukur (WCAG AA 4,5:1 untuk teks biasa). Tiga nilai digelapkan dari prototipe karena tidak lolos:
+//   teks sekunder #5E7391 -> #50647F (4,26 -> 5,3 di latar muda),
+//   latar tombol oranye #CB642B -> #B85A26 (teks putih 3,89 -> 4,64), #CB642B tetap untuk aksen dan garis,
+//   teks chip/tautan biru #2F6FD6 -> #2560C0 (4,07 -> 5,06 di #E3EDFC), #2F6FD6 tetap untuk ikon dan isian.
+
+:root {
+  // warna inti
+  --navy: #193f69;
+  --navy-gelap: #12304f;
+  --biru: #2f6fd6;
+  --biru-teks: #2560c0;
+  --oranye: #cb642b;
+  --oranye-aksi: #b85a26;
+  --oranye-aksi-hover: #a04c1c;
+  --oranye-teks: #a34c1c;
+  // Teks dan pil "Pilih tes" di halaman awal (hover prototipe #B0541F): teks oranye di putih 5,1:1, putih di atasnya 5,1:1.
+  --oranye-teks-aksi: #b0541f;
+
+  // teks
+  --teks: #1c2f4a;
+  --teks-redup: #50647f;
+
+  // permukaan dan garis
+  --kartu: #ffffff;
+  --kaca: rgba(255, 255, 255, 0.78);
+  --kaca-pekat: rgba(255, 255, 255, 0.86);
+  --kaca-garis: rgba(255, 255, 255, 0.9);
+  --garis: #cfdbec;
+  --garis-halus: #dce6f5;
+  --garis-tipis: #edf2fa;
+  --kontrol: #7a8da8; // batas kontrol: 3,4:1 di atas putih (WCAG 1.4.11); prototipe #CFDBEC hanya 1,4:1
+  --biru-muda: #e3edfc;
+  --biru-pucat: #f3f7fd;
+  --oranye-muda: #fbe9dc;
+  --oranye-muda-teks: #7a3a0a;
+  --kotak-kosong: #e3e9f2;
+
+  // status dan kategori
+  --benar: #1e6b3a;
+  --benar-muda: #e3f3e8;
+  --salah: #8a1f2b;
+  --salah-muda: #fbe4e6;
+  --kuning-muda: #fff3cc;
+  --kuning-teks: #6b5200;
+  --bilah-baik: #4caf7a;
+  --bilah-rata: #f2c94c;
+  --bilah-kurang: #e8924f;
+  --bilah-kurang-sekali: #d9534f;
+
+  // latar halaman
+  --latar: #eef4fc;
+  --latar-gradien: radial-gradient(900px 500px at 85% 0%, #d7e5fb 0%, rgba(215, 229, 251, 0) 60%),
+    radial-gradient(700px 500px at 0% 60%, #e3edfc 0%, rgba(227, 237, 252, 0) 60%),
+    linear-gradient(180deg, #f3f7fd, #eaf1fb);
+  --ubin-gradien: linear-gradient(145deg, #e6effd, #c9dcf8);
+
+  // bentuk
+  --radius: 20px;
+  --radius-besar: 22px;
+  --radius-sedang: 16px;
+  --radius-field: 14px;
+  --radius-kecil: 8px;
+  --pil: 999px;
+  --bayangan: 0 10px 30px rgba(25, 63, 105, 0.09);
+  --bayangan-kaca: 0 14px 40px rgba(25, 63, 105, 0.1);
+  --bayangan-angkat: 0 18px 44px rgba(25, 63, 105, 0.16);
+  --bayangan-oranye: 0 8px 20px rgba(184, 90, 38, 0.26);
+  --bayangan-oranye-hover: 0 12px 26px rgba(184, 90, 38, 0.38);
+  --bayangan-navy: 0 8px 20px rgba(25, 63, 105, 0.25);
+
+  // gerak (7b); dimatikan oleh prefers-reduced-motion di _dasar.scss
+  --pantul: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  // font (di-host sendiri lewat @fontsource, lihat angular.json)
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-judul: 'Raleway', 'Inter', system-ui, sans-serif;
+}

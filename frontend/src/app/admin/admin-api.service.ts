@@ -61,9 +61,6 @@ export class ApiAdmin {
   templateBawaan(mode: ModeSesi = 'INDIVIDU'): Promise<Template> {
     return this.get('/template-bawaan', mode === 'KELOMPOK' ? new HttpParams().set('mode', 'kelompok') : undefined);
   }
-  simpanTemplate(sesiId: number, t: Template): Promise<void> {
-    return firstValueFrom(this.http.put<void>(`${DASAR}/sesi/${sesiId}/template`, t));
-  }
   tokenBaru(sesiId: number, email: string): Promise<{ undangan: Undangan }> {
     return this.post(`/sesi/${sesiId}/token-baru`, { email });
   }

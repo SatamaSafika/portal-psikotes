@@ -1,14 +1,16 @@
 import { Component, input } from '@angular/core';
+import { TandaProduk } from '../bersama/tanda-produk';
 
 const LANGKAH = ['Pilih tes', 'Verifikasi', 'Instruksi', 'Latihan', 'Tes', 'Selesai'];
 
 /** Header portal: nama netral "Portal Psikotes" (tanpa nama atau logo perusahaan) dan stepper alur peserta. */
 @Component({
   selector: 'app-kepala-portal',
+  imports: [TandaProduk],
   template: `
     <header class="kepala">
-      <div class="wadah kepala-isi">
-        <span class="merek">Portal Psikotes</span>
+      <div class="wadah wadah-lebar kepala-isi">
+        <span class="merek"><app-tanda-produk />Portal Psikotes</span>
         @if (langkah()) {
           <ol class="stepper" aria-label="Langkah">
             @for (nama of daftar; track nama; let i = $index) {

@@ -1,7 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { pesanGalat } from '../core/api.service';
-import { LABEL_TES } from '../core/model';
+import { Ikon } from '../core/ikon';
+import { LABEL_TES_PESERTA } from '../core/model';
 import { jumlahDijawab } from '../core/navigasi';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { formatSisa } from '../core/waktu';
@@ -11,18 +12,19 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
 /** Konfirmasi kirim. Waktu tetap berjalan; bila habis di halaman ini, jawaban terkirim otomatis. */
 @Component({
   selector: 'app-kirim',
-  imports: [RouterLink, KepalaPortal, KakiPortal],
+  imports: [RouterLink, KepalaPortal, KakiPortal, Ikon],
   template: `
     <div class="halaman">
       <app-kepala-portal [keterangan]="labelTes() + ' · Sisa waktu ' + sisa()" />
       <main class="isi-halaman">
         <div class="wadah wadah-sempit">
+          <span class="ubin-ikon besar ubin-judul"><app-ikon nama="send" [ukuran]="28" /></span>
           <h1 class="judul">Kirim jawaban sekarang?</h1>
           <div class="kartu">
             <div class="statistik">
               <div><span class="teks-kecil">Sudah dijawab</span><span class="nilai">{{ dijawab() }}</span></div>
-              <div style="background: var(--oranye-muda)">
-                <span class="teks-kecil">Belum dijawab</span><span class="nilai" style="color: #7a3b0c">{{ total() - dijawab() }}</span>
+              <div class="oranye">
+                <span class="teks-kecil">Belum dijawab</span><span class="nilai">{{ total() - dijawab() }}</span>
               </div>
             </div>
             <p class="teks-redup">
@@ -48,7 +50,7 @@ export class Kirim implements OnInit {
   private readonly pengerjaan = inject(PengerjaanService);
   protected readonly labelTes = computed(() => {
     const i = this.pengerjaan.info();
-    return i ? LABEL_TES[i.jenis_tes] : '';
+    return i ? LABEL_TES_PESERTA[i.jenis_tes] : '';
   });
   protected readonly sisa = computed(() => formatSisa(this.pengerjaan.sisaDetik() ?? 0));
   /** TIU 5: 30 soal; TIU 6: 40 butir. */

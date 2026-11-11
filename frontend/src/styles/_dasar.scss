@@ -1,0 +1,273 @@
+// Dasar: reset, tipografi, tata letak, header dan footer peserta, gerak.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  color: var(--teks);
+  background: var(--latar-gradien);
+  background-color: var(--latar);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.merek,
+.judul-kartu {
+  color: var(--teks);
+  font-family: var(--font-judul);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+// Raleway memakai angka gaya lama secara bawaan (5 dan 3 turun di bawah garis); paksa angka tegak.
+h1,
+h2,
+h3,
+.merek,
+.judul-kartu,
+.kpi strong,
+.hasil-skor,
+.ringkasan-angka strong {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+// Ikon Lucide (core/ikon.ts): sejajar dengan teks, warna mengikuti teks.
+.ikon {
+  display: inline-flex;
+  flex: none;
+  line-height: 0;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: var(--biru-teks);
+}
+
+// Fokus keyboard selalu terlihat (7b-7).
+:focus-visible {
+  outline: 2px solid var(--oranye);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ---------- tata letak ----------
+
+.wadah {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// Halaman HC: memanfaatkan layar lebar, tetap ada batas supaya baris tidak terlalu panjang.
+.wadah-lebar {
+  max-width: 1440px;
+  padding: 0 32px;
+}
+
+.wadah-sempit {
+  max-width: 560px;
+}
+
+.wadah-sedang {
+  max-width: 860px;
+}
+
+.isi-halaman {
+  padding: 32px 0 56px;
+  flex: 1;
+}
+
+.halaman {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+// ---------- header, stepper, footer peserta (transparan) ----------
+
+.kepala {
+  background: transparent;
+}
+
+.kepala-isi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  min-height: 72px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.merek {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--navy);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--teks-redup);
+
+  li {
+    position: relative;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  // Pemisah di luar kotak langkah supaya tidak ikut tersorot pada langkah aktif.
+  li + li::before {
+    content: '›';
+    position: absolute;
+    left: -13px;
+    color: var(--teks-redup);
+    font-weight: 400;
+  }
+
+  // Layar sempit: stepper membungkus; pemisah disembunyikan supaya tidak muncul di awal baris.
+  @media (max-width: 760px) {
+    gap: 4px 6px;
+
+    li + li::before {
+      display: none;
+    }
+  }
+
+  li.aktif {
+    background: var(--oranye-muda);
+    color: var(--navy);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--oranye);
+  }
+}
+
+.kaki {
+  background: transparent;
+  color: var(--teks-redup);
+  font-size: 0.875rem;
+}
+
+.kaki-isi {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 20px;
+  padding-bottom: 24px;
+}
+
+// ---------- tipografi ----------
+
+h1.judul {
+  margin: 0 0 20px;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.teks-redup {
+  color: var(--teks-redup);
+}
+
+.teks-kecil {
+  font-size: 0.875rem;
+}
+
+.instruksi {
+  white-space: pre-wrap;
+}
+
+.tengah {
+  text-align: center;
+}
+
+// ---------- gerak (7b-4): kartu muncul ----------
+
+@keyframes muncul {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes goyang {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  30% {
+    transform: rotate(-10deg);
+  }
+
+  60% {
+    transform: rotate(8deg);
+  }
+}
+
+// 7b-9: semua transisi, animasi, dan transformasi hover mati bila pengguna meminta gerak dikurangi.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .tombol:hover,
+  .tombol:active,
+  .ubin-tes:hover,
+  .ubin-tes:focus-visible,
+  .ubin-tes:active,
+  .tautan-ubin .ikon,
+  .tombol-aksi:hover {
+    transform: none !important;
+  }
+}

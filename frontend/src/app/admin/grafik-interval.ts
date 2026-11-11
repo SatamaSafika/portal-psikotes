@@ -10,9 +10,9 @@ import type { Interval } from './admin-model';
   selector: 'app-grafik-interval',
   template: `
     <ul class="legenda-grafik">
-      <li><span style="background: var(--navy)"></span>Dikerjakan</li>
-      <li><span style="background: var(--benar)"></span>Benar</li>
-      <li><span style="background: var(--salah)"></span>Salah</li>
+      <li><span [style.background]="warna.dikerjakan"></span>Dikerjakan</li>
+      <li><span [style.background]="warna.benar"></span>Benar</li>
+      <li><span [style.background]="warna.salah"></span>Salah</li>
     </ul>
     @let s = skala();
     <svg viewBox="0 0 760 260" class="grafik" role="img"
@@ -25,17 +25,17 @@ import type { Interval } from './admin-model';
         <text [attr.x]="x" [attr.y]="s.dasarY + 18" text-anchor="middle" class="label-sumbu">{{ $index + 1 }}</text>
       }
       <text x="394" y="256" text-anchor="middle" class="label-sumbu">Interval ke- (setiap {{ detik() }} detik, total {{ interval().length }})</text>
-      <polyline [attr.points]="s.garis.dikerjakan" fill="none" stroke="#003C71" stroke-width="2" />
-      <polyline [attr.points]="s.garis.benar" fill="none" stroke="#1E6B3A" stroke-width="2" />
-      <polyline [attr.points]="s.garis.salah" fill="none" stroke="#8A1F2B" stroke-width="2" />
+      <polyline [attr.points]="s.garis.dikerjakan" fill="none" [attr.stroke]="warna.dikerjakan" stroke-width="2" />
+      <polyline [attr.points]="s.garis.benar" fill="none" [attr.stroke]="warna.benar" stroke-width="2" />
+      <polyline [attr.points]="s.garis.salah" fill="none" [attr.stroke]="warna.salah" stroke-width="2" />
       @for (t of s.titik.dikerjakan; track $index) {
-        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" fill="#003C71"><title>Interval {{ $index + 1 }}: dikerjakan {{ interval()[$index].dikerjakan }}</title></circle>
+        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" [attr.fill]="warna.dikerjakan"><title>Interval {{ $index + 1 }}: dikerjakan {{ interval()[$index].dikerjakan }}</title></circle>
       }
       @for (t of s.titik.benar; track $index) {
-        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" fill="#1E6B3A"><title>Interval {{ $index + 1 }}: benar {{ interval()[$index].benar }}</title></circle>
+        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" [attr.fill]="warna.benar"><title>Interval {{ $index + 1 }}: benar {{ interval()[$index].benar }}</title></circle>
       }
       @for (t of s.titik.salah; track $index) {
-        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" fill="#8A1F2B"><title>Interval {{ $index + 1 }}: salah {{ interval()[$index].salah }}</title></circle>
+        <circle [attr.cx]="t.x" [attr.cy]="t.y" r="3" [attr.fill]="warna.salah"><title>Interval {{ $index + 1 }}: salah {{ interval()[$index].salah }}</title></circle>
       }
     </svg>
 
@@ -67,6 +67,8 @@ export class GrafikInterval {
   /** false di Laporan Peserta: grafik saja. */
   readonly denganTabel = input(true);
   protected readonly skala = computed(() => skalaGrafik(this.interval()));
+  /** Biru, hijau, oranye: rona berbeda jauh; masing-masing minimal 3:1 terhadap putih (unsur grafik, WCAG 1.4.11). */
+  protected readonly warna = { dikerjakan: '#2F6FD6', benar: '#1E8A4E', salah: '#D9480F' } as const;
   protected readonly tabelTerbuka = signal(false);
   protected readonly jumlah = computed(() =>
     this.interval().reduce((a, x) => ({ dikerjakan: a.dikerjakan + x.dikerjakan, benar: a.benar + x.benar, salah: a.salah + x.salah }), {

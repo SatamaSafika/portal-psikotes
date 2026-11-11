@@ -11,7 +11,7 @@ import { AdminSesi } from './admin-sesi.service';
   template: `
     <div class="halaman">
       <header class="kepala-admin">
-        <div class="wadah kepala-admin-isi">
+        <div class="wadah wadah-lebar kepala-admin-isi">
           <strong>Portal Psikotes · Dashboard HC</strong>
           <span class="akun-admin">
             {{ sesi.username() ?? 'Admin HC' }}
@@ -20,16 +20,16 @@ import { AdminSesi } from './admin-sesi.service';
         </div>
       </header>
       <nav class="tab-admin" aria-label="Menu dashboard">
-        <div class="wadah">
+        <div class="wadah wadah-lebar">
           <a routerLink="/admin" routerLinkActive="aktif" [routerLinkActiveOptions]="{ exact: true }">Overview</a>
           <a routerLink="/admin/token" routerLinkActive="aktif">Token dan jadwal</a>
           <a routerLink="/admin/hasil" routerLinkActive="aktif">Hasil dan laporan</a>
         </div>
       </nav>
       <main class="isi-halaman">
-        <div class="wadah"><router-outlet /></div>
+        <div class="wadah wadah-lebar"><router-outlet /></div>
       </main>
-      <app-kaki-portal />
+      <app-kaki-portal [lebar]="true" />
     </div>
   `,
 })

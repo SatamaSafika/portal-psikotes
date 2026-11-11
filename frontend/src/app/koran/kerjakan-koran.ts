@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
+import { Ikon } from '../core/ikon';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { LajurKoran } from './lajur-koran';
 
@@ -11,33 +12,33 @@ import { LajurKoran } from './lajur-koran';
  */
 @Component({
   selector: 'app-kerjakan-koran',
-  imports: [LajurKoran],
+  imports: [LajurKoran, Ikon],
   template: `
     @if (susunan(); as s) {
       <div class="wadah area-koran">
-        <div class="info-halaman">
-          <strong>Halaman {{ halaman() }} dari {{ s.soal.halaman }}</strong>
-          <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
-        </div>
-        <div class="kotak-peringatan peringatan-koran" role="note">
-          <strong>Perhatian:</strong> satu angka yang Anda ketik langsung terkunci dan tidak dapat diubah. Kursor pindah otomatis
-          ke kotak berikutnya, tanpa menekan Enter, dan halaman yang sudah lewat tidak dapat dibuka lagi.
+        <!-- Satu baris: aturan di kiri, posisi halaman di kanan, supaya satu lajur muat di layar 1366 x 768. -->
+        <div class="baris-info-koran">
+          <div class="peringatan-koran" role="note">
+            <app-ikon nama="lock" [ukuran]="16" />
+            <span><strong>Perhatian:</strong> satu angka langsung terkunci dan tidak dapat diubah. Kursor pindah otomatis tanpa Enter.</span>
+          </div>
+          <div class="info-halaman">
+            <strong>Halaman {{ halaman() }} dari {{ s.soal.halaman }}</strong>
+            <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
+          </div>
         </div>
         <div class="kertas-koran">
           @for (l of lajurTampil(); track l.lajur) {
             <app-lajur-koran [judul]="'Lajur ' + l.posisi" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif" (ketik)="ketik($event)" />
           }
         </div>
-        <div class="kaki-koran">
-          <p class="teks-redup teks-kecil">
-            Jumlahkan dua angka yang mengapit kotak, lalu ketik angka terakhirnya saja: untuk hasil 12, ketik 2.
-            Kotak tidak dapat dilewati. Setelah kotak terakhir di halaman ini terisi, halaman berikutnya terbuka otomatis.
-          </p>
-          <!-- Hanya setelah kembali dari layar konfirmasi atau memuat ulang: semua kotak sudah terisi. -->
-          @if (selesaiSemua()) {
+        <!-- Instruksi lengkap ada di halaman instruksi dan uji coba; di sini ruang dipakai untuk lajur. -->
+        <!-- Tombol hanya setelah kembali dari layar konfirmasi atau memuat ulang: semua kotak sudah terisi. -->
+        @if (selesaiSemua()) {
+          <div class="kaki-koran">
             <button type="button" class="tombol tombol-navy" (click)="keKonfirmasi()">Kirim jawaban</button>
-          }
-        </div>
+          </div>
+        }
       </div>
     }
   `,

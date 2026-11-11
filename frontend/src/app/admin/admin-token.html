@@ -1,44 +1,35 @@
+<!--
+  Token dan jadwal (prototipe v50, HcToken): kiri formulir "Buat sesi tes" (lengket), tengah sesi terpilih,
+  kanan pratinjau email (lengket) pada layar >= 1700 px; di bawah itu pratinjau pindah ke bawah tabel.
+  Penjelasan panjang dipindah ke chip Catatan (teks tidak dihapus).
+-->
 <div class="tata-token">
   <!-- Kiri: buat sesi -->
-  <form class="kartu" (submit)="buatSesi($event)" novalidate>
+  <form class="kartu form-sesi" (submit)="buatSesi($event)" novalidate>
     <h2 class="judul-kartu">Buat sesi tes</h2>
 
     <div class="pilih-mode" role="radiogroup" aria-label="Mode sesi">
       <button type="button" role="radio" [attr.aria-checked]="modeBaru() === 'INDIVIDU'"
               [class.aktif]="modeBaru() === 'INDIVIDU'" (click)="gantiMode('INDIVIDU')">Individu</button>
       <button type="button" role="radio" [attr.aria-checked]="modeBaru() === 'KELOMPOK'"
-              [class.aktif]="modeBaru() === 'KELOMPOK'" (click)="gantiMode('KELOMPOK')">Serentak</button>
+              [class.aktif]="modeBaru() === 'KELOMPOK'" (click)="gantiMode('KELOMPOK')">Serentak (kelompok)</button>
     </div>
-    <p class="teks-redup teks-kecil">
+    <app-catatan class="catatan-form">
       @if (modeBaru() === 'INDIVIDU') {
         Token per peserta, dikirim ke email masing-masing peserta.
       } @else {
         Satu token per tes untuk satu kelompok, dengan kuota. Token dikirim ke satu penerima (pengawas atau PIC);
         peserta masuk dengan token dan nama saja.
       }
-    </p>
+    </app-catatan>
 
     <label class="isian">
       <span>Nama sesi</span>
       <input [value]="namaSesi()" (input)="namaSesi.set(nilai($event))" placeholder="Contoh: Sesi pagi" />
     </label>
 
-    @if (modeBaru() === 'KELOMPOK') {
-      <div>
-        <label class="isian">
-          <span>Jumlah peserta (kuota per tes)</span>
-          <input type="number" min="1" [max]="kuotaMaks" inputmode="numeric" [value]="kuotaTeks()"
-                 (input)="kuotaTeks.set(nilai($event))" placeholder="Contoh: 100" />
-        </label>
-        <label class="isian">
-          <span>Email penerima token</span>
-          <input type="email" [value]="emailPenerima()" (input)="emailPenerima.set(nilai($event))" placeholder="pengawas@contoh.test" />
-        </label>
-      </div>
-    }
-
     <fieldset class="kelompok">
-      <legend>Tes dan jadwal (setiap tes punya jadwal sendiri)</legend>
+      <legend>Tes dan jadwal</legend>
       @for (t of daftarTes; track t) {
         @let j = jadwal()[t];
         <div class="baris-jadwal">
@@ -56,7 +47,17 @@
       }
     </fieldset>
 
-    @if (modeBaru() === 'INDIVIDU') {
+    @if (modeBaru() === 'KELOMPOK') {
+      <label class="isian">
+        <span>Jumlah peserta (kuota per tes, maksimal {{ kuotaMaks }})</span>
+        <input type="number" min="1" [max]="kuotaMaks" inputmode="numeric" [value]="kuotaTeks()"
+               (input)="kuotaTeks.set(nilai($event))" placeholder="Contoh: 100" />
+      </label>
+      <label class="isian">
+        <span>Email penerima token</span>
+        <input type="email" [value]="emailPenerima()" (input)="emailPenerima.set(nilai($event))" placeholder="pengawas@contoh.test" />
+      </label>
+    } @else {
       <label class="isian">
         <span>Peserta (satu per baris: email, atau email, nama)</span>
         <textarea rows="5" [value]="pesertaTeks()" (input)="pesertaTeks.set(nilai($event))"
@@ -64,10 +65,10 @@
       </label>
     }
 
-    <button type="button" class="tombol-tautan" (click)="ubahTemplateBaru.set(!ubahTemplateBaru())">
-      {{ ubahTemplateBaru() ? '▾ Pakai template ini' : '▸ Ubah template email untuk sesi ini' }}
-    </button>
-    @if (ubahTemplateBaru()) {
+    <!-- Terbuka = templat di bawah dipakai untuk sesi ini; tertutup = templat bawaan. -->
+    <details class="templat" [open]="ubahTemplateBaru()" (toggle)="ubahTemplateBaru.set(terbuka($event))">
+      <summary>Templat email (opsional)</summary>
+      <p class="teks-redup teks-kecil">Selama bagian ini terbuka, templat di bawah dipakai untuk sesi ini.</p>
       <label class="isian"><span>Subjek</span>
         <input [value]="template().subjek" (input)="ubahTemplate('subjek', nilai($event))" /></label>
       <label class="isian"><span>Isi (wajib memuat {{ '{' }}daftar_token{{ '}' }})</span>
@@ -80,36 +81,24 @@
           {{ '{' }}daftar_token{{ '}' }} (nama tes, jadwal, dan token tiap tes).
         </p>
       }
-    }
+    </details>
 
-    <p class="teks-redup teks-kecil">
-      @if (modeBaru() === 'INDIVIDU') {
-        Token dibuat per peserta untuk setiap tes, sekali pakai, dan hanya berlaku pada jadwal tes itu.
-        Undangan semua tes seorang peserta digabung dalam satu email.
-      } @else {
-        Satu token per tes, dipakai bersama sampai kuota habis, dan hanya berlaku pada jadwal tes itu.
-        Setiap peserta yang masuk mendapat catatan tes dan waktu sendiri.
-      }
-    </p>
     @for (g of galatBuat(); track g) {
-      <div class="kotak-galat" role="alert" style="margin-bottom: 6px">{{ g }}</div>
+      <div class="kotak-galat galat-form" role="alert">{{ g }}</div>
     }
     <button class="tombol tombol-navy tombol-penuh" type="submit" [disabled]="membuat()">
-      {{ membuat() ? 'Membuat...' : 'Buat sesi dan token' }}
+      {{ membuat() ? 'Membuat...' : modeBaru() === 'KELOMPOK' ? 'Buat sesi dan token kelompok' : 'Buat sesi dan token' }}
     </button>
   </form>
 
-  <!-- Kanan: sesi terpilih -->
-  <div class="kolom-kanan">
-    @if (pesan()) {
-      <div class="kotak-benar" role="status">{{ pesan() }}</div>
-    }
+  <!-- Tengah: sesi terpilih -->
+  <div class="kolom-tengah">
     @if (galat()) {
       <div class="kotak-galat" role="alert">{{ galat() }}</div>
     }
 
-    <div class="kartu">
-      <label class="isian" style="margin: 0">
+    <div class="kartu kartu-pilih-sesi">
+      <label class="pilih-sesi">
         <span>Sesi</span>
         <select [value]="sesiId() ?? ''" (change)="pilihSesi(+nilai($event))">
           @for (s of daftarSesi(); track s.id) {
@@ -121,6 +110,9 @@
           }
         </select>
       </label>
+      <app-catatan>
+        Pilihan sesi menentukan tampilan di bawah (individu atau serentak), terpisah dari mode formulir Buat sesi tes.
+      </app-catatan>
     </div>
 
     @if (detail(); as d) {
@@ -129,17 +121,17 @@
         <div class="kartu">
           <h2 class="judul-kartu">Token kelompok</h2>
           <div class="tabel-gulir">
-            <table class="tabel">
-              <thead><tr><th>Tes</th><th>Token</th><th>Jadwal</th><th>Peserta masuk</th><th>Status</th><th></th></tr></thead>
+            <table class="tabel tabel-rapat-hc">
+              <thead><tr><th>Tes</th><th>Token</th><th>Jadwal</th><th>Terpakai</th><th>Status</th><th>Aksi</th></tr></thead>
               <tbody>
                 @for (k of d.kelompok; track k.kelompok_id) {
                   <tr [class.terpilih]="kelompokDipilih()?.kelompok_id === k.kelompok_id">
-                    <td>{{ label[k.tes] }}</td>
+                    <td><strong>{{ label[k.tes] }}</strong></td>
                     <td class="token">{{ tokenKelompok(k.kelompok_id) ?? '••••' }}</td>
-                    <td>{{ k.tanggal }} {{ k.waktu_buka }}–{{ k.waktu_tutup }}</td>
+                    <td>{{ jadwalSingkat(k.tanggal, k.waktu_buka, k.waktu_tutup) }}</td>
                     <td>
                       <div>{{ k.terpakai }} dari {{ k.kuota }}</div>
-                      <div class="batang-kuota" [attr.aria-label]="k.terpakai + ' dari ' + k.kuota">
+                      <div class="batang-kuota" [class.penuh]="k.terpakai >= k.kuota" [attr.aria-label]="k.terpakai + ' dari ' + k.kuota">
                         <span [style.width.%]="persen(k.terpakai, k.kuota)"></span>
                       </div>
                     </td>
@@ -149,7 +141,7 @@
                       @if (k.status !== 'DICABUT' && k.status !== 'SELESAI') {
                         <button type="button" class="tombol-tautan" [disabled]="k.kuota >= kuotaMaks" (click)="tambahKuota(k)">Tambah kuota</button>
                         <button type="button" class="tombol-tautan" (click)="tokenBaruKelompok(k)">Token baru</button>
-                        <button type="button" class="tombol-tautan" (click)="cabutKelompok(k)">Cabut</button>
+                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabutKelompok(k)">Cabut</button>
                       }
                     </td>
                   </tr>
@@ -157,21 +149,20 @@
               </tbody>
             </table>
           </div>
-          <p class="teks-redup teks-kecil">
-            Tambah kuota menambah 1 kursi. Token baru mengganti token (token lama langsung tidak berlaku) tanpa mengubah kuota
-            atau peserta yang sudah masuk. Cabut hanya menolak peserta baru; peserta yang sudah masuk tetap dapat menyelesaikan tes.
-            Token tersimpan sebagai hash; nilai token hanya terlihat sesaat setelah dibuat.
-          </p>
+          <app-catatan class="catatan-bawah">
+            Tambah kuota: +1 kursi. Token baru: token lama langsung tidak berlaku, kuota dan peserta tetap.
+            Cabut: menolak peserta baru saja. Nilai token hanya terlihat sesaat setelah dibuat.
+          </app-catatan>
         </div>
 
         @if (kelompokDipilih(); as k) {
           <div class="kartu">
-            <div class="judul-baris">
+            <div class="kepala-kartu">
               <h2 class="judul-kartu">Peserta yang sudah masuk · {{ label[k.tes] }} ({{ pesertaKelompok().length }})</h2>
               <button type="button" class="tombol-tautan" (click)="kelompokDipilih.set(null)">Tutup</button>
             </div>
             <div class="tabel-gulir">
-              <table class="tabel">
+              <table class="tabel tabel-rapat-hc">
                 <thead><tr><th>Nama</th><th>Masuk</th><th>Persetujuan</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   @for (p of pesertaKelompok(); track p.ujian_id) {
@@ -182,7 +173,9 @@
                                  (keydown.enter)="simpanNama(p)" maxlength="100" aria-label="Nama baru" />
                         } @else {
                           {{ p.nama }}
-                          @if (p.nama_kembar) { <span class="lencana BELUM_MULAI" title="Ada peserta lain dengan nama sama">nama sama</span> }
+                          @if (p.nama_kembar) {
+                            <span class="tanda-nama">Nama sama dengan peserta lain di token ini. Periksa.</span>
+                          }
                         }
                       </td>
                       <td>{{ p.masuk_pada.slice(11, 16) }}</td>
@@ -205,13 +198,13 @@
                 </tbody>
               </table>
             </div>
-            <p class="teks-redup teks-kecil">Nama sama tidak ditolak, hanya ditandai. Ubah nama untuk memperbaiki salah ketik.</p>
+            <app-catatan class="catatan-bawah">Nama sama hanya ditandai, tidak digabung. Gunakan Ubah nama untuk salah ketik.</app-catatan>
           </div>
         }
       } @else {
         <!-- Sesi individu -->
         <div class="kartu">
-          <div class="judul-baris">
+          <div class="kepala-kartu">
             <h2 class="judul-kartu">Undangan peserta</h2>
             @if (belumTerkirim().length > 0) {
               <button type="button" class="tombol tombol-navy" (click)="kirimBerikutnya()">
@@ -220,22 +213,28 @@
             }
           </div>
           <div class="tabel-gulir">
-            <table class="tabel">
-              <thead><tr><th>Peserta</th><th>Email</th><th>Tes diundang</th><th>Undangan</th></tr></thead>
+            <table class="tabel tabel-rapat-hc">
+              <thead><tr><th>Peserta</th><th>Email</th><th>Tes diundang</th><th>Undangan</th><th></th></tr></thead>
               <tbody>
                 @for (b of barisUndangan(); track b.email) {
                   <tr>
                     <td>{{ b.nama ?? '—' }}</td>
                     <td>{{ b.email }}</td>
-                    <td>{{ b.tes.map(tesLabel).join(', ') }}</td>
-                    <td class="sel-aksi">
+                    <td>{{ b.tes.map(tesLabel).join(', ') || '—' }}</td>
+                    <td>
                       @if (b.dikirimPada) {
-                        <span class="lencana SELESAI">Dibuka {{ b.dikirimPada.slice(11, 16) }}</span>
+                        <span class="lencana TERKIRIM">Dibuka {{ b.dikirimPada.slice(11, 16) }}</span>
+                      } @else {
+                        <span class="lencana BELUM_DIKIRIM">Belum dikirim</span>
                       }
+                    </td>
+                    <td class="sel-aksi">
                       @if (b.siapKirim) {
-                        <button type="button" class="tombol-tautan" (click)="kirim(b)">{{ b.dikirimPada ? 'Buka lagi' : 'Kirim undangan' }}</button>
+                        <button type="button" class="tombol-aksi" (click)="kirim(b)">{{ b.dikirimPada ? 'Buka lagi' : 'Kirim undangan' }}</button>
                       } @else if (b.adaBelumDipakai) {
-                        <button type="button" class="tombol-tautan" (click)="kirim(b)">Buat token baru dan kirim</button>
+                        <button type="button" class="tombol-aksi" (click)="kirim(b)">Buat token baru dan kirim</button>
+                      } @else {
+                        <span class="teks-redup teks-kecil">Tidak ada token aktif</span>
                       }
                     </td>
                   </tr>
@@ -243,17 +242,16 @@
               </tbody>
             </table>
           </div>
-          <p class="teks-redup teks-kecil">
-            Tombol membuka email di Outlook dengan isi siap kirim; tekan Send di Outlook. Satu email per peserta berisi semua tes,
-            masing-masing dengan jadwal dan token sendiri. Token hanya tersedia sesaat setelah dibuat; setelah halaman dimuat ulang,
-            kirim ulang berarti membuat token baru (token lama yang belum dipakai tidak berlaku lagi).
-          </p>
+          <app-catatan class="catatan-bawah">
+            Email terbuka di Outlook, lalu tekan Send. Setelah halaman dimuat ulang, kirim ulang membuat token baru
+            (token lama yang belum dipakai tidak berlaku).
+          </app-catatan>
         </div>
 
         <div class="kartu">
           <h2 class="judul-kartu">Token dan jadwal per tes</h2>
           <div class="tabel-gulir">
-            <table class="tabel">
+            <table class="tabel tabel-rapat-hc">
               <thead><tr><th>Token</th><th>Peserta</th><th>Tes</th><th>Jadwal</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 @for (u of d.ujian; track u.ujian_id) {
@@ -261,11 +259,11 @@
                     <td class="token">{{ tokenDari(u.ujian_id) ?? '••••' }}</td>
                     <td>{{ u.nama ?? u.email }}</td>
                     <td>{{ label[u.jenis_tes] }}</td>
-                    <td>{{ u.tanggal }} {{ u.waktu_buka }}–{{ u.waktu_tutup }}</td>
+                    <td>{{ jadwalSingkat(u.tanggal, u.waktu_buka, u.waktu_tutup) }}</td>
                     <td><span [class]="'lencana ' + u.status">{{ labelStatus[u.status] ?? u.status }}</span></td>
-                    <td>
+                    <td class="sel-aksi">
                       @if (bisaDicabut(u.status)) {
-                        <button type="button" class="tombol-tautan" (click)="cabut(u.ujian_id, u.email ?? u.nama ?? '', u.jenis_tes)">Cabut</button>
+                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabut(u.ujian_id, u.email ?? u.nama ?? '', u.jenis_tes)">Cabut</button>
                       }
                     </td>
                   </tr>
@@ -273,57 +271,62 @@
               </tbody>
             </table>
           </div>
-          <p class="teks-redup teks-kecil">Token tersimpan sebagai hash; nilai token hanya terlihat sesaat setelah dibuat.</p>
-        </div>
-      }
-
-      @if (pratinjau(); as p) {
-        <div class="kartu">
-          <div class="judul-baris">
-            <h2 class="judul-kartu">{{ d.mode === 'KELOMPOK' ? 'Email token untuk penerima' : 'Pratinjau email undangan' }}</h2>
-            <button type="button" class="tombol-tautan" (click)="ubahTemplateSesi.set(!ubahTemplateSesi())">
-              {{ ubahTemplateSesi() ? 'Batal' : 'Ubah template sesi' }}
-            </button>
-          </div>
-          @if (ubahTemplateSesi()) {
-            <label class="isian"><span>Subjek</span>
-              <input [value]="templateSesi().subjek" (input)="templateSesi.set({ subjek: nilai($event), isi: templateSesi().isi })" /></label>
-            <label class="isian"><span>Isi</span>
-              <textarea rows="9" [value]="templateSesi().isi" (input)="templateSesi.set({ subjek: templateSesi().subjek, isi: nilai($event) })"></textarea></label>
-            <button type="button" class="tombol tombol-navy" (click)="simpanTemplateSesi()">Simpan template</button>
-          } @else {
-            <div class="pratinjau-email">
-              <div class="kepala-email">
-                <div><strong>Kepada:</strong> {{ p.kepada }}</div>
-                <div><strong>Subjek:</strong> {{ p.subjek }}</div>
-              </div>
-              <div class="instruksi isi-email">{{ p.isi }}</div>
-            </div>
-            @if (d.mode === 'KELOMPOK') {
-              @let e = memoriKelompok().email;
-              <div class="baris-tombol">
-                <button type="button" class="tombol tombol-navy" [disabled]="!e" (click)="kirimEmailKelompok()">
-                  Kirim email token ke penerima
-                </button>
-                @if (emailKelompokDikirim(); as w) {
-                  <span class="lencana SELESAI">Dibuka {{ w.slice(11, 16) }}</span>
-                }
-              </div>
-              @if (e?.mailtoTerlaluPanjang) {
-                <p class="kotak-peringatan teks-kecil">Email cukup panjang dan mungkin terpotong di sebagian aplikasi email. Periksa isinya sebelum Send.</p>
-              }
-              <p class="teks-redup teks-kecil">
-                @if (e) {
-                  Tombol membuka email di Outlook dengan isi siap kirim; tekan Send di Outlook.
-                } @else {
-                  Token hanya tersedia sesaat setelah dibuat. Untuk mengirim ulang, pilih Token baru pada tes yang diperlukan;
-                  email berisi token baru itu saja.
-                }
-              </p>
-            }
-          }
+          <app-catatan class="catatan-bawah">Nilai token hanya terlihat sesaat setelah dibuat.</app-catatan>
         </div>
       }
     }
   </div>
+
+  <!-- Kanan (>= 1700 px) atau di bawah tabel: pratinjau email -->
+  @if (detail(); as d) {
+    @if (pratinjau(); as p) {
+      <div class="kolom-pratinjau">
+        <div class="kartu">
+          <div class="kepala-kartu">
+            <h2 class="judul-kartu">{{ d.mode === 'KELOMPOK' ? 'Pratinjau email token kelompok' : 'Pratinjau email undangan' }}</h2>
+          </div>
+          <!-- Template hanya diedit saat membuat sesi (formulir Buat sesi tes), supaya satu sumber dipakai konsisten. -->
+          <div class="pratinjau-email">
+            <div class="kepala-email">
+              <div><strong>Kepada:</strong> {{ p.kepada }}</div>
+              <div><strong>Subjek:</strong> {{ p.subjek }}</div>
+            </div>
+            <div class="instruksi isi-email">{{ p.isi }}</div>
+          </div>
+          @if (d.mode === 'KELOMPOK') {
+            @let e = memoriKelompok().email;
+            <div class="baris-tombol">
+              <button type="button" class="tombol tombol-navy" [disabled]="!e" (click)="kirimEmailKelompok()">
+                Kirim email token ke penerima
+              </button>
+              @if (emailKelompokDikirim(); as w) {
+                <span class="lencana TERKIRIM">Dibuka {{ w.slice(11, 16) }}</span>
+              }
+            </div>
+            @if (e?.mailtoTerlaluPanjang) {
+              <p class="kotak-peringatan teks-kecil">Email cukup panjang dan mungkin terpotong di sebagian aplikasi email. Periksa isinya sebelum Send.</p>
+            }
+            <app-catatan class="catatan-bawah">
+              @if (e) {
+                Tombol membuka email di Outlook dengan isi siap kirim; tekan Send di Outlook.
+              } @else {
+                Token hanya tersedia sesaat setelah dibuat. Untuk mengirim ulang, pilih Token baru pada tes yang diperlukan;
+                email berisi token baru itu saja.
+              }
+            </app-catatan>
+          } @else {
+            <app-catatan class="catatan-bawah">Templat otomatis, tanpa nama perusahaan. Email dibuka di Outlook untuk dikirim admin.</app-catatan>
+          }
+        </div>
+      </div>
+    }
+  }
 </div>
+
+<!-- Umpan balik aksi: toast hijau, tetap tampil sampai ditutup (bisa memuat nilai token baru). -->
+@if (pesan()) {
+  <div class="toast" role="status">
+    <span>{{ pesan() }}</span>
+    <button type="button" class="tombol-tautan" (click)="pesan.set('')">Tutup</button>
+  </div>
+}

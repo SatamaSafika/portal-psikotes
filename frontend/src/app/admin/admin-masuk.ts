@@ -1,24 +1,43 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { pesanGalat, statusGalat } from '../core/api.service';
-import { KakiPortal } from '../tata-letak/kaki-portal';
+import { Ikon } from '../core/ikon';
+import { Ilustrasi } from '../bersama/ilustrasi';
+import { TandaProduk } from '../bersama/tanda-produk';
 import { ApiAdmin } from './admin-api.service';
 import { AdminSesi } from './admin-sesi.service';
 
-/** Login admin HC. Batas percobaan dan penguncian akun ditegakkan di server. */
+/**
+ * Login admin HC (prototipe v50, HcLogin): kiri panel ilustrasi bergradien navy, kanan kartu kaca.
+ * Di layar sempit panel menumpuk di atas formulir. Batas percobaan dan penguncian akun ditegakkan di server.
+ */
 @Component({
   selector: 'app-admin-masuk',
-  imports: [KakiPortal],
+  imports: [Ikon, Ilustrasi, TandaProduk],
   template: `
-    <div class="halaman">
-      <header class="kepala-admin">
-        <div class="wadah kepala-admin-isi"><strong>Portal Psikotes · Dashboard HC</strong></div>
-      </header>
-      <main class="isi-halaman">
-        <div class="wadah wadah-sempit">
-          <h1 class="judul">Masuk admin HC</h1>
-          <form class="kartu" (submit)="masuk($event)" novalidate>
-            <label class="isian">
+    <div class="tata-masuk">
+      <section class="panel-masuk">
+        <span class="merek merek-putih"><app-tanda-produk [putih]="true" />Portal Psikotes</span>
+        <div class="panel-masuk-isi">
+          <div class="panel-masuk-teks">
+            <span class="chip-panel">Dashboard HC</span>
+            <p class="panel-masuk-judul">Dari token sampai laporan,<br /><span class="aksen-panel">semuanya terpantau.</span></p>
+            <ol class="alur-panel" aria-label="Alur kerja">
+              <li><span class="ikon-alur"><app-ikon nama="calendar-days" [ukuran]="18" /></span>Siapkan sesi</li>
+              <li><span class="ikon-alur"><app-ikon nama="users" [ukuran]="18" /></span>Pantau peserta</li>
+              <li><span class="ikon-alur"><app-ikon nama="printer" [ukuran]="18" /></span>Cetak laporan</li>
+            </ol>
+          </div>
+          <app-ilustrasi varian="hclogin" />
+        </div>
+      </section>
+      <main class="sisi-masuk">
+        <form class="kaca kartu-masuk" (submit)="masuk($event)" novalidate>
+          <div class="kepala-kartu-masuk">
+            <span class="ubin-ikon kecil"><app-ikon class="ikon-cermin" nama="key" [ukuran]="22" /></span>
+            <h1>Masuk admin HC</h1>
+          </div>
+          <label class="isian">
               <span>Username</span>
               <input name="username" autocomplete="username" [value]="username()" (input)="username.set(nilai($event))" />
             </label>
@@ -30,15 +49,11 @@ import { AdminSesi } from './admin-sesi.service';
             @if (galat()) {
               <div class="kotak-galat" role="alert">{{ galat() }}</div>
             }
-            <div class="baris-tombol">
-              <button class="tombol tombol-navy" type="submit" [disabled]="memproses()">
-                {{ memproses() ? 'Memeriksa...' : 'Masuk' }}
-              </button>
-            </div>
-          </form>
-        </div>
+            <button class="tombol tombol-navy tombol-penuh" type="submit" [disabled]="memproses()">
+              {{ memproses() ? 'Memeriksa...' : 'Masuk' }}
+            </button>
+        </form>
       </main>
-      <app-kaki-portal />
     </div>
   `,
 })

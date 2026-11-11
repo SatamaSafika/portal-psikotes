@@ -1,20 +1,25 @@
 import { Component, Injector, OnInit, afterNextRender, computed, inject, signal } from '@angular/core';
+import { Avatar } from '../bersama/avatar';
+import { Catatan } from '../bersama/catatan';
 import { pesanGalat } from '../core/api.service';
+import { Ikon } from '../core/ikon';
 import { DAFTAR_TES, LABEL_TES, type JenisTes } from '../core/model';
-import { buatCsv, kelompokkanPeserta, ringkasHasil, unduh } from './admin-alat';
+import { formatTanggal, kelompokkanPeserta } from './admin-alat';
 import { ApiAdmin } from './admin-api.service';
-import { LABEL_STATUS, type BarisHasil, type JawabanNomor, type PesertaHasil, type SesiRingkas } from './admin-model';
+import type { BarisHasil, JawabanNomor, PesertaHasil, SesiRingkas } from './admin-model';
 import { GrafikInterval } from './grafik-interval';
+import { lembarLaporan } from './laporan-excel';
 import { LaporanPeserta } from './laporan-peserta';
+import { buatXlsx, unduhXlsx } from './xlsx';
 
 /**
  * Hasil dan laporan: satu baris per peserta berisi ringkasan semua tesnya. Review membuka Laporan Peserta,
  * Cetak PDF mencetak laporan itu (Simpan sebagai PDF di dialog cetak), Detail jawaban membuka jawaban per nomor
- * dan tracking Koran per interval (benar/salah, tanpa kunci). Ekspor Excel tetap satu baris per tes. Hanya admin HC.
+ * dan tracking Koran per interval (benar/salah, tanpa kunci). Ekspor Excel (.xlsx) berisi rekap per peserta dan detail per tes. Hanya admin HC.
  */
 @Component({
   selector: 'app-admin-hasil',
-  imports: [GrafikInterval, LaporanPeserta],
+  imports: [GrafikInterval, LaporanPeserta, Ikon, Avatar, Catatan],
   templateUrl: './admin-hasil.html',
 })
 export class AdminHasil implements OnInit {
@@ -22,11 +27,14 @@ export class AdminHasil implements OnInit {
   private readonly injector = inject(Injector);
   protected readonly daftarTes = DAFTAR_TES;
   protected readonly label = LABEL_TES;
-  protected readonly ringkas = ringkasHasil;
+  /** Kode tes singkat di kolom Hasil per tes. */
+  protected readonly singkat: Record<JenisTes, string> = { TIU5: 'TIU 5', TIU6: 'TIU 6', KORAN: 'Koran' };
 
   protected readonly jenis = signal<JenisTes | ''>('');
   protected readonly sesi = signal('');
   protected readonly tanggal = signal('');
+  /** Cari nama: tanpa membedakan huruf besar/kecil, di sisi browser (data sudah dimuat). */
+  protected readonly cari = signal('');
   protected readonly daftarSesi = signal<SesiRingkas[]>([]);
   private readonly hasil = signal<BarisHasil[]>([]);
   protected readonly intervalDetik = signal(0);
@@ -38,10 +46,43 @@ export class AdminHasil implements OnInit {
   protected readonly peserta = computed(() => {
     const jenis = this.jenis();
     const tanggal = this.tanggal();
+    const cari = this.cari().trim().toLocaleLowerCase('id');
     return kelompokkanPeserta(this.hasil()).filter(
-      (p) => (!jenis || p.tes.some((t) => t.jenis_tes === jenis)) && (!tanggal || p.tanggal.includes(tanggal)),
+      (p) =>
+        (!jenis || p.tes.some((t) => t.jenis_tes === jenis)) &&
+        (!tanggal || p.tanggal.includes(tanggal)) &&
+        (!cari || p.nama.toLocaleLowerCase('id').includes(cari)),
     );
   });
+
+  /**
+   * Kartu ringkasan, dihitung dari baris yang tampil (mengikuti filter). Sebaran memakai skor akhir 1-5;
+   * nama kategori diambil dari data (skoring.json di server), bukan ditulis di sini.
+   */
+  protected readonly ringkasan = computed(() => {
+    const daftar = this.peserta();
+    const tes = daftar.flatMap((p) => p.tes);
+    const jenis = DAFTAR_TES.filter((j) => tes.some((t) => t.jenis_tes === j)).map((j) => this.singkat[j]);
+    const sebaran = [5, 4, 3, 2, 1]
+      .map((skor) => {
+        const ini = tes.filter((t) => t.skor_akhir === skor);
+        return { skor, jumlah: ini.length, label: ini.find((t) => t.kategori)?.kategori ?? `Skor ${skor}` };
+      })
+      .filter((x) => x.jumlah > 0);
+    return {
+      peserta: daftar.length,
+      sesi: new Set(daftar.map((p) => p.sesi_id ?? p.nama_sesi)).size,
+      hasil: tes.length,
+      jenis: jenis.join(', '),
+      sebaran,
+      uraian: sebaran.map((x) => `${x.label} ${x.jumlah}`).join(', '),
+      dinilai: sebaran.reduce((n, x) => n + x.jumlah, 0),
+    };
+  });
+
+  protected tanggalTampil(p: PesertaHasil): string {
+    return p.tanggal.map(formatTanggal).join(', ');
+  }
 
   // ----- Review dan cetak -----
   private readonly reviewKunci = signal<string | null>(null);
@@ -145,30 +186,20 @@ export class AdminHasil implements OnInit {
     }
   }
 
-  protected eksporCsv(): void {
-    const jenis = this.jenis();
-    const kepala = ['Peserta', 'Email', 'Sesi', 'Mode', 'Tanggal tes', 'Tes', 'Status', 'Benar', 'Salah', 'Dijawab', 'N (Koran)', 'Kategori', 'Skor akhir', 'Persetujuan', 'Versi persetujuan'];
-    const baris = this.peserta()
-      .flatMap((p) => p.tes)
-      .filter((h) => !jenis || h.jenis_tes === jenis)
-      .map((h) => [
-        h.nama ?? '',
-        h.email ?? '',
-        h.nama_sesi,
-        h.mode === 'KELOMPOK' ? 'Serentak' : 'Individu',
-        h.tanggal,
-        LABEL_TES[h.jenis_tes],
-        LABEL_STATUS[h.status] ?? h.status,
-        h.jumlah_benar,
-        h.jumlah_salah,
-        h.jumlah_dijawab,
-        h.n_koran,
-        h.kategori,
-        h.skor_akhir,
-        h.persetujuan_pada,
-        h.persetujuan_versi,
-      ]);
-    const tgl = new Date().toISOString().slice(0, 10);
-    unduh(`hasil-psikotes-${tgl}.csv`, buatCsv(kepala, baris));
+  /** Excel .xlsx sesuai filter aktif: rekap per peserta, detail per jenis tes, dan keterangan ekspor. */
+  protected eksporExcel(): void {
+    const sekarang = new Date();
+    const dua = (n: number): string => String(n).padStart(2, '0');
+    const tgl = `${sekarang.getFullYear()}-${dua(sekarang.getMonth() + 1)}-${dua(sekarang.getDate())}`;
+    const waktu = `${tgl} ${dua(sekarang.getHours())}:${dua(sekarang.getMinutes())}:${dua(sekarang.getSeconds())}`;
+    const sesi = this.daftarSesi().find((s) => String(s.id) === this.sesi());
+    const lembar = lembarLaporan(this.peserta(), {
+      waktu,
+      jenis: this.jenis(),
+      sesi: sesi ? `${sesi.nama_sesi} (${sesi.tanggal})` : '',
+      tanggal: this.tanggal(),
+      cari: this.cari(),
+    });
+    unduhXlsx(`laporan-psikotes-${tgl}.xlsx`, buatXlsx(lembar));
   }
 }

@@ -1,7 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Catatan } from '../bersama/catatan';
 import { pesanGalat } from '../core/api.service';
 import { DAFTAR_TES, LABEL_TES, type JenisTes } from '../core/model';
-import { KUOTA_MAKS, persenKuota, uraiEmail, uraiKuota, uraiPeserta } from './admin-alat';
+import { KUOTA_MAKS, jadwalSingkat, persenKuota, uraiEmail, uraiKuota, uraiPeserta } from './admin-alat';
 import { ApiAdmin } from './admin-api.service';
 import {
   LABEL_STATUS,
@@ -52,6 +53,7 @@ const galatDari = (galat: unknown): string[] => {
  */
 @Component({
   selector: 'app-admin-token',
+  imports: [Catatan],
   templateUrl: './admin-token.html',
 })
 export class AdminToken implements OnInit {
@@ -65,6 +67,7 @@ export class AdminToken implements OnInit {
   protected readonly kuotaMaks = KUOTA_MAKS;
   protected readonly persen = persenKuota;
   protected readonly tesLabel = (t: JenisTes): string => LABEL_TES[t];
+  protected readonly jadwalSingkat = jadwalSingkat;
 
   // ----- form buat sesi -----
   protected readonly modeBaru = signal<ModeSesi>('INDIVIDU');
@@ -94,8 +97,6 @@ export class AdminToken implements OnInit {
   protected readonly detail = signal<DetailSesi | null>(null);
   protected readonly galat = signal('');
   protected readonly pratinjauEmail = signal<string | null>(null);
-  protected readonly ubahTemplateSesi = signal(false);
-  protected readonly templateSesi = signal<Template>({ subjek: '', isi: '' });
 
   // ----- sesi serentak terpilih -----
   protected readonly kelompokDipilih = signal<KelompokAdmin | null>(null);
@@ -198,6 +199,11 @@ export class AdminToken implements OnInit {
     return (e.target as HTMLInputElement).checked;
   }
 
+  /** Bagian Templat email (details) terbuka atau tertutup. */
+  protected terbuka(e: Event): boolean {
+    return (e.target as HTMLDetailsElement).open;
+  }
+
   protected async buatSesi(e: Event): Promise<void> {
     e.preventDefault();
     this.pesan.set('');
@@ -276,7 +282,6 @@ export class AdminToken implements OnInit {
   protected async pilihSesi(id: number): Promise<void> {
     this.sesiId.set(id);
     this.pratinjauEmail.set(null);
-    this.ubahTemplateSesi.set(false);
     this.kelompokDipilih.set(null);
     this.pesertaKelompok.set([]);
     await this.muatDetail();
@@ -288,7 +293,6 @@ export class AdminToken implements OnInit {
     try {
       const d = await this.api.detailSesi(id);
       this.detail.set(d);
-      this.templateSesi.set({ subjek: d.template_subjek, isi: d.template_isi });
       // Segarkan baris kelompok yang sedang dibuka (kuota, terpakai, status).
       const k = this.kelompokDipilih();
       if (k) this.kelompokDipilih.set(d.kelompok.find((x) => x.kelompok_id === k.kelompok_id) ?? null);
@@ -347,23 +351,6 @@ export class AdminToken implements OnInit {
       await this.muatDetail();
     } catch (galat) {
       this.galat.set(pesanGalat(galat));
-    }
-  }
-
-  protected async simpanTemplateSesi(): Promise<void> {
-    const id = this.sesiId();
-    if (id === null) return;
-    try {
-      await this.api.simpanTemplate(id, this.templateSesi());
-      this.ubahTemplateSesi.set(false);
-      await this.muatDetail();
-      this.pesan.set(
-        this.detail()?.mode === 'KELOMPOK'
-          ? 'Template sesi disimpan. Berlaku untuk email token yang dibuat berikutnya (token baru).'
-          : 'Template sesi disimpan. Berlaku untuk undangan yang dibuat berikutnya (token baru atau peserta baru).',
-      );
-    } catch (galat) {
-      this.galat.set(galatDari(galat).join(' '));
     }
   }
 
