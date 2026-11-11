@@ -1,0 +1,844 @@
+# Inventaris teks UI per layar (otomatis dari prototipe)
+
+
+
+Teks statis yang tampil di prototipe, untuk mencocokkan kata-kata (label, tombol, judul). Teks di `[...]` adalah isi dari server. Angka dan nama adalah data contoh. Teks persetujuan BUKAN teks resmi.
+
+
+
+## Main
+- Portal Psikotes
+- Pilih tes
+- yang akan
+- Anda ikuti
+- Siapkan token dari pengawas atau tim HC. Setiap tes memiliki token dan jadwalnya sendiri.
+- Mulai dengan token
+- Waktu terukur
+- 01
+- TIU 5
+- 30 soal · 10 menit
+- Pilih tes
+- 02
+- TIU 6
+- 40 butir · 10 menit
+- Pilih tes
+- 03
+- Tes Koran / Kraepelin
+- 13 halaman · 9 menit 32 detik
+- Pilih tes
+- Catatan prototipe (bukan bagian tampilan): penanda "Selesai" muncul setelah tes dikirim dari tab ini (sessionStorage, tanpa identitas). Simulasi: TIU 5 terkirim TIU 6 terkirim
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## Token
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- Verifikasi token dan identitas
+- Masukkan token dari tim HC atau pengawas tes. Token hanya berlaku pada jadwal sesi tes.
+- Token
+- Huruf besar atau kecil sama saja. Tanda hubung boleh diabaikan.
+- Lanjut
+- Kembali
+- Catatan prototipe (bukan bagian tampilan): ketik 7KQ4M-X9RTC untuk melihat mode serentak (nama saja), SALAH-0000 untuk pesan galat, atau token lain untuk mode individu (nama dan email), misalnya P2VE-ES6D-HZH3-D0EG-RCHX (token individu 20 karakter). Layar dua langkah: mode baru diketahui setelah token dikirim ke server.
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## Instruksi
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TIU 5
+- Instruksi pengerjaan
+- Durasi
+- [sesuai HC]
+- Jumlah soal
+- [sesuai HC]
+- [Teks instruksi tes dari tim HC ditampilkan di sini, termasuk contoh soal bergambar.]
+- Anda akan mengerjakan 2 soal latihan lebih dulu. Kunci jawaban langsung ditampilkan setelah Anda menjawab.
+- Klik kembali jawaban yang dipilih untuk membatalkan pilihan. Anda juga dapat melewati soal dan menjawabnya kembali nanti.
+- Waktu mulai berjalan saat tes dimulai dan tidak dapat dihentikan.
+- Jawaban dikirim otomatis saat waktu habis.
+- Saya sudah membaca, mulai latihan
+- Kembali
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## Simulasi
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TIU 5 · LATIHAN
+- Soal latihan 1 dari 2
+- Latihan, tidak dinilai dan tidak disimpan
+- [Instruksi soal contoh dari tim HC.]
+- [Satu gambar soal contoh: A, B, C dan pilihan 1 sampai 5 berada dalam gambar yang sama]
+- 1
+- 2
+- 3
+- 4
+- 5
+- Kembali ke instruksi
+
+## Simulasi6
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TIU 6 · LATIHAN
+- Soal latihan 1 dari 2
+- Latihan tidak dinilai dan tidak disimpan
+- [Instruksi soal contoh dari tim HC. Pada setiap butir pilih B jika betul atau S jika salah.]
+- [Satu gambar soal contoh: butir 1 sampai 5 berada dalam gambar yang sama]
+- Butir	B	S
+- 1
+- 2
+- 3
+- 4
+- 5
+- Kembali ke instruksi
+
+## Tiu5
+- TIU 5
+- Peserta: [nama peserta]
+- Sisa waktu
+- 07:35
+- Soal 7 dari 30
+- Jawaban tersimpan
+- [Instruksi soal dari tim HC, misalnya: Seperti halnya A diubah menjadi B, demikian pula C diubah menjadi salah satu dari kelima gambar berikutnya. Carilah gambar tersebut dan pilihlah jawaban di bawahnya.]
+- [Satu gambar soal: A, B, C dan pilihan 1 sampai 5 berada dalam gambar yang sama]
+- Pilih nomor jawaban
+- 1
+- 2
+- 3
+- 4
+- 5
+- Klik kembali jawaban yang dipilih untuk membatalkan pilihan. Anda juga dapat melewati soal dan menjawabnya kembali nanti.
+- Sebelumnya
+- Berikutnya
+- Navigasi soal
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 12
+- 13
+- 14
+- 15
+- 16
+- 17
+- 18
+- 19
+- 20
+- 21
+- 22
+- 23
+- 24
+- 25
+- 26
+- 27
+- 28
+- 29
+- 30
+- Soal saat ini
+- Sudah dijawab
+- Belum dijawab
+- Kirim jawaban
+
+## Tiu6
+- TIU 6
+- Peserta: [nama peserta]
+- Sisa waktu
+- 07:35
+- Soal 3 dari 8 (5 butir)
+- [Instruksi dari tim HC, misalnya: Pilihlah pada guntingan-guntingan yang betul sebuah huruf B, dan pada guntingan-guntingan yang salah sebuah huruf S.]
+- [Satu gambar soal: guntingan nomor 1 sampai 5 berada dalam gambar yang sama]
+- Butir	B	S
+- 1	B	S
+- 2	B	S
+- 3	B	S
+- 4	B	S
+- 5	B	S
+- Setiap butir hanya dapat diisi satu pilihan (B atau S). Klik kembali pilihan yang dipilih untuk membatalkan, atau lewati dan jawab nanti.
+- Sebelumnya
+- Berikutnya
+- Navigasi soal
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- Soal saat ini
+- Sudah dijawab
+- Belum dijawab
+- Kirim jawaban
+
+## KoranInstruksi
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TES KORAN / KRAEPELIN
+- Instruksi pengerjaan
+- Durasi
+- 9 menit 32 detik
+- Jumlah halaman
+- 13 halaman
+- Anda akan diberi daftar penjumlahan dua angka. Kerjakan secepat dan seteliti mungkin, dan jawablah sebanyak-banyaknya dengan tepat dalam waktu yang tersedia.
+- Jumlahkan dua angka yang mengapit kotak, lalu ketik angka terakhir dari hasilnya. Jika hasil dua digit (misalnya 15), ketik hanya digit terakhirnya (5).
+- Kerjakan berurutan dari atas ke bawah. Satu digit yang diketik langsung terkunci dan kursor otomatis pindah ke kotak berikutnya (tanpa menekan Enter). Kotak tidak dapat dilewati atau diubah, dan Anda tidak dapat kembali ke halaman sebelumnya. Halaman berganti otomatis.
+- Sebelum tes ada 2 contoh dan 1 uji coba. Uji coba tidak dinilai dan jawabannya tidak disimpan.
+- Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal dengan cepat, teliti, dan akurat.
+- Waktu berjalan saat tes dimulai dan tidak dapat dihentikan. Jawaban dikirim otomatis saat waktu habis.
+- Saya sudah membaca, lihat contoh
+- Kembali
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## KoranContoh1
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TES KORAN / KRAEPELIN · CONTOH 1 DARI 2
+- Contoh 1: hasil penjumlahan 9 atau kurang
+- Hanya contoh, tidak perlu mengisi
+- Contoh lajur
+- 2
+- 5
+- 2 + 3 = 5, tulis 5
+- 3
+- 4
+- 3 + 1 = 4, tulis 4
+- 1
+- 5
+- 1 + 4 = 5, tulis 5
+- 4
+- 7
+- 4 + 3 = 7, tulis 7
+- 3
+- Cara mengerjakan
+- Lihat dua angka yang mengapit sebuah kotak, misalnya 2 dan 3.
+- Jumlahkan keduanya: 2 + 3 = 5.
+- Tulis hasilnya di kotak di antara kedua angka itu.
+- Lanjutkan ke bawah, pasangan berikutnya adalah 3 dan 1.
+- Kerjakan soal dengan cepat, teliti, dan akurat. Jawablah sebanyak mungkin soal dalam batasan waktu yang tersedia. Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal.
+- Lanjut ke contoh 2
+- Kembali
+
+## KoranContoh2
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TES KORAN / KRAEPELIN · CONTOH 2 DARI 2
+- Contoh 2: hasil penjumlahan lebih dari 9
+- Hanya contoh, tidak perlu mengisi
+- Contoh lajur
+- 9
+- 4
+- 9 + 5 = 14, tulis 4
+- 5
+- 3
+- 5 + 8 = 13, tulis 3
+- 8
+- 5
+- 8 + 7 = 15, tulis 5
+- 7
+- 6
+- 7 + 9 = 16, tulis 6
+- 9
+- 5
+- 9 + 6 = 15, tulis 5
+- 6
+- Cara mengerjakan
+- Jumlahkan dua angka yang mengapit kotak: 9 + 5 = 14.
+- Jika hasilnya dua digit, tulis angka terakhirnya saja (satuan). Maka tulis 4.
+- Isi satu angka saja pada setiap kotak.
+- Lanjutkan ke bawah. Pasangan berikutnya adalah 5 dan 8: 5 + 8 = 13, tulis 3.
+- Penting: jangan menulis 1 lalu 2 untuk hasil 12. Cukup tulis 2.
+- Lanjut ke uji coba
+- Kembali
+
+## KoranLatihan
+- Portal Psikotes
+- 1 Pilih tes
+- ›
+- 2 Verifikasi
+- ›
+- 3 Instruksi
+- ›
+- 4 Latihan
+- ›
+- 5 Tes
+- ›
+- 6 Selesai
+- TES KORAN / KRAEPELIN · UJI COBA
+- Uji coba: isi dua lajur
+- Tidak dinilai dan tidak disimpan
+- Tanpa batas waktu
+- Lajur 1
+- 4
+- 3
+- 8
+- 6
+- 7
+- 9
+- 2
+- Lajur 2
+- 5
+- 8
+- 2
+- 9
+- 4
+- 1
+- 7
+- Kerjakan seperti pada contoh
+- Jumlahkan dua angka yang mengapit kotak. Jika hasilnya dua digit, ketik angka terakhir saja. Satu digit langsung terkunci dan kursor pindah ke kotak berikutnya, tanpa Enter. Hasil uji coba muncul setelah Anda menekan tombol selesai.
+- Kerjakan soal dengan cepat, teliti, dan akurat. Jawablah sebanyak mungkin soal dalam batasan waktu yang tersedia. Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal.
+- Selesai uji coba
+- Kembali ke contoh
+
+## Koran
+- Tes Koran / Kraepelin
+- Peserta: [nama peserta]
+- Sisa waktu
+- 09:32
+- Halaman 1 dari 13
+- Terjawab 0 dari 988 soal
+- Satu digit yang diketik langsung terkunci dan kursor pindah ke kotak berikutnya. Tidak perlu menekan Enter.
+- Lajur 1
+- 1
+- 4
+- 1
+- 4
+- 3
+- 9
+- 9
+- 5
+- 4
+- 6
+- 4
+- 6
+- 7
+- 7
+- 9
+- 7
+- 2
+- 9
+- 9
+- 3
+- Lajur 2
+- 3
+- 6
+- 1
+- 6
+- 3
+- 2
+- 7
+- 3
+- 1
+- 9
+- 8
+- 3
+- 2
+- 9
+- 2
+- 4
+- 7
+- 7
+- 5
+- 7
+- Lajur 3
+- 6
+- 3
+- 9
+- 4
+- 5
+- 3
+- 6
+- 6
+- 5
+- 9
+- 9
+- 6
+- 4
+- 7
+- 5
+- 1
+- 8
+- 7
+- 7
+- 3
+- Lajur 4
+- 6
+- 5
+- 7
+- 7
+- 8
+- 8
+- 8
+- 3
+- 5
+- 4
+- 9
+- 8
+- 1
+- 3
+- 5
+- 8
+- 1
+- 5
+- 2
+- 2
+- Jumlahkan dua angka yang mengapit kotak, ketik digit terakhirnya. Kotak tidak dapat dilewati atau diubah, dan halaman berganti otomatis setelah kotak terakhir terisi.
+- Angka pada layar ini dibuat otomatis sebagai contoh tampilan, bukan soal asli HC.
+
+## Submit
+- Portal Psikotes
+- TIU 5
+- Kirim jawaban sekarang?
+- Sudah dijawab
+- 8
+- Belum dijawab
+- 22
+- Angka di atas hanya contoh tampilan. Setelah dikirim, jawaban tidak dapat diubah. Soal yang belum dijawab dianggap kosong.
+- Ya, kirim jawaban
+- Kembali ke soal
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## Selesai
+- Portal Psikotes
+- Tes selesai
+- Jawaban Anda telah tersimpan. Terima kasih telah mengikuti tes. Tim HC akan menindaklanjuti hasilnya.
+- Kembali ke halaman utama
+- Catatan prototipe (bukan bagian tampilan): varian layar.
+- Dikirim peserta
+- Waktu habis
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## HcLogin
+- Portal Psikotes
+- Kelola sesi, token,
+- dan hasil tes
+- Masuk admin HC
+- Username
+- Kata sandi
+- Masuk
+- Prototipe: tombol Masuk langsung menuju Overview.
+
+## HcOverview
+- Portal Psikotes · Dashboard HC
+- admin.uji
+- Keluar
+- Overview
+- Token dan jadwal
+- Hasil dan laporan
+- Ringkasan
+- Selasa, 10 November 2026 · data contoh
+- Sedang mengerjakan
+- 7
+- Selesai hari ini
+- 18
+- Total selesai
+- 214
+- Sesi hari ini
+- NAMA SESI	MODE	JENIS TES	JUMLAH PESERTA	WAKTU	STATUS
+- Magang SMK Contoh	Serentak	TIU 5	6 dari 40	08.00 - 11.00	Berjalan
+- Sesi contoh A	Individu	TIU 5	12	08.00 - 11.00	Berjalan
+- Sesi contoh B	Individu	Tes Koran / Kraepelin	12	09.30 - 11.00	Berjalan
+- Sesi contoh C	Individu	TIU 6	6	07.00 - 08.00	Selesai
+- Catatan
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## HcToken
+- Portal Psikotes · Dashboard HC
+- admin.uji
+- Keluar
+- Overview
+- Token dan jadwal
+- Hasil dan laporan
+- Buat sesi tes
+- Individu
+- Serentak (kelompok)
+- Catatan
+- Nama sesi
+- Tes dan jadwal
+- TIU 5
+- Tanggal
+- Buka
+- Tutup
+- TIU 6
+- Tanggal
+- Buka
+- Tutup
+- Tes Koran / Kraepelin
+- Tanggal
+- Buka
+- Tutup
+- Peserta (satu per baris: email, atau email, nama)
+- Templat email (opsional)
+- Catatan
+- Buat sesi dan token
+- Sesi
+- Sesi contoh A · Individu
+- Magang SMK Contoh · Serentak
+- Catatan
+- Undangan peserta
+- Data contoh · lampiran .xlsx dan Outlook: lihat catatan
+- Kirim semua undangan yang belum terkirim
+- Peserta	Email	Tes diundang	Undangan
+- Peserta contoh 1	peserta1@contoh.test	-	Terkirim 07.45	Tidak ada token aktif
+- Peserta contoh 2	peserta2@contoh.test	TIU 5	Belum dikirim	Kirim undangan
+- Peserta contoh 3	peserta3@contoh.test	-	Belum dikirim	Tidak ada token aktif
+- Peserta contoh 4	peserta4@contoh.test	TIU 5, TIU 6, Tes Koran	Belum dikirim	Kirim undangan
+- Catatan
+- Token dan jadwal per tes
+- Data contoh
+- Token	Peserta	Tes	Jadwal	Status
+- ••••	Peserta contoh 1	TIU 5	Sen, 2 Nov 08.00-10.00	Dipakai
+- ••••	Peserta contoh 2	TIU 5	Sen, 2 Nov 08.00-10.00	Belum dipakai	Cabut
+- ••••	Peserta contoh 3	TIU 6	Sen, 26 Okt 07.00-09.00	Kedaluwarsa
+- ••••	Peserta contoh 4	TIU 5	Sen, 2 Nov 15.46-17.16	Belum dipakai	Cabut
+- ••••	Peserta contoh 4	TIU 6	Sen, 2 Nov 17.16-18.16	Belum dipakai	Cabut
+- ••••	Peserta contoh 4	Tes Koran	Sel, 3 Nov 08.00-09.00	Belum dipakai	Cabut
+- Pratinjau email undangan
+- Templat otomatis, tanpa nama perusahaan
+- Dari: [alamat pengirim, menunggu keputusan HC]
+- Kepada: peserta4@contoh.test
+- Subjek: Undangan Psikotes
+- Halo Peserta Empat,
+- Anda diundang mengikuti psikotes. Setiap tes memiliki token dan jadwal sendiri:
+- TIU 5 - Senin, 2 November 2026, pukul 15:46-17:16
+- Token: NPQR-3456
+- TIU 6 - Senin, 2 November 2026, pukul 17:16-18:16
+- Token: STUV-7890
+- Tes Koran - Selasa, 3 November 2026, pukul 08:00-09:00
+- Token: WXYZ-2468
+- Pada jadwal tiap tes, buka [alamat portal]/masuk lalu masukkan alamat email ini dan token tes tersebut. Setiap token hanya bisa dipakai satu kali dan hanya berlaku pada jadwalnya. Jangan bagikan token kepada orang lain.
+- Catatan
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## HcHasil
+- Portal Psikotes · Dashboard HC
+- admin.uji
+- Keluar
+- Overview
+- Token dan jadwal
+- Hasil dan laporan
+- Hasil dan laporan
+- Satu baris per peserta per sesi · data contoh
+- Peserta
+- 6
+- dalam 3 sesi
+- Hasil tes
+- 8
+- TIU 5, TIU 6, Koran
+- Sebaran kategori (8 hasil)
+- ● Baik 2
+- ● Rata-Rata 4
+- ● Kurang 1
+- ● Kurang Sekali 1
+- Sesi
+- Semua sesi
+- Magang SMK Contoh
+- Sesi contoh A
+- Sesi contoh B
+- Jenis tes
+- Semua tes
+- TIU 5
+- TIU 6
+- Koran
+- Tanggal
+- Cari nama
+- Ekspor Excel (.xlsx)
+- Ekspor PDF
+- 7 baris dari 6 peserta
+- Semua
+- Perlu perhatian 2
+- PESERTA	SESI	HASIL PER TES (KODE, SKOR 1-5)	TANGGAL	AKSI
+- AL
+- Ayu Lestari
+- Magang SMK Contoh
+- Serentak
+- TIU 5
+- 4
+- Baik
+- TIU 6
+- 3
+- Rata-Rata
+- 10 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- BS
+- Budi Santoso
+- Magang SMK Contoh
+- Serentak
+- TIU 5
+- 2
+- Kurang
+- 10 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- BS
+- Budi S.
+- Nama mirip, tidak digabung
+- Magang SMK Contoh
+- Serentak
+- TIU 5
+- 3
+- Rata-Rata
+- 10 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- DP
+- Dimas Pratama
+- Nama sama untuk tes sama, tidak digabung
+- Magang SMK Contoh
+- Serentak
+- TIU 5
+- 3
+- Rata-Rata
+- 10 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- DP
+- Dimas Pratama
+- Nama sama untuk tes sama, tidak digabung
+- Magang SMK Contoh
+- Serentak
+- TIU 5
+- 4
+- Baik
+- 10 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- PC
+- Peserta contoh 1
+- Sesi contoh A
+- Individu
+- TIU 5
+- 1
+- Kurang Sekali
+- 9 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- PC
+- Peserta contoh 3
+- Sesi contoh B
+- Individu
+- Koran
+- 3
+- Rata-Rata
+- 9 Nov 2026
+- Review
+- Cetak PDF
+- Jawaban
+- Catatan
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## HcLaporan
+- Portal Psikotes · Dashboard HC
+- admin.uji
+- Keluar
+- Overview
+- Token dan jadwal
+- Hasil dan laporan
+- Laporan peserta
+- Cetak PDF
+- Detail jawaban
+- Kembali
+- Nama
+- Ayu Lestari
+- Sesi
+- Magang SMK Contoh · Serentak
+- Tanggal
+- 10 November 2026
+- Versi aturan skor
+- v2-2026-11-05
+- Hasil per tes
+- TES	BENAR	SALAH	DIJAWAB / DIKERJAKAN	KETERANGAN	SKOR (1-5)
+- TIU 5	22	8	30	30 soal · 600 dtk	4 Baik
+- TIU 6	20	20	40	8 x 5 butir · 600 dtk	3 Rata-Rata
+- Koran	240	12	252	N = 11 · 572 dtk	3 Rata-Rata
+- Catatan
+- Tes Koran per 26 detik
+- 22 interval · hanya terlihat oleh admin HC
+- 0
+- 4
+- 8
+- 12
+- 16
+- 1
+- 4
+- 7
+- 10
+- 13
+- 16
+- 19
+- 22
+- Interval ke- (setiap 26 detik)
+- ━ Dikerjakan
+- ━ Benar
+- ━ Salah
+- Catatan HC
+- Catatan ikut tercetak pada PDF tetapi tidak disimpan di sistem.
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.
+
+## HcJawaban
+- Portal Psikotes · Dashboard HC
+- admin.uji
+- Keluar
+- Overview
+- Token dan jadwal
+- Hasil dan laporan
+- Detail jawaban · Ayu Lestari
+- Tutup
+- TIU 5
+- TIU 6
+- Tes Koran / Kraepelin
+- Benar 22, salah 8, kosong 0
+- Catatan
+- 1
+- 4
+- 2
+- 2
+- 3
+- 5
+- 4
+- 3
+- 5
+- 1
+- 6
+- 4
+- 7
+- 2
+- 8
+- 5
+- 9
+- 3
+- 10
+- 1
+- 11
+- 4
+- 12
+- 2
+- 13
+- 5
+- 14
+- 3
+- 15
+- 1
+- 16
+- 4
+- 17
+- 2
+- 18
+- 5
+- 19
+- 3
+- 20
+- 1
+- 21
+- 4
+- 22
+- 2
+- 23
+- 5
+- 24
+- 3
+- 25
+- 1
+- 26
+- 4
+- 27
+- 2
+- 28
+- 5
+- 29
+- 3
+- 30
+- 1
+- Portal Psikotes
+- Kendala saat tes? Hubungi tim HC.

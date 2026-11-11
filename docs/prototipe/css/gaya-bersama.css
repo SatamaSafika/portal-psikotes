@@ -1,0 +1,103 @@
+/* gaya-bersama.css: rujukan CSS dari prototipe v50 (hasil gabungan, dirapikan).
+   Ini RUJUKAN untuk dibuat menjadi variabel CSS dan komponen Angular, bukan untuk ditempel mentah.
+   Selektor atribut `div[style*=...]` di bawah hanyalah akal-akalan prototipe untuk menimpa gaya inline;
+   di Angular ganti dengan kelas komponen. */
+
+/* ===== 1. Dasar (Main) ===== */
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#1C2F4A;background:#EEF4FC}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:'Raleway','Inter',system-ui,sans-serif;margin:0}
+.pill{display:inline-flex;align-items:center;gap:8px;background:#CB642B;color:#fff;font-weight:700;font-size:16px;padding:14px 26px;border-radius:999px;border:0;font-family:inherit;cursor:pointer;box-shadow:0 8px 20px rgba(203,100,43,.28)}
+.pill:hover{background:#B0541F}
+.pillN{background:#193F69;box-shadow:0 8px 20px rgba(25,63,105,.25)}
+.pillN:hover{background:#12304F}
+.ghost{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.7);color:#193F69;font-weight:600;font-size:15px;padding:13px 22px;border-radius:999px;border:1px solid #CFDBEC;font-family:inherit;cursor:pointer}
+.glass{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 14px 40px rgba(25,63,105,.10)}
+.grad{background:linear-gradient(90deg,#193F69,#2F6FD6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tile{transition:transform .15s}
+.tile:hover{transform:translateY(-4px)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input{font:inherit;font-size:16px;padding:13px 16px;border:1px solid #CFDBEC;border-radius:14px;background:#fff;color:#1C2F4A}
+.field input:focus{outline:2px solid #CB642B;outline-offset:1px}
+@media (max-width:760px){h1{font-size:34px!important}.art{display:none!important}}
+
+/* ===== 2. Gaya lembut untuk halaman peserta (dari Instruksi) ===== */
+/*soft*/.card{background:rgba(255,255,255,.86)!important;border:1px solid #fff!important;border-radius:20px!important;box-shadow:0 10px 30px rgba(25,63,105,.09)!important}
+.btn,.btn2,.btnO{border-radius:999px!important}
+.btn,.btnO{padding-left:26px!important;padding-right:26px!important}
+.btnO{box-shadow:0 8px 20px rgba(203,100,43,.26)}
+.field input,.field select{border-radius:14px!important;border-color:#CFDBEC!important}
+h1::after{display:none!important}
+h1{font-weight:800!important;letter-spacing:-.02em}
+body{background:linear-gradient(180deg,#F3F7FD,#EAF1FB)!important;color:#1C2F4A}
+div[style*="border-bottom:2px solid #193F69"]{background:transparent!important;border-bottom:0!important}
+div[style*="margin-top:auto"]{background:transparent!important;border-top:0!important}
+div[style*="margin-top:auto"] div{color:#5E7391!important}
+body{background:radial-gradient(900px 500px at 85% 0%,#D7E5FB 0%,rgba(215,229,251,0) 60%),linear-gradient(180deg,#F3F7FD,#EAF1FB)!important}
+div[style*="dashed #8A94A1"],div[style*="1.5px dashed"]{border-radius:16px!important;background:rgba(255,255,255,.5)}
+
+/* ===== 3. Efek hover dan gerak ===== */
+/*hover*/
+.btn,.btnO,.btn2,.pill,.pillN,.ghost{transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,background .15s}
+.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:translateY(-2px) scale(1.04)}
+.btn:active,.btnO:active,.btn2:active,.pill:active,.pillN:active,.ghost:active{transform:translateY(0) scale(.97)}
+button:disabled:hover{transform:none!important}
+.pill:hover{box-shadow:0 12px 26px rgba(203,100,43,.38)}
+.pill svg,.ghost svg{transition:transform .2s}
+.pill:hover svg{transform:translateX(5px)}
+.tile:hover{box-shadow:0 18px 44px rgba(25,63,105,.16)}
+.tile:hover svg{animation:wig .5s}
+@keyframes wig{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+@media (prefers-reduced-motion:reduce){.btn,.btnO,.btn2,.pill,.pillN,.ghost,.tile{transition:none!important;animation:none!important}.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:none}.tile:hover svg{animation:none}}
+
+/* ===== 4. Animasi kartu muncul dan header/tab HC ===== */
+/*anim*/
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.glass{animation:up .5s ease both}
+@media (prefers-reduced-motion:reduce){.card,.glass{animation:none}}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"]{background:rgba(255,255,255,.72)!important;color:#193F69!important;border-bottom:1px solid #DCE6F5!important;backdrop-filter:none}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"] *{color:#193F69!important}
+div[style*="background:#fff;border-bottom:1px solid #D9DEE5"]{background:transparent!important;border-bottom:0!important}
+a.tab[style*="background:#E3EBF4"]{background:#fff!important;box-shadow:0 4px 12px rgba(25,63,105,.10)}
+
+/* ===== 5. Langkah instruksi bernomor ===== */
+/*ol*/
+.pg ol{list-style:none;counter-reset:n;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.pg ol>li{counter-increment:n;position:relative;padding:14px 16px 14px 56px;background:#F3F7FD;border-radius:16px;line-height:1.6}
+.pg ol>li::before{content:counter(n);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#2F6FD6,#193F69);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+
+/* ===== 6. Chip Catatan dan tooltip (dashboard HC) ===== */
+/*tip*/
+.tip{position:relative;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#2F6FD6;background:#E3EDFC;border-radius:999px;padding:4px 10px;cursor:help;width:fit-content;line-height:1.2}
+.tipbox{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:340px;max-width:80vw;background:#fff;color:#25364A;font-weight:400;font-size:13px;line-height:1.55;padding:12px 14px;border-radius:14px;box-shadow:0 12px 32px rgba(25,63,105,.18);border:1px solid #DCE6F5}
+.tip:hover .tipbox,.tip:focus .tipbox,.tip:focus-within .tipbox{display:block}
+
+/* ===== 7. Tabel dan ringkasan Hasil ===== */
+/*hasil*/
+table th{font-size:11px!important;letter-spacing:.08em;color:#5E7391!important;text-transform:uppercase;padding:10px 12px!important;border-bottom:1px solid #DCE6F5!important}
+table td{padding:12px!important;border-bottom:1px solid #EDF2FA!important;vertical-align:middle}
+table tbody tr{transition:background .15s}
+table tbody tr:hover{background:#F3F7FD}
+table td a[href]{border-radius:999px!important;border:1px solid #C9D8EE!important;padding:6px 12px!important;transition:transform .15s,background .15s,box-shadow .15s}
+table td a[href]:hover{background:#E3EDFC!important;transform:translateY(-1px);box-shadow:0 4px 10px rgba(25,63,105,.12)}
+table td a[href="HcLaporan.dc.html"]:first-child{background:#2F6FD6!important;color:#fff!important;border-color:#2F6FD6!important}
+table td a[href="HcLaporan.dc.html"]:first-child:hover{background:#2560C0!important}
+.btn2{border-radius:999px!important}
+.glass{background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 10px 30px rgba(25,63,105,.08)}
+table td>div[style*="display:flex;gap:6px"]{flex-wrap:nowrap!important}
+table td a[href]{padding:6px 10px!important}
+
+/* ===== 8. Token dan jadwal: tiga kolom HC ===== */
+/*cols*/
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.cA .card{overflow-x:auto}
+@media (max-width:1699px){.cB .card{max-width:820px}}
+.cA table{font-size:13px}
+.cA th,.cA td{padding:8px 10px!important;white-space:nowrap}
+.cA td .tip,.cA td span[style*="border-radius:999px"]{white-space:nowrap}
+.cA,.cB{display:flex;flex-direction:column;gap:24px;min-width:0}
+.cB{position:sticky;top:16px}
+.lf{position:sticky;top:16px}
+@media (max-width:1699px){.cols{grid-template-columns:1fr}.cB,.lf{position:static}}
+@media (max-width:900px){.lf{flex:1 1 100%!important}}

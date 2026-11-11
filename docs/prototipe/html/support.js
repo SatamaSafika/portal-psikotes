@@ -2,7 +2,7 @@
 // Hanya untuk melihat prototipe di browser. Bukan bagian dari aplikasi.
 class DCLogic {
   constructor(props) { this.props = props || {}; this.state = {}; this._r = null; }
-  setState(p) { this.state = Object.assign({}, this.state, p); if (this._r) this._r(); }
+  setState(p, cb) { this.state = Object.assign({}, this.state, p); if (this._r) this._r(); if (typeof cb === 'function') setTimeout(cb, 0); }
 }
 window.DCLogic = DCLogic;
 document.addEventListener('DOMContentLoaded', async () => {
@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const a of node.attributes) {
       if (a.name === 'hint-placeholder-val' || a.name === 'hint-placeholder-count') continue;
       if (/^on/i.test(a.name)) { const fn = ev(a.value, scope); if (typeof fn === 'function') { let t = a.name.slice(2).toLowerCase(); if (t === 'change' && (tag === 'input' || tag === 'textarea')) t = 'input'; el.addEventListener(t, fn); } continue; }
+      if (/^(readonly|disabled|checked|hidden|selected|required)$/i.test(a.name)) { const bv = ev(a.value, scope); if (bv !== undefined) { if (bv) el.setAttribute(a.name, ''); continue; } }
       const v = interp(a.value, scope);
       try { el.setAttribute(a.name, v); } catch (e) {}
     }

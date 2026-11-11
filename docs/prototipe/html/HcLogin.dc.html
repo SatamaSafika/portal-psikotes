@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Dashboard HC: masuk</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#1C2F4A;background:#EEF4FC}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:'Raleway','Inter',system-ui,sans-serif;margin:0}
+.pill{display:inline-flex;align-items:center;gap:8px;background:#CB642B;color:#fff;font-weight:700;font-size:16px;padding:14px 26px;border-radius:999px;border:0;font-family:inherit;cursor:pointer;box-shadow:0 8px 20px rgba(203,100,43,.28)}
+.pill:hover{background:#B0541F}
+.pillN{background:#193F69;box-shadow:0 8px 20px rgba(25,63,105,.25)}
+.pillN:hover{background:#12304F}
+.ghost{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.7);color:#193F69;font-weight:600;font-size:15px;padding:13px 22px;border-radius:999px;border:1px solid #CFDBEC;font-family:inherit;cursor:pointer}
+.glass{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 14px 40px rgba(25,63,105,.10)}
+.grad{background:linear-gradient(90deg,#193F69,#2F6FD6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tile{transition:transform .15s}
+.tile:hover{transform:translateY(-4px)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input{font:inherit;font-size:16px;padding:13px 16px;border:1px solid #CFDBEC;border-radius:14px;background:#fff;color:#1C2F4A}
+.field input:focus{outline:2px solid #CB642B;outline-offset:1px}
+@media (max-width:760px){h1{font-size:34px!important}.art{display:none!important}}
+/*hover*/
+.btn,.btnO,.btn2,.pill,.pillN,.ghost{transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,background .15s}
+.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:translateY(-2px) scale(1.04)}
+.btn:active,.btnO:active,.btn2:active,.pill:active,.pillN:active,.ghost:active{transform:translateY(0) scale(.97)}
+button:disabled:hover{transform:none!important}
+.pill:hover{box-shadow:0 12px 26px rgba(203,100,43,.38)}
+.pill svg,.ghost svg{transition:transform .2s}
+.pill:hover svg{transform:translateX(5px)}
+.tile:hover{box-shadow:0 18px 44px rgba(25,63,105,.16)}
+.tile:hover svg{animation:wig .5s}
+@keyframes wig{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+@media (prefers-reduced-motion:reduce){.btn,.btnO,.btn2,.pill,.pillN,.ghost,.tile{transition:none!important;animation:none!important}.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:none}.tile:hover svg{animation:none}}
+/*anim*/
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.glass{animation:up .5s ease both}
+@media (prefers-reduced-motion:reduce){.card,.glass{animation:none}}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"]{background:rgba(255,255,255,.72)!important;color:#193F69!important;border-bottom:1px solid #DCE6F5!important;backdrop-filter:none}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"] *{color:#193F69!important}
+div[style*="background:#fff;border-bottom:1px solid #D9DEE5"]{background:transparent!important;border-bottom:0!important}
+a.tab[style*="background:#E3EBF4"]{background:#fff!important;box-shadow:0 4px 12px rgba(25,63,105,.10)}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-wrap:wrap;background:radial-gradient(900px 500px at 85% 0%,#D7E5FB 0%,rgba(215,229,251,0) 60%),radial-gradient(700px 500px at 0% 60%,#E3EDFC 0%,rgba(227,237,252,0) 60%),linear-gradient(180deg,#F3F7FD,#EAF1FB)">
+  <div style="flex:1 1 420px;display:flex;flex-direction:column;justify-content:space-between;padding:32px 40px;box-sizing:border-box;position:relative;overflow:hidden;background:linear-gradient(160deg,#193F69 0%,#2A5FA8 60%,#3B7BE0 100%);color:#fff;min-height:320px">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;font-family:'Raleway','Inter',sans-serif"><svg width="30" height="30" viewBox="0 0 30 30"><rect x="2" y="2" width="12" height="12" rx="4" fill="#fff"/><rect x="16" y="2" width="12" height="12" rx="4" fill="#9DBFF4"/><rect x="2" y="16" width="12" height="12" rx="4" fill="#9DBFF4"/><rect x="16" y="16" width="12" height="12" rx="6" fill="#CB642B"/></svg>Portal Psikotes</div>
+    <svg width="100%" viewBox="0 0 420 300" style="max-width:420px;align-self:center;opacity:.95" aria-hidden="true"><g transform="rotate(-12 150 150)"><rect x="60" y="40" width="170" height="210" rx="30" fill="#fff" opacity=".16"/></g><g transform="rotate(8 230 150)"><rect x="150" y="30" width="170" height="210" rx="30" fill="#fff" opacity=".24"/></g><rect x="100" y="90" width="170" height="200" rx="30" fill="#fff" opacity=".92"/><rect x="128" y="124" width="70" height="10" rx="5" fill="#193F69"/><rect x="128" y="148" width="112" height="8" rx="4" fill="#9DBFF4"/><rect x="128" y="168" width="96" height="8" rx="4" fill="#9DBFF4"/><rect x="128" y="206" width="30" height="50" rx="8" fill="#2F6FD6"/><rect x="166" y="190" width="30" height="66" rx="8" fill="#8FB4F5"/><rect x="204" y="222" width="30" height="34" rx="8" fill="#CB642B"/><circle cx="330" cy="70" r="12" fill="#CB642B"/><circle cx="50" cy="230" r="7" fill="#9DBFF4"/></svg>
+    <div><h2 style="font-size:30px;line-height:1.2;font-weight:700">Kelola sesi, token,<br>dan hasil tes</h2></div>
+  </div>
+  <div style="flex:1 1 420px;display:flex;align-items:center;justify-content:center;padding:40px 28px;box-sizing:border-box">
+    <div class="glass" style="width:100%;max-width:400px;padding:34px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:12px"><div style="width:46px;height:46px;border-radius:16px;background:linear-gradient(145deg,#E6EFFD,#C9DCF8);display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></div><h1 style="font-size:26px;font-weight:700;color:#193F69">Masuk admin HC</h1></div>
+      <div class="field"><label for="u">Username</label><input id="u" type="text" autocomplete="off"></div>
+      <div class="field"><label for="p">Kata sandi</label><input id="p" type="password" autocomplete="off"></div>
+      <a href="HcOverview.dc.html" class="pill pillN" style="justify-content:center">Masuk</a>
+      <div style="font-size:13px;color:#5E7391;line-height:1.5">Prototipe: tombol Masuk langsung menuju Overview.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

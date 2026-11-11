@@ -9,14 +9,15 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:#17202A;background:#F4F6F9}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#25364A;background:#F4F5F6}
 a{color:inherit;text-decoration:none}
-.card{background:#fff;border:1px solid #D5DBE3;border-top:4px solid #CB6015;border-radius:12px}
-.tab{padding:10px 16px;border-radius:8px;font-size:15px;font-weight:600;color:#5B6673}
+h1,h2,h3{font-family:'Raleway','Inter',system-ui,sans-serif}
+.card{background:#fff;border:1px solid #D9DEE5;border-radius:4px}
+.tab{padding:10px 16px;border-radius:4px;font-size:15px;font-weight:600;color:#667085}
 .tab:hover{background:#E3EBF4}
-th{text-align:left;font-size:13px;color:#5B6673;font-weight:600;padding:10px 14px;border-bottom:2px solid #CB6015;white-space:nowrap}
+th{text-align:left;font-size:13px;color:#667085;font-weight:600;padding:10px 14px;border-bottom:2px solid #CB642B;white-space:nowrap}
 td{padding:12px 14px;font-size:15px;border-bottom:1px solid #EAEEF3}
 @media (max-width:640px){
 .card{padding-left:16px!important;padding-right:16px!important}
@@ -24,49 +25,85 @@ h1{font-size:24px!important}
 .btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
 button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
 }
+/*soft*/.card{background:rgba(255,255,255,.86)!important;border:1px solid #fff!important;border-radius:20px!important;box-shadow:0 10px 30px rgba(25,63,105,.09)!important}
+.btn,.btn2,.btnO{border-radius:999px!important}
+.btn,.btnO{padding-left:26px!important;padding-right:26px!important}
+.btnO{box-shadow:0 8px 20px rgba(203,100,43,.26)}
+.field input,.field select{border-radius:14px!important;border-color:#CFDBEC!important}
+h1::after{display:none!important}
+h1{font-weight:800!important;letter-spacing:-.02em}
+body{background:linear-gradient(180deg,#F3F7FD,#EAF1FB)!important;color:#1C2F4A}
+div[style*="border-bottom:3px solid #CB642B"]{border-radius:0 0 22px 22px!important}
+.tab{border-radius:999px!important}
+a.tab[style*="background:#E3EBF4"]{border-bottom:0!important}
+th{border-bottom:1px solid #CFDBEC!important}
+div[style*="margin-top:auto"]{background:transparent!important;border-top:0!important}div[style*="margin-top:auto"] div{color:#5E7391!important}/*hover*/
+.btn,.btnO,.btn2,.pill,.pillN,.ghost{transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,background .15s}
+.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:translateY(-2px) scale(1.04)}
+.btn:active,.btnO:active,.btn2:active,.pill:active,.pillN:active,.ghost:active{transform:translateY(0) scale(.97)}
+button:disabled:hover{transform:none!important}
+.pill:hover{box-shadow:0 12px 26px rgba(203,100,43,.38)}
+.pill svg,.ghost svg{transition:transform .2s}
+.pill:hover svg{transform:translateX(5px)}
+.tile:hover{box-shadow:0 18px 44px rgba(25,63,105,.16)}
+.tile:hover svg{animation:wig .5s}
+@keyframes wig{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+@media (prefers-reduced-motion:reduce){.btn,.btnO,.btn2,.pill,.pillN,.ghost,.tile{transition:none!important;animation:none!important}.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:none}.tile:hover svg{animation:none}}
+/*anim*/
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.glass{animation:up .5s ease both}
+@media (prefers-reduced-motion:reduce){.card,.glass{animation:none}}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"]{background:rgba(255,255,255,.72)!important;color:#193F69!important;border-bottom:1px solid #DCE6F5!important;backdrop-filter:none}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"] *{color:#193F69!important}
+div[style*="background:#fff;border-bottom:1px solid #D9DEE5"]{background:transparent!important;border-bottom:0!important}
+a.tab[style*="background:#E3EBF4"]{background:#fff!important;box-shadow:0 4px 12px rgba(25,63,105,.10)}
+/*tip*/
+.tip{position:relative;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#2F6FD6;background:#E3EDFC;border-radius:999px;padding:4px 10px;cursor:help;width:fit-content;line-height:1.2}
+.tipbox{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:340px;max-width:80vw;background:#fff;color:#25364A;font-weight:400;font-size:13px;line-height:1.55;padding:12px 14px;border-radius:14px;box-shadow:0 12px 32px rgba(25,63,105,.18);border:1px solid #DCE6F5}
+.tip:hover .tipbox,.tip:focus .tipbox,.tip:focus-within .tipbox{display:block}
 </style>
 </helmet>
 <div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
-  <div style="background:#003C71;color:#fff;border-bottom:3px solid #CB6015">
+  <div style="background:#193F69;color:#fff;border-bottom:3px solid #CB642B">
     <div style="max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
       <div style="font-weight:700;font-size:18px">Portal Psikotes · Dashboard HC</div>
-      <div style="font-size:14px;color:#D5E0EE">Admin HC</div>
+      <div style="display:flex;gap:16px;align-items:center;font-size:14px;color:#D5E0EE"><span>admin.uji</span><a href="HcLogin.dc.html" style="color:#fff;font-weight:600;text-decoration:underline">Keluar</a></div>
     </div>
   </div>
-  <div style="background:#fff;border-bottom:1px solid #D5DBE3">
+  <div style="background:#fff;border-bottom:1px solid #D9DEE5">
     <div style="max-width:1160px;margin:0 auto;padding:8px 24px;display:flex;gap:8px;flex-wrap:wrap">
-      <a href="HcOverview.dc.html" class="tab" style="background:#E3EBF4;color:#003C71;border-bottom:3px solid #CB6015">Overview</a>
+      <a href="HcOverview.dc.html" class="tab" style="background:#E3EBF4;color:#193F69;border-bottom:3px solid #CB642B">Overview</a>
       <a href="HcToken.dc.html" class="tab">Token dan jadwal</a>
       <a href="HcHasil.dc.html" class="tab">Hasil dan laporan</a>
     </div>
   </div>
   <div style="max-width:1160px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:24px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
-      <h1 style="margin:0;font-size:26px">Ringkasan hari ini</h1>
-      <div style="font-size:13px;color:#5B6673">Data pada layar ini hanya contoh tampilan.</div>
+      <h1 style="margin:0;font-size:26px">Ringkasan</h1>
+      <div style="font-size:14px;color:#667085">Selasa, 10 November 2026 · data contoh</div>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:16px">
-      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Peserta selesai hari ini</div><div style="font-size:36px;font-weight:700;color:#CB6015">18</div></div>
-      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Token aktif</div><div style="font-size:36px;font-weight:700;color:#CB6015">42</div></div>
-      <div class="card" style="flex:1 1 220px;padding:20px"><div style="font-size:14px;color:#5B6673">Sesi tes aktif</div><div style="font-size:36px;font-weight:700;color:#CB6015">2</div></div>
+    <div class="card" style="display:flex;flex-wrap:wrap">
+      <div style="flex:1 1 200px;padding:18px 20px;display:flex;align-items:center;gap:14px;border-right:1px solid #D9DEE5"><div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#E6EFFD,#C9DCF8);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg></div><div><div style="font-size:13px;color:#667085">Sedang mengerjakan</div><div style="font-size:34px;font-weight:700;color:#193F69">7</div></div></div>
+      <div style="flex:1 1 200px;padding:18px 20px;display:flex;align-items:center;gap:14px;border-right:1px solid #D9DEE5"><div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#E6EFFD,#C9DCF8);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div><div><div style="font-size:13px;color:#667085">Selesai hari ini</div><div style="font-size:34px;font-weight:700;color:#193F69">18</div></div></div>
+      <div style="flex:1 1 200px;padding:18px 20px;display:flex;align-items:center;gap:14px"><div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#E6EFFD,#C9DCF8);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><div><div style="font-size:13px;color:#667085">Total selesai</div><div style="font-size:34px;font-weight:700;color:#193F69">214</div></div></div>
     </div>
     <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:12px">
-      <div style="font-weight:700;font-size:17px">Jadwal hari ini</div>
+      <div style="font-weight:700;font-size:17px">Sesi hari ini</div>
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;min-width:720px">
-          <thead><tr><th>Nama sesi</th><th>Mode</th><th>Jenis tes</th><th>Jumlah peserta</th><th>Waktu buka</th><th>Status</th></tr></thead>
+          <thead><tr><th>NAMA SESI</th><th>MODE</th><th>JENIS TES</th><th>JUMLAH PESERTA</th><th>WAKTU</th><th>STATUS</th></tr></thead>
           <tbody>
-            <tr><td>Magang SMK Contoh</td><td>Serentak</td><td>TIU 5</td><td>6 dari 40</td><td>08.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
-            <tr><td>Sesi contoh A</td><td>Individu</td><td>TIU 5</td><td>12</td><td>08.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
-            <tr><td>Sesi contoh B</td><td>Individu</td><td>Tes Koran / Kraepelin</td><td>12</td><td>09.30</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
-            <tr><td>Sesi contoh C</td><td>Individu</td><td>TIU 6</td><td>6</td><td>07.00</td><td><span style="background:#E3F3E8;color:#1E6B3A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Selesai</span></td></tr>
+            <tr><td>Magang SMK Contoh</td><td>Serentak</td><td>TIU 5</td><td>6 dari 40</td><td>08.00 - 11.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh A</td><td>Individu</td><td>TIU 5</td><td>12</td><td>08.00 - 11.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh B</td><td>Individu</td><td>Tes Koran / Kraepelin</td><td>12</td><td>09.30 - 11.00</td><td><span style="background:#FBE9DC;color:#7A3A0A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Berjalan</span></td></tr>
+            <tr><td>Sesi contoh C</td><td>Individu</td><td>TIU 6</td><td>6</td><td>07.00 - 08.00</td><td><span style="background:#E3F3E8;color:#1E6B3A;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px">Selesai</span></td></tr>
           </tbody>
         </table>
       </div>
-      <div style="font-size:13px;color:#5B6673;line-height:1.5">Sesi serentak: jumlah peserta = yang sudah masuk dari kuota X. Token serentak dihitung satu per tes, bukan per peserta.</div>
+      <span class="tip" tabindex="0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> Catatan<span class="tipbox" role="tooltip">Sesi serentak: jumlah peserta = yang sudah masuk dari kuota X. Token serentak dihitung satu per tes, bukan per peserta.</span></span>
     </div>
   </div>
-  <div style="margin-top:auto;background:#003C71;color:#fff;border-top:4px solid #CB6015">
+  <div style="margin-top:auto;background:#193F69;color:#fff;border-top:2px solid #CB642B">
     <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
       <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
       <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
