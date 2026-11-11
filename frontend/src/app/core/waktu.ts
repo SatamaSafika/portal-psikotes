@@ -7,7 +7,7 @@ export function formatSisa(detik: number): string {
   return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`;
 }
 
-/** "10 menit", "7 menit 20 detik". */
+/** "10 menit", "9 menit 32 detik". */
 export function formatDurasi(detik: number): string {
   const m = Math.floor(detik / 60);
   const s = detik % 60;

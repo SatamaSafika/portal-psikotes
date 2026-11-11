@@ -26,28 +26,37 @@
 
   @if (siap() && item(); as s) {
     <section class="kolom-soal">
-      <div class="kartu-polos">
-        <div class="teks-redup teks-kecil">
-          Soal {{ indeks() + 1 }} dari {{ soal().length }}@if (jenis() === 'TIU6') { ({{ butir.length }} butir)}
+      <div class="kartu-polos kartu-soal">
+        <div class="kepala-soal">
+          <span class="teks-redup">
+            Soal {{ indeks() + 1 }} dari {{ soal().length }}@if (jenis() === 'TIU6') { ({{ butir.length }} butir)}
+          </span>
+          <span class="status-simpan" [class.gagal]="statusSimpan() === 'gagal'" role="status">
+            @switch (statusSimpan()) {
+              @case ('tersimpan') { Jawaban tersimpan }
+              @case ('menyimpan') { Menyimpan... }
+              @case ('gagal') { Gagal menyimpan, mencoba lagi... }
+            }
+          </span>
         </div>
         @if (instruksi()) {
-          <p class="instruksi" [class.kotak-info]="jenis() === 'TIU6'">{{ instruksi() }}</p>
+          <p class="instruksi" [class.instruksi-tiu6]="jenis() === 'TIU6'">{{ instruksi() }}</p>
         }
         <div class="gambar-soal">
-          <img [src]="gambar(s.gambar)" alt="Gambar soal {{ s.nomor }}" />
+          <img [src]="gambar(s.gambar)" alt="Gambar soal {{ indeks() + 1 }}" />
         </div>
 
         @if (jenis() === 'TIU5') {
-          <p class="teks-redup teks-kecil"><strong>Pilih nomor jawaban</strong></p>
-          <div role="radiogroup" [attr.aria-label]="'Jawaban soal ' + s.nomor">
+          <p class="label-pilihan">Pilih nomor jawaban</p>
+          <div class="pilihan-grid" role="radiogroup" [attr.aria-label]="'Jawaban soal ' + (indeks() + 1)">
             @for (p of pilihan5; track p) {
               <button type="button" class="pilihan" role="radio"
                       [attr.aria-checked]="nilai(s.nomor) === p" (click)="pilih(s.nomor, p)">
-                <span class="bulat"></span>{{ p }}
+                {{ p }}
               </button>
             }
           </div>
-          <p class="teks-redup teks-kecil">Klik pilihan yang sama sekali lagi untuk mengosongkan jawaban. Anda boleh melewati soal dan kembali lagi.</p>
+          <p class="teks-redup teks-kecil">Klik kembali jawaban yang dipilih untuk membatalkan pilihan. Anda juga dapat melewati soal dan menjawabnya kembali nanti.</p>
         } @else {
           <table class="tabel-butir">
             <thead><tr><th>Butir</th><th>B</th><th>S</th></tr></thead>
@@ -67,7 +76,7 @@
               }
             </tbody>
           </table>
-          <p class="teks-redup teks-kecil">Setiap nomor hanya dapat diisi satu pilihan. Klik pilihan yang sama lagi untuk mengosongkan.</p>
+          <p class="teks-redup teks-kecil">Pilih B atau S untuk setiap butir. Klik kembali jawaban yang dipilih untuk membatalkan pilihan. Anda juga dapat melewati soal dan menjawabnya kembali nanti.</p>
         }
       </div>
 
@@ -79,8 +88,8 @@
 
     <aside class="kolom-panel">
       <div class="kartu-polos">
-        <strong>Navigasi soal</strong>
-        <div class="grid-nomor">
+        <strong class="judul-navigasi">Navigasi soal</strong>
+        <div class="grid-nomor" [class.empat-kolom]="jenis() === 'TIU6'">
           @for (x of soal(); track x.nomor; let i = $index) {
             <button type="button" [class]="'nomor ' + status(i)" [attr.aria-current]="i === indeks() ? 'step' : null"
                     [attr.aria-label]="'Soal ' + (i + 1)" (click)="ke(i)">{{ i + 1 }}</button>
@@ -91,13 +100,6 @@
           <li><span class="nomor dijawab"></span> Sudah dijawab</li>
           <li><span class="nomor kosong"></span> Belum dijawab</li>
         </ul>
-        <div class="teks-kecil status-simpan" role="status">
-          @switch (statusSimpan()) {
-            @case ('tersimpan') { Jawaban tersimpan }
-            @case ('menyimpan') { Menyimpan... }
-            @case ('gagal') { <span style="color: var(--salah)">Gagal menyimpan, mencoba lagi...</span> }
-          }
-        </div>
       </div>
       <button type="button" class="tombol tombol-navy tombol-penuh" (click)="keKirim()">Kirim jawaban</button>
     </aside>

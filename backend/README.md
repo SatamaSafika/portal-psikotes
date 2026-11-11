@@ -32,6 +32,7 @@ Variabel yang dibaca kode:
 - `npm run bank:periksa`: muat bank yang sudah terimpor lewat pembaca server, cetak jumlah dan sidik jari.
 - `npm run buat-koran`: buat angka Tes Koran baru (sekali per versi bank) ke `materi_rahasia/mentah/koran.json`. Susunan dari `config/tes.json`. Tidak menimpa berkas yang ada.
 - `npm test`: tes otomatis (data dummy saja).
+- `npm run uji:kelompok`: uji sesi serentak dengan database (data dummy "Uji Kuota ..."): 100 klaim paralel pada kuota 50, di luar jadwal, tes lain, tambah kuota, 100 salah ketik lewat HTTP, token baru, cabut, ubah nama. Jalankan `npm run dev` di terminal lain dulu (pilihan `-- --api <url>`). Setiap kali jalan membuat satu sesi uji baru; tidak mencetak token.
 
 Semua skrip bank hanya mencetak nama berkas, nomor, jumlah, dan sidik jari. Kunci, penjelasan, instruksi, dan angka Koran tidak pernah dicetak.
 
@@ -51,7 +52,9 @@ Rute peserta:
 
 | Rute | Hasil |
 | --- | --- |
-| `POST /api/peserta/masuk` | Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
+| `POST /api/peserta/token` | Langkah 1 verifikasi. Body `{ "token", "jenis_tes" }`. Balasan `{ "mode": "INDIVIDU" | "KELOMPOK" }` bila token berlaku untuk tes itu sekarang; token tidak dipakai. Gagal: 401 dengan pesan seragam. Dibatasi 300 gagal per 15 menit per IP (yang berhasil tidak dihitung). |
+| `POST /api/peserta/masuk-kelompok` | Langkah 2 sesi serentak. Body `{ "token", "jenis_tes", "nama" }` (nama 2 sampai 100 karakter). Klaim satu kursi kuota secara atomik dan membuat catatan ujian sendiri. Berhasil: cookie `psikotes_peserta`. |
+| `POST /api/peserta/masuk` | Langkah 2 individu. Body `{ "email", "token", "jenis_tes"?, "nama"? }`. Token sekali pakai, harus di dalam jam sesi. `jenis_tes` (tes yang dipilih di halaman awal) harus sama dengan tes token; bila beda ditolak dan token tidak terpakai. `nama` disimpan hanya bila HC belum mengisi nama. Berhasil: cookie `psikotes_peserta`. |
 | `GET /api/peserta/saya` | Jenis tes, nama (atau email bila kosong), status, durasi, jumlah soal (`jumlah_soal`, `jumlah_nomor`, `jumlah_halaman` untuk Koran), sisa waktu dan `berjalan_ms` menurut jam server. |
 | `POST /api/peserta/mulai` | Tulis `mulai_pada` dan `batas_selesai` di server. Aman diulang. |
 
@@ -62,6 +65,23 @@ Rute peserta:
 - Jadwal dibandingkan dengan jam server database. Peserta harus masuk dan mulai di dalam jadwal tesnya; durasi tes tidak dipotong jam tutup (keputusan sementara, menunggu konfirmasi HC).
 - Versi bank untuk sesi baru: `bank_aktif` di `config/tes.json`.
 
+### Sesi serentak (token kelompok, `db/09`)
+| Rute | Hasil |
+| --- | --- |
+| `POST /api/admin/sesi-kelompok` | `nama_sesi`, `kuota` (1 sampai 1000), `email_penerima`, `jadwal` (1 sampai 3 tes), `template` opsional. Satu token 10 karakter (`XXXXX-XXXXX`) per tes. Respons berisi token dan satu email untuk penerima. **Token mentah hanya tampil di respons ini.** |
+| `GET /api/admin/kelompok/:id/peserta` | Peserta yang sudah masuk, urut nama, dengan tanda `nama_kembar` |
+| `POST /api/admin/kelompok/:id/tambah-kuota` | Kuota +1 (ditolak bila dicabut atau sudah 1000) |
+| `POST /api/admin/kelompok/:id/token-baru` | Ganti token; kuota, terpakai, dan peserta yang sudah masuk tidak berubah. Respons berisi token baru dan email berisi token itu saja. |
+| `POST /api/admin/kelompok/:id/cabut` | Tolak klaim baru; peserta yang sudah masuk tetap lanjut |
+| `POST /api/admin/sesi/:id/email-kelompok-dikirim` | Tandai email token sudah dibuka di aplikasi email |
+| `PUT /api/admin/ujian/:id/nama` | Body `{ "nama" }`. Koreksi nama peserta |
+| `GET /api/admin/template-bawaan?mode=kelompok` | Template email bawaan sesi serentak (`config/undangan-kelompok.json`). Penanda: `{nama_sesi}`, `{kuota}`, `{tautan}`, `{daftar_token}`. |
+
+- Persetujuan peserta (`db/10`, `config/persetujuan.json`): balasan `/api/peserta/token` memuat teks persetujuan. `/masuk` dan `/masuk-kelompok` wajib menyertakan `"setuju": true` dan `"persetujuan_versi"` sesuai teks yang berlaku; tanpa itu 400, versi usang 409, dan token tidak terpakai. Waktu dan versi disimpan di catatan ujian. Mengubah teks = naikkan `versi` (maksimal 20 karakter).
+- Token individu (20 karakter) dan kelompok (10 karakter) dibedakan dari panjangnya. Huruf besar/kecil, spasi, dan tanda hubung diabaikan.
+- Satu peserta serentak = satu catatan ujian dengan timer sendiri, tanpa email dan tanpa token sendiri. Penutupan otomatis, koreksi, dan hasil sama dengan individu.
+- Sesi serentak tidak bisa ditambah peserta individu atau dibuatkan token individu (409).
+
 ## Pengerjaan
 Rute peserta (wajib sesi peserta):
 
@@ -69,7 +89,7 @@ Rute peserta (wajib sesi peserta):
 | --- | --- | --- |
 | `GET /api/peserta/latihan` | selama sesi | Instruksi dan latihan, tanpa kunci |
 | `POST /api/peserta/latihan/periksa` | selama sesi | Body `{ nomor, jawaban }` (TIU 5: `"1"`-`"5"`; TIU 6: daftar 5 `"B"`/`"S"`). Balasan: benar/salah dan kunci; penjelasan hanya TIU 5. Jawaban kosong ditolak. |
-| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur |
+| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur. TIU 5 dan TIU 6: urutan tampil acak per catatan ujian (tetap sama setiap dimuat, `modules/tes/acak.ts`); setiap soal membawa nomor aslinya, dan jawaban disimpan dengan nomor asli. |
 | `GET /api/peserta/gambar/:nama` | latihan selama sesi; soal setelah mulai | Hanya gambar milik jenis tes peserta |
 | `GET /api/peserta/jawaban` | setelah mulai | Jawaban tersimpan (tanpa waktu) |
 | `PUT /api/peserta/jawaban` | setelah mulai, sebelum waktu habis | TIU 5/6: `{ jawaban: [{ nomor, jawaban }] }`, `jawaban` null = kosong. TIU 6 nomor datar `(soal - 1) x 5 + butir`. |
@@ -84,8 +104,17 @@ Rute peserta (wajib sesi peserta):
 ## Koreksi dan hasil
 - Hasil dihitung otomatis saat ujian dikirim, dan setiap 15 detik untuk ujian `DIKIRIM`/`WAKTU_HABIS` yang belum punya hasil. Peserta tidak bisa melihat hasil.
 - Skor mentah = jumlah benar, tanpa penalti. TIU 6 per butir. Koran: kunci = digit terakhir dari jumlah dua angka bersebelahan; N = benar / 22 dibulatkan setengah ke atas (bilangan bulat); kategori Koran memakai N.
-- Koran: ringkasan `interval_detik` (20 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah 440 detik tidak dihitung di skor maupun interval.
-- Admin melihat hasil per token di `GET /api/admin/sesi/:id` (benar, salah, dijawab, N, kategori, skor akhir, ringkasan interval, versi aturan).
+- Koran: ringkasan `interval_detik` (26 detik, `config/skoring.json`) = 22 interval `{ dikerjakan, benar, salah }`, disimpan di kolom `ringkasan_interval`. Jawaban dengan waktu pada atau setelah durasi Koran (572 detik) tidak dihitung di skor maupun interval.
+- Admin melihat hasil per token di `GET /api/admin/sesi/:id` (benar, salah, dijawab, N, kategori, skor akhir, ringkasan interval, versi aturan, `undangan_dikirim_pada`).
+
+## Dashboard HC (rute admin tambahan, wajib login admin)
+| Rute | Hasil |
+| --- | --- |
+| `GET /api/admin/ringkasan` | Total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (timer berjalan), semua per orang per sesi, dan jadwal hari ini (menurut jam server) |
+| `GET /api/admin/hasil?jenis=&sesi=&tanggal=` | Hasil ujian yang sudah selesai, filter opsional, maksimal 5000 baris. Balasan: `hasil`, `interval_detik`, `terpotong` |
+| `GET /api/admin/ujian/:id/jawaban` | Jawaban per nomor dengan `benar` (true/false/null), tanpa kunci |
+| `GET /api/admin/template-bawaan` | Template email bawaan untuk diedit sebelum membuat sesi |
+| `POST /api/admin/sesi/:id/undangan-dikirim` | Body `{ "email" }`. Tandai undangan peserta sudah dibuka di aplikasi email (`db/08`) |
 - `npm run hasil:hitung-ulang` (atau `-- --sesi <id>`): hitung ulang dari jawaban mentah dengan `skoring.json` terbaru. Ujian yang jawaban mentahnya sudah terhapus (retensi 3 bulan) dilewati, hasil lama tetap.
 
 ## Bank soal

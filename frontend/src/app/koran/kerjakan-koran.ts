@@ -1,43 +1,44 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
+import { Ikon } from '../core/ikon';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { LajurKoran } from './lajur-koran';
 
-const LAYAR_SEMPIT = '(max-width: 640px)';
-
 /**
  * Tes Koran sebenarnya: ketat satu per satu dari atas ke bawah, lajur 1 sampai 4, halaman 1 sampai 13.
- * Hanya satu kotak aktif. Enter pada kotak berisi mengunci jawaban (dengan waktu_ms) dan pindah ke kotak
- * berikutnya; di layar sempit satu digit langsung mengunci. Tidak bisa kembali ke halaman sebelumnya.
- * Tidak ada indikator benar/salah.
+ * Hanya satu kotak aktif. Satu angka langsung terkunci (dengan waktu_ms) dan pindah ke kotak berikutnya, tanpa Enter;
+ * kotak terakhir sebuah halaman langsung membuka halaman berikutnya (revisi HC 5 November 2026).
+ * Kotak terakhir halaman 13 membuka layar konfirmasi kirim. Tidak ada indikator benar/salah.
  */
 @Component({
   selector: 'app-kerjakan-koran',
-  imports: [LajurKoran],
+  imports: [LajurKoran, Ikon],
   template: `
     @if (susunan(); as s) {
       <div class="wadah area-koran">
-        <div class="info-halaman">
-          <strong>Halaman {{ halaman() }} dari {{ s.soal.halaman }}</strong>
-          <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
+        <!-- Satu baris: aturan di kiri, posisi halaman di kanan, supaya satu lajur muat di layar 1366 x 768. -->
+        <div class="baris-info-koran">
+          <div class="peringatan-koran" role="note">
+            <app-ikon nama="lock" [ukuran]="16" />
+            <span><strong>Perhatian:</strong> satu angka langsung terkunci dan tidak dapat diubah. Kursor pindah otomatis tanpa Enter.</span>
+          </div>
+          <div class="info-halaman">
+            <strong>Halaman {{ halaman() }} dari {{ s.soal.halaman }}</strong>
+            <span class="teks-redup">Terjawab {{ terakhir() }} dari {{ s.total }} soal</span>
+          </div>
         </div>
         <div class="kertas-koran">
           @for (l of lajurTampil(); track l.lajur) {
-            <app-lajur-koran [judul]="'Lajur ' + l.posisi" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif"
-                             [isiAktif]="isiAktif()" (ketik)="ketik($event)" (enter)="kunci()" />
+            <app-lajur-koran [judul]="'Lajur ' + l.posisi" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif" (ketik)="ketik($event)" />
           }
         </div>
-        <div class="kaki-koran">
-          <p class="teks-redup teks-kecil">
-            Jumlahkan dua angka yang mengapit kotak, tulis digit terakhirnya. Isi satu kotak, lalu tekan <strong>Enter</strong>
-            untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati, dan jawaban yang sudah ditinggalkan tidak dapat diubah.
-            Di layar kecil, kotak pindah otomatis setelah Anda mengisi angka. Setelah semua kotak di halaman ini terisi,
-            tekan tombol {{ halamanTerakhir() ? 'Kirim jawaban' : 'Halaman berikutnya' }}.
-          </p>
-          <button type="button" class="tombol tombol-navy" [disabled]="!halamanPenuh()" (click)="berikutnya()">
-            {{ halamanTerakhir() ? 'Kirim jawaban' : 'Halaman berikutnya' }}
-          </button>
-        </div>
+        <!-- Instruksi lengkap ada di halaman instruksi dan uji coba; di sini ruang dipakai untuk lajur. -->
+        <!-- Tombol hanya setelah kembali dari layar konfirmasi atau memuat ulang: semua kotak sudah terisi. -->
+        @if (selesaiSemua()) {
+          <div class="kaki-koran">
+            <button type="button" class="tombol tombol-navy" (click)="keKonfirmasi()">Kirim jawaban</button>
+          </div>
+        }
       </div>
     }
   `,
@@ -55,15 +56,11 @@ export class KerjakanKoran {
   });
   protected readonly nomorAktif = computed(() => this.terakhir() + 1);
   protected readonly halaman = signal(1);
-  protected readonly isiAktif = signal('');
-
-  protected readonly halamanTerakhir = computed(() => this.halaman() === (this.susunan()?.soal.halaman ?? 0));
-  /** Semua kotak di halaman ini sudah terisi. */
-  protected readonly halamanPenuh = computed(() => {
+  /** Semua kotak tes sudah terisi. */
+  protected readonly selesaiSemua = computed(() => {
     const s = this.susunan();
-    return !!s && this.terakhir() >= s.nomorTerakhirHalaman(this.halaman());
+    return !!s && this.terakhir() >= s.total;
   });
-
   protected readonly lajurTampil = computed(() => {
     const s = this.susunan();
     const soal = this.pengerjaan.soalKoran();
@@ -93,30 +90,24 @@ export class KerjakanKoran {
     });
   }
 
+  /** Satu angka: kunci kotak aktif, lalu pindah halaman bila kotak itu yang terakhir di halamannya. */
   protected ketik(digit: string): void {
-    this.isiAktif.set(digit);
-    if (digit && window.matchMedia(LAYAR_SEMPIT).matches) this.kunci();
-  }
-
-  /** Enter: kunci isi kotak aktif. Kotak kosong tidak berpindah. */
-  protected kunci(): void {
-    const digit = this.isiAktif();
     const s = this.susunan();
-    if (!digit || !s) return;
+    if (!s) return;
     const nomor = this.nomorAktif();
-    // Kotak aktif harus ada di halaman ini (halaman penuh menunggu tombol halaman berikutnya).
-    if (nomor > s.nomorTerakhirHalaman(this.halaman()) || nomor > s.total) return;
-    if (this.pengerjaan.jawabKoran(nomor, digit)) this.isiAktif.set('');
-  }
-
-  protected async berikutnya(): Promise<void> {
-    if (!this.halamanPenuh()) return;
+    if (nomor > s.total || !this.pengerjaan.jawabKoran(nomor, digit)) return;
+    if (nomor < s.nomorTerakhirHalaman(this.halaman())) return;
     this.pengerjaan.simpanKoranSekarang();
-    if (this.halamanTerakhir()) {
-      await this.router.navigateByUrl('/tes/kirim');
+    if (nomor === s.total) {
+      void this.keKonfirmasi();
       return;
     }
     this.halaman.update((h) => h + 1);
     window.scrollTo({ top: 0 });
+  }
+
+  protected async keKonfirmasi(): Promise<void> {
+    this.pengerjaan.simpanKoranSekarang();
+    await this.router.navigateByUrl('/tes/kirim');
   }
 }

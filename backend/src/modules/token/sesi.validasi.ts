@@ -103,6 +103,71 @@ export function validasiMasuk(data: unknown, normalisasi: (t: string) => string 
   return { email, token, jenis_tes: jenis, nama };
 }
 
+// ---------- sesi serentak / kelompok (Part 8b) ----------
+
+export const KUOTA_MAKS = 1000;
+export const NAMA_MIN = 2;
+export const NAMA_MAKS = 100;
+
+/** Nama peserta kelompok: spasi dirapikan, 2 sampai 100 karakter. Null bila tidak sah. */
+export function validasiNama(x: unknown): string | null {
+  if (typeof x !== 'string') return null;
+  const nama = x.trim().replace(/\s+/g, ' ');
+  return nama.length >= NAMA_MIN && nama.length <= NAMA_MAKS ? nama : null;
+}
+
+export interface SesiKelompokMasukan {
+  nama_sesi: string;
+  kuota: number;
+  email_penerima: string;
+  /** 1 sampai 3 tes, urut baku. */
+  jadwal: JadwalTes[];
+}
+
+export function validasiSesiKelompok(data: unknown): { sesi: SesiKelompokMasukan | null; galat: string[] } {
+  const galat: string[] = [];
+  const d = (data ?? {}) as Record<string, unknown>;
+
+  const nama = typeof d.nama_sesi === 'string' ? d.nama_sesi.trim() : '';
+  if (nama === '' || nama.length > 100) galat.push('nama_sesi wajib diisi, maksimal 100 karakter');
+
+  const kuota = d.kuota;
+  if (!Number.isInteger(kuota) || (kuota as number) < 1 || (kuota as number) > KUOTA_MAKS) {
+    galat.push(`kuota harus bilangan bulat 1 sampai ${KUOTA_MAKS}`);
+  }
+
+  const email = validasiPeserta([{ email: d.email_penerima }]).peserta[0]?.email;
+  if (!email) galat.push('email_penerima tidak valid');
+
+  const j = validasiJadwal(d.jadwal);
+  galat.push(...j.galat);
+
+  if (galat.length > 0) return { sesi: null, galat };
+  return { sesi: { nama_sesi: nama, kuota: kuota as number, email_penerima: email!, jadwal: j.jadwal }, galat };
+}
+
+/** Langkah 1 verifikasi: token apa saja (individu atau kelompok) dan tes yang dipilih. */
+export function validasiCekToken(
+  data: unknown,
+  normalisasi: (t: string) => { jenis: 'INDIVIDU' | 'KELOMPOK'; token: string } | null,
+): { jenis: 'INDIVIDU' | 'KELOMPOK'; token: string; jenis_tes: JenisTes } | null {
+  const d = (data ?? {}) as Record<string, unknown>;
+  if (!DAFTAR_TES.includes(d.jenis_tes as JenisTes) || typeof d.token !== 'string') return null;
+  const t = normalisasi(d.token);
+  return t ? { ...t, jenis_tes: d.jenis_tes as JenisTes } : null;
+}
+
+/** Langkah 2 mode kelompok: token kelompok, tes yang dipilih, dan nama. */
+export function validasiMasukKelompok(
+  data: unknown,
+  normalisasi: (t: string) => { jenis: 'INDIVIDU' | 'KELOMPOK'; token: string } | null,
+): { token: string; jenis_tes: JenisTes; nama: string } | null {
+  const t = validasiCekToken(data, normalisasi);
+  const nama = validasiNama((data as Record<string, unknown> | null)?.nama);
+  if (!t || t.jenis !== 'KELOMPOK' || !nama) return null;
+  return { token: t.token, jenis_tes: t.jenis_tes, nama };
+}
+
 export function validasiJadwal(data: unknown): { jadwal: JadwalTes[]; galat: string[] } {
   const galat: string[] = [];
   if (!Array.isArray(data) || data.length === 0) {

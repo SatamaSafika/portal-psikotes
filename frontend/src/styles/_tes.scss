@@ -1,0 +1,552 @@
+// Halaman tes (TIU 5, TIU 6, Koran) dan unsur soal yang juga dipakai latihan.
+// 7c: halaman tes TETAP TENANG. Warna dan font baru, header navy lengket membulat, kartu lembut,
+// tanpa efek hover, animasi masuk, atau dekorasi pada kotak soal, pilihan, digit Koran, dan navigasi soal.
+
+app-kerjakan {
+  display: block;
+
+  .kartu,
+  .kartu-polos,
+  .kaca {
+    animation: none;
+  }
+
+  .tombol,
+  .tombol .ikon {
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+  }
+
+  .tombol:hover:not(:disabled),
+  .tombol:active:not(:disabled),
+  .tombol:hover .ikon {
+    transform: none;
+  }
+
+  .tombol-utama:hover:not(:disabled) {
+    box-shadow: var(--bayangan-oranye);
+  }
+}
+
+// ---------- header tes ----------
+
+.kepala-tes {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 0 0 22px 22px;
+  box-shadow: 0 10px 30px rgba(25, 63, 105, 0.18);
+
+  .merek {
+    color: #fff;
+    font-size: 1.1rem;
+  }
+
+  .teks-redup {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.kepala-tes-isi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 56px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.pil-waktu {
+  display: inline-flex;
+  align-items: baseline;
+  background: var(--oranye-aksi);
+  color: #fff;
+  border-radius: var(--pil);
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  strong {
+    font-size: 1.25rem;
+    margin-left: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.genting {
+    background: #b42318;
+  }
+}
+
+// ---------- tata letak TIU ----------
+
+.area-tes {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+  padding-top: 28px;
+  padding-bottom: 48px;
+
+  > .kotak-galat {
+    grid-column: 1 / -1;
+  }
+}
+
+.kolom-panel {
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: 84px;
+}
+
+.baris-navigasi {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.grid-nomor {
+  display: grid;
+  grid-template-columns: repeat(5, 38px);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+// Navigasi soal TIU: saat ini oranye, sudah dijawab navy, belum dijawab putih bergaris.
+.nomor {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid var(--kontrol);
+  background: #fff;
+  color: var(--teks-redup);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.dijawab {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+
+  &.saat-ini {
+    background: var(--oranye-aksi);
+    border-color: var(--oranye-aksi);
+    color: #fff;
+  }
+}
+
+.legenda {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nomor {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    cursor: default;
+  }
+}
+
+// Kartu soal: kepala berisi nomor soal (kiri) dan status simpan (kanan).
+.kartu-soal {
+  padding: 24px;
+}
+
+.kepala-soal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-simpan {
+  color: var(--benar);
+  font-weight: 600;
+
+  &.gagal {
+    color: var(--salah);
+  }
+}
+
+.label-pilihan {
+  margin: 0 0 10px;
+  color: var(--teks-redup);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+// TIU 6: kotak instruksi biru bergaris kiri.
+.instruksi-tiu6 {
+  padding: 12px 16px;
+  border-left: 4px solid var(--navy);
+  border-radius: 4px var(--radius-kecil) var(--radius-kecil) 4px;
+  background: #e3ebf4;
+  color: var(--teks);
+}
+
+.judul-navigasi {
+  color: var(--navy);
+}
+
+.grid-nomor.empat-kolom {
+  grid-template-columns: repeat(4, 38px);
+  column-gap: 23px;
+}
+
+// Tombol Sebelumnya/Berikutnya: garis navy agar jelas sebagai navigasi.
+.baris-navigasi .tombol-garis:not(:disabled) {
+  border-color: var(--navy);
+}
+
+// ---------- unsur soal (tes dan latihan) ----------
+
+.gambar-soal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 8px 0;
+  margin: 12px 0 20px;
+  background: #fff;
+  border-radius: var(--radius-kecil);
+
+  img {
+    display: block;
+    height: auto;
+  }
+}
+
+// TIU 5: pilihan 1-5 berjajar seperti lembar jawaban.
+.pilihan-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .pilihan {
+    justify-content: center;
+    margin: 0;
+    padding: 12px 8px;
+    font-size: 1.15rem;
+  }
+}
+
+.pilihan {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--kontrol);
+  border-radius: var(--radius-kecil);
+  background: #fff;
+  color: var(--teks);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  .bulat {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--kontrol);
+    flex: none;
+  }
+
+  &[aria-checked='true'] {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: #fff;
+
+    .bulat {
+      border: 6px solid #fff;
+      background: var(--oranye);
+    }
+  }
+
+  // Latihan: benar hijau, salah merah (latar muda, garis tegas).
+  &.benar {
+    border: 2px solid var(--benar);
+    background: var(--benar-muda);
+    color: var(--benar);
+  }
+
+  &.salah {
+    border: 2px solid var(--salah);
+    background: var(--salah-muda);
+    color: var(--salah);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.tabel-butir {
+  border-collapse: collapse;
+  min-width: 320px;
+
+  th,
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--garis-halus);
+    text-align: center;
+  }
+
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+
+  th {
+    color: var(--teks-redup);
+    font-size: 0.875rem;
+  }
+}
+
+.tombol-bs {
+  width: 44px;
+  height: 36px;
+  border: 1px solid var(--kontrol);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--teks);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+
+  &[aria-checked='true'] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+
+  &.benar {
+    background: var(--benar-muda);
+    border-color: var(--benar);
+    color: var(--benar);
+  }
+
+  &.salah {
+    background: var(--salah-muda);
+    border-color: var(--salah);
+    color: var(--salah);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// ---------- Tes Koran ----------
+
+.area-koran {
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+// Aturan (kiri) dan posisi halaman (kanan) dalam satu baris.
+.baris-info-koran {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 8px;
+}
+
+.info-halaman {
+  display: flex;
+  align-items: baseline;
+  gap: 4px 14px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  font-size: 0.9rem;
+}
+
+// Banner aturan: satu baris navy.
+.peringatan-koran {
+  display: flex;
+  flex: 1 1 520px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  background: var(--navy);
+  color: #fff;
+
+  .ikon {
+    color: #f6a26b;
+  }
+}
+
+.kertas-koran {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px 72px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--bayangan);
+  padding: 8px 32px 10px;
+}
+
+.lajur-judul {
+  color: var(--teks-redup);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.lajur {
+  display: flex;
+  gap: 10px;
+}
+
+// Tinggi baris (--baris) mengikuti tinggi layar supaya satu lajur (20 angka) selalu muat tanpa menggulir
+// dan ruang kosong di layar tinggi terpakai: 24 px di laptop 1366 x 768 (viewport sekitar 650 px), membesar
+// sampai 38 px di layar tinggi. 180 px = header, baris aturan, judul lajur, dan jarak kertas (diukur).
+// Latihan Koran memakai 30 px tetap. Kotak aktif tetap digulir ke tampilan bila layar lebih pendek (lajur-koran.ts).
+.lajur {
+  --baris: 30px;
+}
+
+app-kerjakan-koran .lajur {
+  --baris: clamp(24px, calc((100vh - 180px) / 20), 38px);
+}
+
+.lajur-angka span {
+  display: block;
+  height: var(--baris);
+  line-height: var(--baris);
+  width: 22px;
+  text-align: right;
+  font-size: max(18px, calc(var(--baris) * 0.7));
+  font-weight: 700;
+  color: var(--teks);
+  font-variant-numeric: tabular-nums;
+}
+
+// Kotak berada di antara dua angka: digeser setengah baris.
+.lajur-kotak {
+  padding-top: calc(var(--baris) / 2);
+}
+
+.baris-kotak {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--baris);
+}
+
+// Kotak jawaban: aktif putih bergaris oranye, terisi navy angka putih, berikutnya abu redup.
+.kotak {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: clamp(36px, calc(var(--baris) * 1.2), 46px);
+  height: max(21px, calc(var(--baris) - 6px));
+  border: 1.5px solid var(--kontrol);
+  border-radius: 6px;
+  background: #f4f6f9;
+  text-align: center;
+  font: inherit;
+  font-size: max(15px, calc(var(--baris) * 0.58));
+  font-weight: 700;
+  line-height: 1;
+  color: var(--navy);
+
+  &.terisi {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+
+  &.redup {
+    opacity: 0.75;
+  }
+
+  &.aktif {
+    background: #fff;
+    padding: 0;
+    outline: none;
+    border: 2px solid var(--oranye);
+    color: var(--teks);
+  }
+
+  &.benar {
+    background: var(--benar);
+    border-color: var(--benar);
+    color: #fff;
+  }
+
+  &.salah {
+    background: var(--salah);
+    border-color: var(--salah);
+    color: #fff;
+  }
+}
+
+.lajur-uji-coba {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+
+.keterangan-kotak {
+  color: var(--navy);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.kaki-koran {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .area-tes {
+    grid-template-columns: 1fr;
+  }
+
+  .kolom-panel {
+    position: static;
+  }
+
+  .baris-navigasi .tombol {
+    flex: 1;
+  }
+
+  .kertas-koran {
+    gap: 24px 32px;
+    padding: 16px;
+  }
+}

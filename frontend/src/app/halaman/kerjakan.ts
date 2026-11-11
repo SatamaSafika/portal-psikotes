@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiPeserta, pesanGalat } from '../core/api.service';
-import { BUTIR_PER_SOAL_TIU6, LABEL_TES } from '../core/model';
+import { BUTIR_PER_SOAL_TIU6, LABEL_TES_PESERTA } from '../core/model';
 import { statusNomor, type StatusNomor } from '../core/navigasi';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { formatSisa } from '../core/waktu';
@@ -27,7 +27,7 @@ export class Kerjakan implements OnInit {
   protected readonly statusSimpan = this.pengerjaan.statusSimpan;
   protected readonly instruksi = computed(() => this.pengerjaan.latihan()?.instruksi ?? null);
   protected readonly jenis = computed(() => this.info()?.jenis_tes ?? null);
-  protected readonly labelTes = computed(() => (this.jenis() ? LABEL_TES[this.jenis()!] : ''));
+  protected readonly labelTes = computed(() => (this.jenis() ? LABEL_TES_PESERTA[this.jenis()!] : ''));
   protected readonly sisa = computed(() => formatSisa(this.pengerjaan.sisaDetik() ?? 0));
   protected readonly hampirHabis = computed(() => (this.pengerjaan.sisaDetik() ?? 999) <= 60);
 

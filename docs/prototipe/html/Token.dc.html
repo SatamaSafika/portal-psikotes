@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Portal Psikotes: verifikasi token</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#25364A;background:#F4F5F6}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:'Raleway','Inter',system-ui,sans-serif}
+.card{background:#fff;border:1px solid #D9DEE5;border-radius:4px}
+.btn{display:inline-block;background:#193F69;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:4px}
+.btn:hover{background:#12304F}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid #8A94A1;border-radius:4px;background:#fff;color:#25364A}
+.field input:focus{outline:2px solid #CB642B;outline-offset:1px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+button.btn{border:0;font-family:inherit;cursor:pointer}
+h1{font-weight:700}
+h1::after{content:"";display:block;width:50px;height:4px;background:#CB642B;margin-top:12px}
+.btnO{background:#CB642B;font-weight:700;font-size:16px}
+.btnO:hover{background:#B0541F}
+.s2{display:grid;grid-template-columns:1.45fr 1fr;gap:28px;align-items:start}
+.s2R{display:flex;flex-direction:column;gap:18px}
+@media (max-width:900px){.s2{grid-template-columns:1fr}}
+body{background:radial-gradient(900px 500px at 85% 0%,#D7E5FB 0%,rgba(215,229,251,0) 60%),linear-gradient(180deg,#F3F7FD,#EAF1FB)!important;color:#1C2F4A}
+.card{background:rgba(255,255,255,.8)!important;border:1px solid #fff!important;border-radius:24px!important;box-shadow:0 14px 40px rgba(25,63,105,.10)!important}
+.btn{border-radius:999px!important;padding:14px 26px!important}
+.btnO{box-shadow:0 8px 20px rgba(203,100,43,.28)}
+.field input{border-radius:14px!important;border-color:#CFDBEC!important}
+h1::after{display:none!important}
+div[style*="border-bottom:2px solid #193F69"]{background:transparent!important;border-bottom:0!important}
+div[style*="margin-top:auto"]{background:transparent!important;border-top:0!important}
+div[style*="margin-top:auto"] div{color:#5E7391!important}
+x-dc{position:relative;z-index:1}
+div[style*="dashed #8A94A1"],div[style*="1.5px dashed"]{border-radius:16px!important;background:rgba(255,255,255,.5)}
+h1{font-weight:800!important;letter-spacing:-.02em}
+@media (max-width:640px){
+.card{padding-left:16px!important;padding-right:16px!important}
+h1{font-size:24px!important}
+.btn,.btn2,.btnO{width:100%;box-sizing:border-box;text-align:center}
+button[aria-label*="untuk butir"]{width:40px!important;height:40px!important}
+}
+/*hover*/
+.btn,.btnO,.btn2,.pill,.pillN,.ghost{transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,background .15s}
+.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:translateY(-2px) scale(1.04)}
+.btn:active,.btnO:active,.btn2:active,.pill:active,.pillN:active,.ghost:active{transform:translateY(0) scale(.97)}
+button:disabled:hover{transform:none!important}
+.pill:hover{box-shadow:0 12px 26px rgba(203,100,43,.38)}
+.pill svg,.ghost svg{transition:transform .2s}
+.pill:hover svg{transform:translateX(5px)}
+.tile:hover{box-shadow:0 18px 44px rgba(25,63,105,.16)}
+.tile:hover svg{animation:wig .5s}
+@keyframes wig{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+@media (prefers-reduced-motion:reduce){.btn,.btnO,.btn2,.pill,.pillN,.ghost,.tile{transition:none!important;animation:none!important}.btn:hover,.btnO:hover,.btn2:hover,.pill:hover,.pillN:hover,.ghost:hover{transform:none}.tile:hover svg{animation:none}}
+/*anim*/
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.glass{animation:up .5s ease both}
+@media (prefers-reduced-motion:reduce){.card,.glass{animation:none}}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"]{background:rgba(255,255,255,.72)!important;color:#193F69!important;border-bottom:1px solid #DCE6F5!important;backdrop-filter:none}
+div[style*="background:#193F69;color:#fff;border-bottom:3px solid #CB642B"] *{color:#193F69!important}
+div[style*="background:#fff;border-bottom:1px solid #D9DEE5"]{background:transparent!important;border-bottom:0!important}
+a.tab[style*="background:#E3EBF4"]{background:#fff!important;box-shadow:0 4px 12px rgba(25,63,105,.10)}
+</style>
+</helmet>
+<div style="min-height:800px;box-sizing:border-box;display:flex;flex-direction:column">
+  <div style="background:#fff;border-bottom:2px solid #193F69">
+    <div style="max-width:1080px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:#193F69"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="4" fill="#2F6FD6"/><rect x="16" y="2" width="12" height="12" rx="4" fill="#8FB4F5"/><rect x="2" y="16" width="12" height="12" rx="4" fill="#8FB4F5"/><rect x="16" y="16" width="12" height="12" rx="6" fill="#CB642B"/></svg>Portal Psikotes</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:#667085">
+        <span>1 Pilih tes</span><span>›</span><span style="font-weight:700;color:#193F69;background:#FBE9DC;border-bottom:2px solid #CB642B;padding:2px 8px;border-radius:4px">2 Verifikasi</span><span>›</span><span>3 Instruksi</span><span>›</span><span>4 Latihan</span><span>›</span><span>5 Tes</span><span>›</span><span>6 Selesai</span>
+      </div>
+    </div>
+  </div>
+  <div style="{{wrapSt}}">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="width:56px;height:56px;border-radius:20px;background:linear-gradient(145deg,#E6EFFD,#C9DCF8);display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></div>
+      <h1 style="margin:0;font-size:36px;line-height:1.25">Verifikasi token dan identitas</h1>
+      <sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#667085">Masukkan token dari tim HC atau pengawas tes. Token hanya berlaku pada jadwal sesi tes.</p></sc-if>
+      <sc-if value="{{isInd}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#667085">Masukkan nama dan email yang tertera pada undangan Anda.</p></sc-if>
+      <sc-if value="{{isGrp}}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.6;color:#667085">Token ini dipakai bersama satu kelompok. Tulis nama lengkap Anda dengan benar, karena hasil tes dicatat atas nama ini.</p></sc-if>
+    </div>
+    <div class="card" style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}">
+        <div class="field"><label for="token">Token</label><input id="token" type="text" value="{{token}}" onChange="{{onToken}}" placeholder="Contoh: 7KQ4M-X9RTC" autocomplete="off" autocapitalize="characters" spellcheck="false"><span style="font-size:13px;color:#667085">Huruf besar atau kecil sama saja. Tanda hubung boleh diabaikan.</span></div>
+        <sc-if value="{{err}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBE4E6;color:#8A1F2B;border:1.5px solid #8A1F2B;border-radius:4px;padding:12px 14px;font-size:14px;line-height:1.5;font-weight:600">{{err}}</div></sc-if>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn btnO" onClick="{{toStep2}}">Lanjut</button>
+          <a href="Main.dc.html" style="font-size:15px;color:#193F69;font-weight:600">Kembali</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{isStep2}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#E6ECF3;border-left:4px solid #193F69;border-radius:4px;padding:10px 14px">
+          <div style="font-size:14px;color:#25364A">Token <b class="mono">{{tokenShow}}</b> diterima</div>
+          <button onClick="{{back}}" style="font:inherit;font-size:14px;font-weight:600;color:#193F69;background:none;border:0;cursor:pointer;text-decoration:underline">Ganti token</button>
+        </div>
+        <div class="s2">
+        <div style="border:1px solid #D9DEE5;border-radius:16px;background:#F7FAFE;padding:20px 22px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:13px;font-weight:700;letter-spacing:.03em">PERSETUJUAN PESERTA PROSES REKRUTMEN <span style="color:#A12E24">*</span></div>
+          <div style="font-size:14px;line-height:1.6">Dengan mengisi dan mengirimkan formulir ini, saya menyatakan bahwa:</div>
+          <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.65;display:flex;flex-direction:column;gap:6px">
+            <li>Saya bersedia mengikuti seluruh tahapan proses rekrutmen dan seleksi yang diselenggarakan oleh perusahaan.</li>
+            <li>Saya menyatakan bahwa data dan informasi yang saya berikan dalam formulir ini adalah benar dan dapat dipertanggungjawabkan.</li>
+            <li>Saya memberikan persetujuan kepada perusahaan untuk mengumpulkan, menggunakan, mengolah, dan menyimpan data yang saya berikan untuk keperluan administrasi, proses seleksi, dan pertimbangan dalam proses rekrutmen.</li>
+            <li>Saya memahami bahwa data tersebut dapat digunakan oleh pihak yang berwenang di perusahaan dalam rangka pelaksanaan proses rekrutmen dan seleksi.</li>
+            <li>Saya memahami bahwa pengisian formulir ini tidak menjamin saya akan diterima sebagai karyawan, dan keputusan akhir merupakan kewenangan perusahaan.</li>
+          </ol>
+          <div style="font-size:14px;line-height:1.6">Dengan mencentang pernyataan persetujuan di bawah ini, saya menyatakan telah membaca, memahami, dan menyetujui ketentuan di atas.</div>
+          <div role="radiogroup" aria-label="Persetujuan" style="display:flex;flex-direction:column;gap:8px">
+            <button onClick="{{pickYa}}" role="radio" aria-checked="{{agreeYa}}" style="display:flex;align-items:center;gap:10px;font:inherit;font-size:14px;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="{{dotYa}}"></span>Saya Setuju</button>
+            <button onClick="{{pickTidak}}" role="radio" aria-checked="{{agreeTidak}}" style="display:flex;align-items:center;gap:10px;font:inherit;font-size:14px;background:none;border:0;cursor:pointer;padding:0;text-align:left"><span style="{{dotTidak}}"></span>Saya Tidak Setuju</button>
+          </div>
+          <sc-if value="{{agreeTidak}}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBE4E6;color:#8A1F2B;border-radius:4px;padding:10px 12px;font-size:13px;line-height:1.5;font-weight:600">Tanpa persetujuan Anda tidak dapat melanjutkan tes. Token Anda belum terpakai dan tidak mengurangi kuota.</div></sc-if>
+        </div>
+        <div class="s2R">
+        <div class="field"><label for="nama">Nama lengkap</label><input id="nama" type="text" value="{{nama}}" onChange="{{onNama}}" placeholder="Sesuai data pendaftaran" autocomplete="off"></div>
+        <sc-if value="{{isInd}}" hint-placeholder-val="{{ false }}">
+          <div class="field"><label for="email">Email</label><input id="email" type="email" value="{{email}}" onChange="{{onEmail}}" placeholder="nama@email.com" autocomplete="off"></div>
+        </sc-if>
+        <div style="background:#FBE9DC;color:#7A3A0A;border-radius:4px;padding:12px 14px;font-size:14px;line-height:1.5">Setelah tes dimulai, waktu berjalan dan tidak dapat dihentikan. Pastikan koneksi internet stabil.</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <sc-if value="{{canGo}}" hint-placeholder-val="{{ false }}"><a href="Instruksi.dc.html" class="btn btnO">Verifikasi dan lanjut</a></sc-if>
+          <sc-if value="{{cantGo}}" hint-placeholder-val="{{ true }}"><button class="btn btnO" disabled style="opacity:.45;cursor:not-allowed">Verifikasi dan lanjut</button></sc-if>
+          <button onClick="{{back}}" style="font:inherit;font-size:15px;color:#193F69;font-weight:600;background:none;border:0;cursor:pointer">Kembali</button>
+        </div>
+        </div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="border:1.5px dashed #8A94A1;border-radius:4px;padding:12px 14px;font-size:13px;line-height:1.6;color:#667085">
+      <b>Catatan prototipe (bukan bagian tampilan):</b> ketik <span class="mono">7KQ4M-X9RTC</span> untuk melihat mode serentak (nama saja), <span class="mono">SALAH-0000</span> untuk pesan galat, atau token lain untuk mode individu (nama dan email), misalnya <span class="mono">P2VE-ES6D-HZH3-D0EG-RCHX</span> (token individu 20 karakter). Layar dua langkah: mode baru diketahui setelah token dikirim ke server.
+    </div>
+  </div>
+  <div style="margin-top:auto;background:#193F69;color:#fff;border-top:2px solid #CB642B">
+    <div style="max-width:1080px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap">
+      <div style="font-size:14px;color:#E3EBF4">Portal Psikotes</div>
+      <div style="font-size:14px;color:#E3EBF4">Kendala saat tes? Hubungi tim HC.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 1, token: '', nama: '', email: '', err: '', agree: null }; }
+  norm(t) { return String(t || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  renderVals() {
+    const s = this.state;
+    const n = this.norm(s.token);
+    const grp = n === '7KQ4MX9RTC';
+    const size = n.length === 10 ? 5 : 4;
+    const show = n.length >= 8 ? n.replace(new RegExp('(.{' + size + '})(?=.)', 'g'), '$1-') : s.token.toUpperCase();
+    const dot = (on) => 'width:16px;height:16px;border-radius:50%;box-sizing:border-box;flex:none;border:2px solid ' + (on ? '#193F69' : '#8A94A1') + ';background:' + (on ? 'radial-gradient(#193F69 0 4px,#fff 5px)' : '#fff');
+    const ya = s.agree === 'ya';
+    const ok = ya && String(s.nama).trim().length >= 2 && (grp || String(s.email).indexOf('@') > 0);
+    return {
+      wrapSt: "max-width:" + (s.step === 2 ? "1100px" : "620px") + ";width:100%;box-sizing:border-box;margin:0 auto;padding:40px 24px;display:flex;flex-direction:column;gap:24px",
+      isStep1: s.step === 1,
+      isStep2: s.step === 2,
+      isGrp: s.step === 2 && grp,
+      isInd: s.step === 2 && !grp,
+      token: s.token, nama: s.nama, email: s.email, err: s.err, tokenShow: show,
+      agreeYa: ya, agreeTidak: s.agree === 'tidak', dotYa: dot(ya), dotTidak: dot(s.agree === 'tidak'),
+      canGo: ok, cantGo: !ok,
+      pickYa: () => this.setState({ agree: 'ya' }), pickTidak: () => this.setState({ agree: 'tidak' }),
+      onToken: (e) => this.setState({ token: e.target.value, err: '' }),
+      onNama: (e) => this.setState({ nama: e.target.value }),
+      onEmail: (e) => this.setState({ email: e.target.value }),
+      toStep2: () => {
+        const m = this.norm(this.state.token);
+        if (!m) { this.setState({ err: 'Masukkan token terlebih dahulu.' }); return; }
+        if (m === 'SALAH0000') { this.setState({ err: 'Token tidak dapat digunakan. Periksa kembali token Anda atau hubungi pengawas atau tim HC.' }); return; }
+        this.setState({ step: 2, err: '', agree: null });
+      },
+      back: () => this.setState({ step: 1, err: '', agree: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

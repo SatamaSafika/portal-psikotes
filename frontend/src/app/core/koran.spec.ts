@@ -32,7 +32,7 @@ describe('susunan Koran (dari konfigurasi server)', () => {
   it('halaman setelah refresh mengikuti nomor terakhir tersimpan', () => {
     expect(S.halamanPulih(0)).toBe(1);
     expect(S.halamanPulih(75)).toBe(1);
-    expect(S.halamanPulih(76)).toBe(1); // halaman 1 penuh: tetap di halaman 1, tombol berikutnya aktif
+    expect(S.halamanPulih(76)).toBe(2); // halaman 1 penuh: langsung halaman 2
     expect(S.halamanPulih(77)).toBe(2);
     expect(S.halamanPulih(988)).toBe(13);
   });
@@ -136,5 +136,7 @@ describe('bahan latihan Koran (latihan.ts, sama dengan prototipe)', () => {
     expect(kunciKoran(LATIHAN_KORAN.contoh1)).toEqual([5, 4, 5, 7]);
     expect(kunciKoran(LATIHAN_KORAN.contoh2)).toEqual([4, 3, 5, 6, 5]);
     expect(kunciKoran(LATIHAN_KORAN.ujiCoba)).toEqual([7, 1, 4, 3, 6, 1]);
+    // 5+8=13, 8+2=10, 2+9=11, 9+4=13, 4+1=5, 1+7=8
+    expect(kunciKoran(LATIHAN_KORAN.ujiCoba2)).toEqual([3, 0, 1, 3, 5, 8]);
   });
 });

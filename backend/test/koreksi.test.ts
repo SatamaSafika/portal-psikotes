@@ -153,19 +153,19 @@ test('contoh Koran dihitung tangan, interval 20 detik', () => {
   });
 });
 
-test('interval Koran sebenarnya: 22 interval, batas 19.999/20.000/439.999/440.000', () => {
+test('interval Koran sebenarnya: 22 interval, batas 25.999/26.000/571.999/572.000', () => {
   const kunci = Array.from({ length: 988 }, () => '0');
-  const r = koreksiKoran([j(1, '0', 19_999), j(2, '0', 20_000), j(3, '1', 439_999), j(4, '0', 440_000)], kunci, 440_000, 20_000);
+  const r = koreksiKoran([j(1, '0', 25_999), j(2, '0', 26_000), j(3, '1', 571_999), j(4, '0', 572_000)], kunci, 572_000, 26_000);
   assert.equal(r.interval.length, 22);
   assert.deepEqual(r.interval[0], { dikerjakan: 1, benar: 1, salah: 0 });
   assert.deepEqual(r.interval[1], { dikerjakan: 1, benar: 1, salah: 0 });
   assert.deepEqual(r.interval[21], { dikerjakan: 1, benar: 0, salah: 1 });
-  // 440.000 tidak dihitung di interval maupun di skor.
+  // 572.000 tidak dihitung di interval maupun di skor.
   assert.deepEqual({ benar: r.benar, salah: r.salah, dikerjakan: r.dikerjakan }, { benar: 2, salah: 1, dikerjakan: 3 });
 });
 
 test('tes Koran tanpa jawaban menghasilkan 22 interval berisi nol', () => {
-  const r = koreksiKoran([], ['1'], 440_000, 20_000);
+  const r = koreksiKoran([], ['1'], 572_000, 26_000);
   assert.equal(r.interval.length, 22);
   assert.ok(r.interval.every((x) => x.dikerjakan === 0 && x.benar === 0 && x.salah === 0));
   assert.deepEqual({ benar: r.benar, salah: r.salah, dikerjakan: r.dikerjakan }, { benar: 0, salah: 0, dikerjakan: 0 });
@@ -179,7 +179,7 @@ test('jumlah 22 interval selalu sama dengan total (jawaban acak dummy)', () => {
     w += 300 + (n % 7) * 50;
     jawaban.push(j(n, String((n * 3) % 10), w));
   }
-  const r = koreksiKoran(jawaban, kunci, 440_000, 20_000);
+  const r = koreksiKoran(jawaban, kunci, 572_000, 26_000);
   const jumlah = (f: 'dikerjakan' | 'benar' | 'salah') => r.interval.reduce((a, x) => a + x[f], 0);
   assert.equal(r.interval.length, 22);
   assert.equal(jumlah('benar'), r.benar);
@@ -197,7 +197,7 @@ test('hitungHasil Koran memakai durasi skoring.json (22 interval) dan menyimpan 
   assert.equal(h.n_koran, 6);
   assert.deepEqual({ kategori: h.kategori, skor_akhir: h.skor_akhir }, { kategori: 'Kurang', skor_akhir: 2 });
   assert.equal(h.ringkasan_interval!.length, 22);
-  // 1 jawaban per detik: 20 per interval untuk interval 1-6, sisanya 1 di interval 7 (detik 120).
-  assert.deepEqual(h.ringkasan_interval!.slice(0, 7).map((x) => x.benar), [20, 20, 20, 20, 20, 20, 1]);
+  // 1 jawaban per detik (detik 0-120): 26 per interval untuk interval 1-4, sisanya 17 di interval 5.
+  assert.deepEqual(h.ringkasan_interval!.slice(0, 6).map((x) => x.benar), [26, 26, 26, 26, 17, 0]);
   assert.ok(JSON.stringify(h.ringkasan_interval).length < 2000, 'muat di kolom NVARCHAR(2000)');
 });

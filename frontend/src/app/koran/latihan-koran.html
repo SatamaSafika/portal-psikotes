@@ -2,7 +2,7 @@
   @case (1) {
     <div class="judul-baris">
       <div>
-        <span class="label-tes">Tes Koran / Kraepelin · Contoh 1 dari 2</span>
+        <span class="label-tes">Tes 1 · Contoh 1 dari 2</span>
         <h1 class="judul">Contoh 1: hasil penjumlahan 9 atau kurang</h1>
       </div>
       <span class="pil">Hanya contoh, tidak perlu mengisi</span>
@@ -34,7 +34,7 @@
   @case (2) {
     <div class="judul-baris">
       <div>
-        <span class="label-tes">Tes Koran / Kraepelin · Contoh 2 dari 2</span>
+        <span class="label-tes">Tes 1 · Contoh 2 dari 2</span>
         <h1 class="judul">Contoh 2: hasil penjumlahan lebih dari 9</h1>
       </div>
       <span class="pil">Hanya contoh, tidak perlu mengisi</span>
@@ -63,25 +63,33 @@
   @case (3) {
     <div class="judul-baris">
       <div>
-        <span class="label-tes">Tes Koran / Kraepelin · Uji coba</span>
-        <h1 class="judul">Uji coba: isi sendiri satu lajur</h1>
+        <span class="label-tes">Tes 1 · Uji coba</span>
+        <h1 class="judul">Uji coba: isi sendiri dua lajur</h1>
       </div>
-      <div>
+      <div class="baris-pil">
         <span class="pil">Tidak dinilai dan tidak disimpan</span>
-        <span class="pil" style="background: #fff; border: 1px solid var(--garis); color: var(--teks-redup); margin-left: 6px">Tanpa batas waktu</span>
+        <span class="pil pil-garis">Tanpa batas waktu</span>
       </div>
     </div>
-    <div class="dua-kolom">
-      <div class="kartu">
-        <app-lajur-koran judul="Lajur uji coba" [angka]="ujiCoba" [isi]="isiUji()" [aktif]="aktifUji()"
-                         [isiAktif]="isiAktif()" [tanda]="tandaUji()" (ketik)="ketik($event)" (enter)="kunci()" />
-      </div>
-      <div class="kartu">
+    <div class="lajur-uji-coba">
+      @for (l of lajurUji(); track l.judul) {
+        <div class="kartu kartu-lajur">
+          <app-lajur-koran [judul]="l.judul" [angka]="l.angka" [isi]="l.isi" [aktif]="l.aktif"
+                           [tanda]="l.tanda" (ketik)="ketik($event)" />
+        </div>
+      }
+    </div>
+    <div>
+      <div class="kartu kartu-uji-coba">
         <strong>Kerjakan seperti pada contoh</strong>
         <p>
-          Jumlahkan dua angka yang mengapit kotak. Jika hasilnya dua digit, tulis angka terakhir saja. Tekan tombol
-          <strong>Enter</strong> untuk pindah ke kotak berikutnya. Hasil uji coba muncul setelah Anda menekan tombol selesai.
+          Jumlahkan dua angka yang mengapit kotak. Jika hasilnya dua digit, tulis angka terakhir saja. Kursor pindah otomatis
+          ke kotak berikutnya, tanpa menekan Enter. Hasil uji coba muncul setelah Anda menekan tombol selesai.
         </p>
+        <div class="kotak-peringatan" role="note">
+          <strong>Perhatian:</strong> satu angka yang Anda ketik langsung terkunci dan tidak dapat diubah. Ketik angka terakhirnya
+          saja: untuk hasil 12, ketik 2, bukan 1 lalu 2. Aturan ini sama pada tes sebenarnya.
+        </div>
         @if (ujiSelesai()) {
           <div [class]="jumlahBenar() === isiUji().length ? 'kotak-benar' : 'kotak-peringatan'" role="status">
             Benar {{ jumlahBenar() }} dari {{ isiUji().length }}. Kunci: {{ kunciTampil }}.

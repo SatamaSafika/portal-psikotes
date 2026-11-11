@@ -12,16 +12,25 @@ Perintah lain: `npm run build` (hasil di `dist/`), `npm test` (tes unit Vitest).
 
 ## Struktur
 ```
-src/app/core/         akses API, keadaan pengerjaan, hitung mundur, antrean simpan otomatis, navigasi
+src/app/admin/        dashboard HC di /admin (dimuat terpisah): login, overview, token dan jadwal, hasil, grafik SVG
+src/app/bersama/      komponen tampilan bersama: tanda produk, ilustrasi SVG, chip Catatan (tooltip), avatar inisial
+src/app/core/         akses API, keadaan pengerjaan, hitung mundur, antrean simpan otomatis, navigasi, ikon Lucide
 src/app/halaman/      pilih tes, verifikasi, instruksi, latihan, kerjakan, kirim, selesai
 src/app/tata-letak/   header (stepper) dan footer netral
 src/app/koran/        Tes Koran: lajur, latihan (contoh 1, contoh 2, uji coba; bahan di latihan.ts), layar tes
-src/styles.scss       token desain dari prototipe (warna, kartu, tombol)
+src/styles.scss       memuat gaya per area di src/styles/ (prototipe v50)
+src/styles/           _token (warna, bentuk, font), _dasar, _komponen, _peserta, _tes, _admin, _laporan (cetak A4)
 ```
+
+## Gaya tampilan (prototipe v50)
+- Warna, radius, bayangan, dan font hanya lewat variabel di `src/styles/_token.scss`. Beberapa warna lebih gelap dari prototipe supaya lolos kontras WCAG AA (alasan di komentar berkas itu dan di WORKFLOW).
+- Halaman tes (`app-kerjakan`) tetap tenang: efek hover dan animasi dimatikan di `_tes.scss`. Jangan menambah efek di sana.
+- Efek gerak mati bila pengguna memilih `prefers-reduced-motion`.
+- Penjelasan panjang di dashboard HC memakai `<app-catatan>`; teksnya tetap ada dan bisa dibuka dengan keyboard.
 
 ## Aturan yang dijaga di front-end
 - Kunci soal tidak pernah ada di browser. Kunci latihan TIU baru diminta ke server setelah peserta menjawab.
 - Timer dihitung dari sisa waktu server dan disinkronkan ulang tiap 30 detik. Saat habis, jawaban dikirim otomatis.
 - Jawaban TIU disimpan otomatis (jeda singkat, dicoba lagi bila gagal). Kirim manual hanya bila semua jawaban tersimpan.
 - Peserta tidak pernah melihat skor.
-- Koran: hanya satu kotak aktif (satu-satunya `<input>`), Enter mengunci, tidak bisa kembali atau melompat. Susunan halaman, lajur, dan angka selalu dari server. `waktu_ms` tiap jawaban dari waktu berjalan server, tidak pernah mundur; jawaban dikirim berurutan.
+- Koran: hanya satu kotak aktif (satu-satunya `<input>`), satu angka langsung terkunci tanpa Enter, halaman berganti otomatis, tidak bisa kembali atau melompat. Susunan halaman, lajur, dan angka selalu dari server. `waktu_ms` tiap jawaban dari waktu berjalan server, tidak pernah mundur; jawaban dikirim berurutan.

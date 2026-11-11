@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { pesanGalat } from '../core/api.service';
-import { LABEL_TES } from '../core/model';
+import { LABEL_TES_PESERTA } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { formatDurasi } from '../core/waktu';
 import { KakiPortal } from '../tata-letak/kaki-portal';
@@ -40,9 +40,11 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
                 Anda akan diberi daftar penjumlahan dua angka. Kerjakan secepat dan seteliti mungkin, dan jawablah
                 sebanyak-banyaknya dengan tepat dalam waktu yang tersedia.
               </p>
-              <ol>
+              <ol class="langkah">
                 <li>Jumlahkan dua angka yang mengapit kotak, lalu tulis angka terakhir dari hasilnya.</li>
-                <li>Kerjakan berurutan dari atas ke bawah. Tekan Enter untuk lanjut ke kotak berikutnya. Kotak tidak dapat dilewati dan Anda tidak dapat kembali ke halaman sebelumnya.</li>
+                <li>Kerjakan berurutan dari atas ke bawah. Kotak tidak dapat dilewati dan Anda tidak dapat kembali ke halaman sebelumnya.</li>
+                <li><strong>Satu angka yang Anda ketik langsung terkunci dan tidak dapat diubah.</strong> Kursor pindah otomatis ke kotak berikutnya, tanpa menekan Enter. Ketik angka terakhirnya saja: untuk hasil 12, ketik 2.</li>
+                <li>Setelah kotak terakhir di satu halaman terisi, halaman berikutnya terbuka otomatis.</li>
                 <li>Sebelum tes ada 2 contoh dan 1 uji coba. Uji coba tidak dinilai dan jawabannya tidak disimpan.</li>
                 <li>Pada tes sebenarnya tidak muncul indikator benar atau salah. Peserta dimohon fokus mengerjakan soal dengan cepat, teliti, dan akurat.</li>
                 <li>Waktu berjalan saat tes dimulai dan tidak dapat dihentikan. Jawaban dikirim otomatis saat waktu habis.</li>
@@ -52,7 +54,7 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
                 <a class="tombol-tautan" routerLink="/">Kembali</a>
               </div>
             } @else {
-            <ol>
+            <ol class="langkah">
               <li>Anda akan mengerjakan 2 soal latihan lebih dulu. Kunci jawaban langsung ditampilkan setelah Anda menjawab.</li>
               <li>Pada tes, Anda boleh melewati soal, tidak mengisi, dan mengubah jawaban sebelum mengirim.</li>
               <li>Waktu mulai berjalan saat tes dimulai dan tidak dapat dihentikan.</li>
@@ -79,7 +81,7 @@ export class Instruksi implements OnInit {
 
   protected readonly labelTes = computed(() => {
     const i = this.info();
-    return i ? LABEL_TES[i.jenis_tes] : '';
+    return i ? LABEL_TES_PESERTA[i.jenis_tes] : '';
   });
   protected readonly durasi = computed(() => formatDurasi(this.info()?.durasi_detik ?? 0));
   protected readonly jumlahSoal = computed(() => {

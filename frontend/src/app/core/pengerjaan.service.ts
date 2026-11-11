@@ -4,6 +4,7 @@ import { AntreanSimpan, type StatusSimpan } from './antrean-simpan';
 import { ApiPeserta, statusGalat } from './api.service';
 import { AntreanKoran, JamKoran, SusunanKoran, type SoalKoran } from './koran';
 import type { DataLatihan, InfoUjian, SoalPublik } from './model';
+import { TesSelesai } from './tes-selesai';
 import { HitungMundur } from './waktu';
 
 const SINKRON_MS = 30_000;
@@ -17,6 +18,7 @@ const SINKRON_MS = 30_000;
 export class PengerjaanService {
   private readonly api = inject(ApiPeserta);
   private readonly router = inject(Router);
+  private readonly tesSelesai = inject(TesSelesai);
 
   readonly info = signal<InfoUjian | null>(null);
   readonly latihan = signal<DataLatihan | null>(null);
@@ -219,6 +221,8 @@ export class PengerjaanService {
     }
     this.antreanTiu().berhenti();
     this.antreanKoran()?.berhenti();
+    const jenis = this.info()?.jenis_tes;
+    if (jenis) this.tesSelesai.catat(jenis);
     this.reset();
     await this.router.navigate(['/selesai'], { queryParams: alasan === 'waktu' ? { alasan: 'waktu' } : {} });
   }

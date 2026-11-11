@@ -20,14 +20,14 @@
       @if (item(); as l) {
         <div class="kartu">
           @if (instruksi()) {
-            <p class="instruksi" [class.kotak-info]="jenis() === 'TIU6'">{{ instruksi() }}</p>
+            <p class="instruksi" [class.instruksi-tiu6]="jenis() === 'TIU6'">{{ instruksi() }}</p>
           }
           <div class="gambar-soal">
             <img [src]="gambar(l.gambar)" alt="Gambar soal latihan {{ l.nomor }}" />
           </div>
 
           @if (jenis() === 'TIU5') {
-            <div role="radiogroup" [attr.aria-label]="'Jawaban latihan ' + l.nomor">
+            <div class="pilihan-grid" role="radiogroup" [attr.aria-label]="'Jawaban latihan ' + l.nomor">
               @for (p of pilihan5; track p) {
                 @let h = hasil5(l.nomor);
                 <button type="button" class="pilihan" role="radio"
@@ -35,7 +35,7 @@
                         [class.benar]="h && p === h.kunci"
                         [class.salah]="h && !h.benar && isian(l.nomor)[0] === p"
                         (click)="pilih5(l.nomor, p)">
-                  <span class="bulat"></span>{{ p }}
+                  {{ p }}
                 </button>
               }
             </div>

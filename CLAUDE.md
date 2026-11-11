@@ -24,13 +24,13 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 - TIU 5 dan TIU 6: peserta boleh melewati soal, mengosongkan jawaban, dan mengubah jawaban sebelum kirim.
 - TIU 5: instruksi dan satu gambar soal digabung. Jawaban hanya angka pilihan.
 - TIU 6: satu gambar guntingan 1 sampai 5. Jawaban hanya B atau S per nomor.
-- Koran/Kraepelin: 13 halaman, 4 lajur per halaman, 20 angka per lajur (1040 angka, 988 penjumlahan jika 19 per lajur), pindah halaman manual oleh peserta, Enter memindahkan kursor ke kotak berikutnya.
+- Koran/Kraepelin: 13 halaman, 4 lajur per halaman, 20 angka per lajur (1040 angka, 988 penjumlahan jika 19 per lajur), satu angka langsung terkunci dan kursor pindah ke kotak berikutnya tanpa Enter, halaman berganti otomatis setelah kotak terakhir halaman itu terisi, kotak terakhir halaman 13 membuka layar konfirmasi kirim.
 - Koran dikerjakan ketat satu per satu dari atas ke bawah: setiap kotak harus terisi satu digit sebelum lanjut, tidak bisa melompat, tidak bisa kembali atau mengubah. Ditegakkan di server, bukan hanya di layar.
 - Setiap tes punya 2 soal latihan dengan kunci langsung. Penjelasan jawaban hanya untuk latihan TIU 5.
 
 ## Dikonfirmasi HC (29 Oktober 2026, disampaikan pemilik proyek; belum ada dokumen tertulis)
 - Tanpa penalti. Skor mentah = jumlah benar. Salah dan kosong tidak mengurangi.
-- Durasi: TIU 5 = 10 menit, TIU 6 = 10 menit, Koran = 7 menit 20 detik (satu timer total, dikerjakan sebisanya).
+- Durasi: TIU 5 = 10 menit, TIU 6 = 10 menit, Koran = 9 menit 32 detik atau 572 detik (satu timer total, dikerjakan sebisanya; direvisi HC 5 November 2026).
 - Jumlah soal: TIU 5 = 30, TIU 6 = 40 butir (8 Soal x 5 butir), dinilai per butir. Koran = 13 halaman x 4 lajur x 20 angka.
 - Kategori dan skor akhir: lihat `backend/config/skoring.json` dan `WORKFLOW.md`. Koran: N = total benar / 22, dibulatkan ke bilangan bulat terdekat setengah ke atas (hitung dengan bilangan bulat, tanpa float).
 - Penyimpanan: jawaban mentah dihapus 3 bulan setelah tanggal tes. Seluruh data peserta (identitas, email, token, hasil, ringkasan skor) dihapus 4 bulan setelah tanggal tes.
@@ -39,7 +39,17 @@ Proyek: Portal Psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin). Ditujukan untuk dig
 
 ## Revisi HC (2 November 2026, disampaikan pemilik proyek)
 - UI tanpa nama dan logo perusahaan (aturan keras 10). Landing page hanya judul dan pilihan langsung, tanpa deskripsi.
-- Tracking Koran per peserta untuk grafik admin HC: 22 interval 20 detik (440 / 20). Interval ke-k = detik [20(k-1), 20k). Tiap interval: dikerjakan, benar, salah. Panjang interval disimpan di `skoring.json`, bukan konstanta di kode. Waktu jawaban dicatat klien (milidetik sejak mulai), divalidasi server. Tidak ditampilkan ke peserta. Latihan Koran tidak dicatat waktunya dan tidak masuk interval.
+- Tracking Koran per peserta untuk grafik admin HC: 22 interval 26 detik (572 / 26, direvisi HC 5 November 2026). Interval ke-k = detik [26(k-1), 26k). Tiap interval: dikerjakan, benar, salah. Panjang interval disimpan di `skoring.json`, bukan konstanta di kode. Waktu jawaban dicatat klien (milidetik sejak mulai), divalidasi server. Tidak ditampilkan ke peserta. Latihan Koran tidak dicatat waktunya dan tidak masuk interval.
+
+## Revisi HC (5 November 2026, disampaikan pemilik proyek)
+- Koran: interval 26 detik x 22, durasi 572 detik = 9 menit 32 detik (26 x 22, dikonfirmasi pemilik proyek 5 November 2026). Satu angka langsung terkunci tanpa Enter dan tanpa bisa diganti, halaman berganti otomatis.
+- Hasil dan laporan: satu baris per peserta per sesi, Review dan cetak Laporan Peserta, tombol Detail jawaban terpisah. Peserta serentak digabung menurut nama di sesi yang sama; bila ada dua catatan bernama sama untuk tes yang sama, tidak digabung dan ditandai. Catatan HC tidak disimpan.
+- Overview: total peserta selesai (data tersimpan), selesai hari ini, sedang mengerjakan (timer berjalan), dihitung per orang.
+
+## Revisi HC (10 November 2026, disampaikan pemilik proyek)
+- Laporan Peserta (dokumen hasil): kolom N Tes Koran tidak ditampilkan. N tetap dihitung dan tetap ada di ekspor Excel. Format dokumen mengikuti contoh dari pemilik proyek (11 November 2026).
+- Portal peserta: kartu Tes Koran paling kiri (cenderung dikerjakan lebih awal). Urutan peserta: Koran, TIU 5, TIU 6.
+- Portal peserta: nama tes diganti Tes 1 (Koran), Tes 2 (TIU 5), Tes 3 (TIU 6). Dashboard HC tetap memakai TIU 5, TIU 6, Tes Koran untuk monitoring dan penilaian.
 
 ## Belum dikonfirmasi HC
 - Belum ada. Catatan: aturan di atas disampaikan lewat pemilik proyek dan belum berupa dokumen tertulis HC.

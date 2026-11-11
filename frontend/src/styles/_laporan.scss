@@ -1,0 +1,339 @@
+// Laporan Peserta: panel Review di layar dan cetak A4 (Ekspor PDF lewat dialog cetak browser).
+// Format mengikuti contoh dokumen dari pemilik proyek (11 November 2026): kepala biru berjarak huruf dengan garis navy,
+// identitas dua kolom dalam kotak biru muda, judul bagian berupa pita navy, tabel bergaris dengan baris judul biru muda,
+// kategori berwarna menurut skor akhir, kaki bergaris oranye. Kolom N Koran tidak ditampilkan (revisi HC 10 November).
+
+app-laporan-peserta {
+  display: block;
+}
+
+.laporan {
+  --laporan-garis: #b9cbe4;
+  --laporan-muda: #e6eefb;
+  background: #fff;
+  color: var(--teks);
+  border: 1px solid var(--garis-halus);
+  border-radius: var(--radius-sedang);
+  padding: 22px;
+  font-size: 0.82rem;
+}
+
+.laporan-kepala {
+  color: var(--biru-teks);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 6px;
+}
+
+.laporan-judul,
+.laporan-subjudul {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.laporan-judul {
+  color: var(--navy);
+  font-size: 1.25rem;
+  margin: 16px 0 2px;
+}
+
+.laporan-subjudul {
+  color: var(--biru-teks);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  margin: 0 0 14px;
+}
+
+// Identitas: di panel Review (sempit) satu pasang label-nilai per baris; saat cetak dua pasang per baris.
+.laporan-identitas {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  background: var(--laporan-muda);
+  border: 1px solid var(--laporan-garis);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 0 0 14px;
+
+  dt {
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.laporan-bagian {
+  margin-bottom: 14px;
+  break-inside: avoid;
+
+  h3 {
+    background: var(--navy);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 0 0 6px;
+  }
+
+  .grafik {
+    width: 100%;
+    height: auto;
+  }
+
+  .legenda-grafik {
+    margin-top: 8px;
+    font-size: 0.75rem;
+  }
+}
+
+.laporan-tabel {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+  border: 1px solid var(--laporan-garis);
+
+  th,
+  td {
+    border: 1px solid var(--laporan-garis);
+  }
+
+  th {
+    background: var(--laporan-muda);
+    color: var(--navy);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 4px;
+  }
+
+  td {
+    color: var(--navy);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 6px 4px;
+  }
+}
+
+// Kategori berwarna menurut skor akhir (1-5 dari skoring.json), sama dengan dashboard.
+.laporan-kategori {
+  &[data-skor='1'] {
+    color: var(--salah) !important;
+  }
+
+  &[data-skor='2'] {
+    color: var(--oranye-teks-aksi) !important;
+  }
+
+  &[data-skor='3'] {
+    color: var(--kuning-teks) !important;
+  }
+
+  &[data-skor='4'],
+  &[data-skor='5'] {
+    color: var(--benar) !important;
+  }
+}
+
+.laporan-catatan-kecil {
+  color: var(--teks-redup);
+  font-size: 0.75rem;
+  margin: 4px 0 0;
+}
+
+.laporan-isian {
+  width: 100%;
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--kontrol);
+  border-radius: var(--radius-kecil);
+}
+
+// Catatan terisi tercetak utuh; bila kosong menjadi garis untuk ditulis tangan.
+.laporan-catatan-cetak {
+  white-space: pre-wrap;
+  min-height: 60px;
+  padding: 2px 6px;
+
+  span {
+    display: block;
+    height: 22px;
+    border-bottom: 1px solid var(--laporan-garis);
+  }
+}
+
+.laporan-kaki {
+  border-top: 2px solid var(--oranye);
+  color: var(--teks-redup);
+  font-size: 0.72rem;
+  text-align: center;
+  padding-top: 6px;
+}
+
+.area-cetak,
+.hanya-cetak {
+  display: none;
+}
+
+// Cetak: hanya Laporan Peserta, A4. Margin halaman 0 supaya browser tidak menambah tanggal dan alamat
+// di tepi kertas; jarak tepi diatur padding .laporan. Satuan pt/mm supaya ukuran sama di semua layar.
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  .kepala-admin,
+  .tab-admin,
+  .kaki,
+  .tanpa-cetak,
+  .tombol-tautan {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+    min-height: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+
+  .halaman {
+    display: block;
+    min-height: 0;
+  }
+
+  .isi-halaman {
+    padding: 0;
+  }
+
+  .wadah {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .area-cetak,
+  .hanya-cetak {
+    display: block;
+  }
+
+  // Satu peserta per halaman, tanpa halaman kosong di akhir.
+  app-laporan-peserta:not(:last-child) {
+    break-after: page;
+  }
+
+  // Tinggi sedikit di bawah 297 mm supaya pembulatan browser tidak membuat halaman kosong.
+  .laporan {
+    display: flex;
+    flex-direction: column;
+    min-height: 296mm;
+    border: none;
+    border-radius: 0;
+    padding: 11mm 16mm 9mm;
+    font-size: 10.5pt;
+    line-height: 1.4;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .laporan-kepala {
+    font-size: 9.5pt;
+    letter-spacing: 0.12em;
+    padding-bottom: 2mm;
+  }
+
+  .laporan-judul {
+    font-size: 17pt;
+    margin: 4mm 0 0.5mm;
+  }
+
+  .laporan-subjudul {
+    font-size: 9pt;
+    letter-spacing: 0.1em;
+    margin: 0 0 3.5mm;
+  }
+
+  .laporan-identitas {
+    grid-template-columns: max-content 1fr max-content 1fr;
+    gap: 1.5mm 6mm;
+    padding: 4mm 5mm;
+    margin: 0 0 4.5mm;
+  }
+
+  .laporan-bagian {
+    margin-bottom: 4.5mm;
+
+    h3 {
+      font-size: 10pt;
+      padding: 2mm 3mm;
+      margin: 0 0 2mm;
+    }
+
+    .grafik {
+      max-width: none;
+      margin-top: 1mm;
+
+      .label-sumbu {
+        font-size: 12.5px;
+      }
+    }
+
+    .legenda-grafik {
+      font-size: 9pt;
+      margin: 2mm 0 0;
+    }
+  }
+
+  .laporan-tabel {
+    th {
+      font-size: 9.5pt;
+      padding: 1.6mm 1mm;
+    }
+
+    td {
+      font-size: 12pt;
+      padding: 2mm 1mm;
+    }
+  }
+
+  .laporan-catatan-kecil {
+    font-size: 9pt;
+    margin-top: 1.5mm;
+  }
+
+  // Catatan mengisi sisa halaman, kaki selalu di bawah kertas.
+  .laporan-bagian:last-of-type {
+    flex: 1;
+    margin-bottom: 4mm;
+  }
+
+  .laporan-catatan-cetak {
+    min-height: 21mm;
+
+    span {
+      height: 7mm;
+    }
+  }
+
+  .laporan-kaki {
+    font-size: 9pt;
+    padding-top: 2mm;
+  }
+}

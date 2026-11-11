@@ -52,11 +52,12 @@ export class SusunanKoran {
 
   /**
    * Halaman yang dibuka setelah refresh, dari nomor terakhir yang tersimpan.
-   * Bila halaman itu sudah penuh, tetap di halaman itu (tombol "Halaman berikutnya" aktif).
+   * Bila semua kotak sudah terisi, tetap di halaman terakhir.
    */
   halamanPulih(terakhirTersimpan: number): number {
     if (terakhirTersimpan <= 0) return 1;
-    return Math.min(this.halamanDari(terakhirTersimpan), this.soal.halaman);
+    // Halaman yang sudah penuh berganti otomatis, jadi yang dibuka adalah halaman kotak berikutnya.
+    return Math.min(this.halamanDari(terakhirTersimpan + 1), this.soal.halaman);
   }
 }
 

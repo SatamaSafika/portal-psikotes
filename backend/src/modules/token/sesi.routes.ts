@@ -6,7 +6,7 @@ import { adminAktif, wajibAdmin } from '../admin/wajib-admin.js';
 import * as repo from './sesi.repo.js';
 import { GalatPermintaan, buatSesi, detailSesi, tambahPeserta, tokenBaru } from './sesi.service.js';
 import { validasiPeserta, validasiSesi } from './sesi.validasi.js';
-import { validasiTemplate, type Template } from './undangan.js';
+import { templateBawaan, validasiTemplate, type Template } from './undangan.js';
 
 function idDari(req: Request): number | null {
   const id = String(req.params.id ?? '');
@@ -68,16 +68,19 @@ export function ruteSesiAdmin(konfig: KonfigurasiAplikasi): Router {
 
   rute.put('/sesi/:id/template', wajibAdmin, async (req, res) => {
     const id = idDari(req);
+    const sesi = id === null ? null : await repo.ambilSesi(id);
+    if (!sesi) {
+      res.status(404).json({ pesan: 'Sesi tidak ditemukan' });
+      return;
+    }
+    // Penanda yang boleh dipakai bergantung pada mode sesi (individu atau serentak).
     const t = (req.body ?? {}) as Partial<Template>;
-    const galat = validasiTemplate(t);
+    const galat = validasiTemplate(t, sesi.mode);
     if (galat.length > 0) {
       res.status(400).json({ pesan: 'Template tidak valid', galat });
       return;
     }
-    if (id === null || !(await repo.simpanTemplate(id, { subjek: t.subjek!, isi: t.isi! }))) {
-      res.status(404).json({ pesan: 'Sesi tidak ditemukan' });
-      return;
-    }
+    await repo.simpanTemplate(sesi.id, { subjek: t.subjek!, isi: t.isi! });
     res.status(204).end();
   });
 
@@ -116,6 +119,26 @@ export function ruteSesiAdmin(konfig: KonfigurasiAplikasi): Router {
     } catch (e) {
       tanganiGalat(res, e);
     }
+  });
+
+  // HC menekan tombol kirim undangan (mailto). Email di body, bukan di URL.
+  rute.post('/sesi/:id/undangan-dikirim', wajibAdmin, async (req, res) => {
+    const id = idDari(req);
+    const v = validasiPeserta([{ email: (req.body as Record<string, unknown> | undefined)?.email }]);
+    if (v.galat.length > 0) {
+      res.status(400).json({ pesan: 'Email tidak valid' });
+      return;
+    }
+    if (id === null || (await repo.tandaiUndanganDikirim(id, v.peserta[0].email)) === 0) {
+      res.status(404).json({ pesan: 'Peserta tidak ditemukan di sesi ini' });
+      return;
+    }
+    res.status(204).end();
+  });
+
+  // Template bawaan, untuk diedit HC sebelum membuat sesi.
+  rute.get('/template-bawaan', wajibAdmin, (req, res) => {
+    res.json(templateBawaan(req.query.mode === 'kelompok' ? 'KELOMPOK' : 'INDIVIDU'));
   });
 
   rute.post('/ujian/:id/cabut', wajibAdmin, async (req, res) => {
