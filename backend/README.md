@@ -89,7 +89,7 @@ Rute peserta (wajib sesi peserta):
 | --- | --- | --- |
 | `GET /api/peserta/latihan` | selama sesi | Instruksi dan latihan, tanpa kunci |
 | `POST /api/peserta/latihan/periksa` | selama sesi | Body `{ nomor, jawaban }` (TIU 5: `"1"`-`"5"`; TIU 6: daftar 5 `"B"`/`"S"`). Balasan: benar/salah dan kunci; penjelasan hanya TIU 5. Jawaban kosong ditolak. |
-| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur |
+| `GET /api/peserta/soal` | setelah mulai, sebelum waktu habis | Soal tanpa kunci; Koran: angka per lajur. TIU 5 dan TIU 6: urutan tampil acak per catatan ujian (tetap sama setiap dimuat, `modules/tes/acak.ts`); setiap soal membawa nomor aslinya, dan jawaban disimpan dengan nomor asli. |
 | `GET /api/peserta/gambar/:nama` | latihan selama sesi; soal setelah mulai | Hanya gambar milik jenis tes peserta |
 | `GET /api/peserta/jawaban` | setelah mulai | Jawaban tersimpan (tanpa waktu) |
 | `PUT /api/peserta/jawaban` | setelah mulai, sebelum waktu habis | TIU 5/6: `{ jawaban: [{ nomor, jawaban }] }`, `jawaban` null = kosong. TIU 6 nomor datar `(soal - 1) x 5 + butir`. |

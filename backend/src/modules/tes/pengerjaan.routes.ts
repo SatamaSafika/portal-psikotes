@@ -4,6 +4,7 @@ import { Router, type Response } from 'express';
 import { durasiDetik } from '../../config/durasi.js';
 import { muatTes } from '../../config/tes.js';
 import { hitungDanSimpan } from '../hasil/hasil.service.js';
+import { acakUrutan, benihUjian } from './acak.js';
 import { ujianAktif, wajibPeserta } from '../token/wajib-peserta.js';
 import { angkaKoran, jalurGambar, muatBank, soalPublik, type BankTermuat } from './bank.js';
 import { latihanPublik, periksaLatihan } from './latihan.js';
@@ -57,7 +58,9 @@ export function rutePengerjaan(): Router {
       res.json({ halaman: k.halaman, lajur_per_halaman: k.lajur_per_halaman, angka_per_lajur: k.angka_per_lajur, lajur: angkaKoran(s.bank) });
       return;
     }
-    res.json({ soal: soalPublik(s.bank, jenis) });
+    // Urutan tampil acak per peserta dan tetap sama setiap dimuat; nomor asli tetap dipakai untuk jawaban.
+    const id = ujianAktif(res).id;
+    res.json({ soal: acakUrutan(soalPublik(s.bank, jenis), benihUjian(id, jenis, s.keadaan.bank_versi)) });
   });
 
   rute.get('/gambar/:nama', async (req, res) => {
