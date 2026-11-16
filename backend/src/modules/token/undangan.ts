@@ -7,11 +7,25 @@ import { FOLDER_CONFIG } from '../../config/jalur.js';
 
 export type JenisTes = 'TIU5' | 'TIU6' | 'KORAN';
 
+/** Nama tes untuk HC (dashboard, laporan). Tidak dipakai di email yang dibaca peserta atau PIC. */
 export const LABEL_TES: Record<JenisTes, string> = {
   TIU5: 'TIU 5',
   TIU6: 'TIU 6',
   KORAN: 'Tes Koran',
 };
+
+/**
+ * Nama tes di email undangan peserta dan email token kelompok (revisi HC 10 November 2026): jenis tes
+ * dirahasiakan dari peserta, sama dengan kartu di portal peserta (frontend LABEL_TES_PESERTA).
+ */
+export const LABEL_TES_PESERTA: Record<JenisTes, string> = {
+  KORAN: 'Tes 1',
+  TIU5: 'Tes 2',
+  TIU6: 'Tes 3',
+};
+
+/** Urutan blok token di email, sama dengan urutan kartu di portal peserta. */
+const URUTAN_PESERTA: JenisTes[] = ['KORAN', 'TIU5', 'TIU6'];
 
 /** Jadwal tiap tes berbeda, jadi tanggal dan jam ada di dalam {daftar_token}, bukan penanda sendiri. */
 export const PENANDA = ['nama', 'tautan', 'daftar_token'] as const;
@@ -108,12 +122,13 @@ export function formatTanggal(tanggal: string): string {
 }
 
 /**
- * Satu blok per tes: nama tes dan jadwal, lalu token di baris sendiri.
+ * Satu blok per tes: nama samaran (Tes 1-3) dan jadwal, lalu token di baris sendiri, urut Tes 1, 2, 3.
  * Tanpa perataan spasi, karena Outlook merapatkan spasi ganda.
  */
 export function daftarToken(token: TokenBerjadwal[]): string {
-  return token
-    .map((x) => `${LABEL_TES[x.tes]} - ${formatTanggal(x.tanggal)}, pukul ${x.waktu_buka}-${x.waktu_tutup}\nToken: ${x.token}`)
+  return [...token]
+    .sort((a, b) => URUTAN_PESERTA.indexOf(a.tes) - URUTAN_PESERTA.indexOf(b.tes))
+    .map((x) => `${LABEL_TES_PESERTA[x.tes]} - ${formatTanggal(x.tanggal)}, pukul ${x.waktu_buka}-${x.waktu_tutup}\nToken: ${x.token}`)
     .join('\n\n');
 }
 

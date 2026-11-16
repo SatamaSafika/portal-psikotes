@@ -1,11 +1,12 @@
 // Akses data peserta: masuk dengan token, sesi peserta, dan mulai ujian.
 // Semua pemeriksaan waktu memakai jam server database (SYSDATETIME), bukan jam browser atau jam Node.
+// Kolom database PascalCase (db/11); hasil query di-alias ke snake_case supaya tipe dan API tidak berubah.
 import sql from 'mssql';
 import { ambilPool } from '../../db/pool.js';
 import type { JenisTes } from './undangan.js';
 
-/** Awal sesi sebagai DATETIME2 dari kolom tanggal dan waktu_buka. */
-const BUKA = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), u.waktu_buka), CAST(u.tanggal AS DATETIME2(0)))`;
+/** Awal sesi sebagai DATETIME2 dari kolom Tanggal dan WaktuBuka. */
+const BUKA = `DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), u.WaktuBuka), CAST(u.Tanggal AS DATETIME2(0)))`;
 /** Menit tambahan setelah batas_selesai supaya kiriman terakhir masih bisa diterima (dipakai di Part 4). */
 export const TOLERANSI_SESI_MENIT = 5;
 
@@ -39,17 +40,17 @@ export async function masuk(
       // Tes yang dipilih peserta harus sama dengan tes token; bila beda, tidak ada baris yang berubah
       // (token tidak terpakai). Nama dari peserta hanya mengisi nama yang belum diisi HC.
       `UPDATE u
-          SET status = 'BERJALAN', sesi_peserta_hash = @sesiHash, sesi_peserta_aktif = SYSDATETIME(),
-              persetujuan_pada = SYSDATETIME(), persetujuan_versi = @versi,
-              nama = CASE WHEN (u.nama IS NULL OR u.nama = '') AND @nama IS NOT NULL THEN @nama ELSE u.nama END
-       OUTPUT inserted.id, inserted.jenis_tes
+          SET Status = 'BERJALAN', SesiPesertaHash = @sesiHash, SesiPesertaAktif = SYSDATETIME(),
+              PersetujuanPada = SYSDATETIME(), PersetujuanVersi = @versi,
+              Nama = CASE WHEN (u.Nama IS NULL OR u.Nama = '') AND @nama IS NOT NULL THEN @nama ELSE u.Nama END
+       OUTPUT inserted.Id AS id, inserted.JenisTes AS jenis_tes
          FROM dbo.HCIS_Psikotes_Ujian u
-        WHERE u.token_hash = @hash
-          AND u.email = @email
-          AND (@jenis IS NULL OR u.jenis_tes = @jenis)
-          AND u.status = 'BELUM_DIPAKAI'
+        WHERE u.TokenHash = @hash
+          AND u.Email = @email
+          AND (@jenis IS NULL OR u.JenisTes = @jenis)
+          AND u.Status = 'BELUM_DIPAKAI'
           AND SYSDATETIME() >= ${BUKA}
-          AND SYSDATETIME() < u.berlaku_sampai`,
+          AND SYSDATETIME() < u.BerlakuSampai`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -66,13 +67,13 @@ export async function pakaiSesiPeserta(sesiHash: Buffer): Promise<UjianPeserta |
     .input('toleransi', sql.Int, TOLERANSI_SESI_MENIT)
     .query<UjianPeserta>(
       `UPDATE u
-          SET sesi_peserta_aktif = SYSDATETIME()
-       OUTPUT inserted.id, inserted.jenis_tes
+          SET SesiPesertaAktif = SYSDATETIME()
+       OUTPUT inserted.Id AS id, inserted.JenisTes AS jenis_tes
          FROM dbo.HCIS_Psikotes_Ujian u
-        WHERE u.sesi_peserta_hash = @sesiHash
-          AND u.status = 'BERJALAN'
-          AND ((u.mulai_pada IS NULL AND SYSDATETIME() < u.berlaku_sampai)
-            OR (u.mulai_pada IS NOT NULL AND SYSDATETIME() <= DATEADD(MINUTE, @toleransi, u.batas_selesai)))`,
+        WHERE u.SesiPesertaHash = @sesiHash
+          AND u.Status = 'BERJALAN'
+          AND ((u.MulaiPada IS NULL AND SYSDATETIME() < u.BerlakuSampai)
+            OR (u.MulaiPada IS NOT NULL AND SYSDATETIME() <= DATEADD(MINUTE, @toleransi, u.BatasSelesai)))`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -101,19 +102,19 @@ export async function infoUjian(id: number): Promise<InfoUjian | null> {
     .request()
     .input('id', sql.Int, id)
     .query<InfoUjian>(
-      `SELECT jenis_tes, COALESCE(NULLIF(nama, ''), email) AS nama, nama_sesi, status,
-              CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
-              CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
-              CONVERT(VARCHAR(19), batas_selesai, 120) AS batas_selesai,
-              CASE WHEN batas_selesai IS NULL THEN NULL
-                   WHEN batas_selesai <= SYSDATETIME() THEN 0
-                   ELSE DATEDIFF(SECOND, SYSDATETIME(), batas_selesai) END AS sisa_detik,
-              -- mulai_pada DATETIME2(0) dibulatkan ke detik terdekat, jadi bisa sedikit di depan jam sekarang.
-              CASE WHEN mulai_pada IS NULL THEN NULL
-                   WHEN mulai_pada > SYSDATETIME() THEN 0
-                   ELSE DATEDIFF(MILLISECOND, mulai_pada, SYSDATETIME()) END AS berjalan_ms
+      `SELECT JenisTes AS jenis_tes, COALESCE(NULLIF(Nama, ''), Email) AS nama, NamaSesi AS nama_sesi, Status AS status,
+              CONVERT(CHAR(5), WaktuTutup, 108) AS waktu_tutup,
+              CONVERT(VARCHAR(19), MulaiPada, 120) AS mulai_pada,
+              CONVERT(VARCHAR(19), BatasSelesai, 120) AS batas_selesai,
+              CASE WHEN BatasSelesai IS NULL THEN NULL
+                   WHEN BatasSelesai <= SYSDATETIME() THEN 0
+                   ELSE DATEDIFF(SECOND, SYSDATETIME(), BatasSelesai) END AS sisa_detik,
+              -- MulaiPada DATETIME2(0) dibulatkan ke detik terdekat, jadi bisa sedikit di depan jam sekarang.
+              CASE WHEN MulaiPada IS NULL THEN NULL
+                   WHEN MulaiPada > SYSDATETIME() THEN 0
+                   ELSE DATEDIFF(MILLISECOND, MulaiPada, SYSDATETIME()) END AS berjalan_ms
          FROM dbo.HCIS_Psikotes_Ujian
-        WHERE id = @id`,
+        WHERE Id = @id`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -132,8 +133,8 @@ export async function mulai(id: number, durasiDetik: number): Promise<boolean> {
     .query(
       `DECLARE @sekarang DATETIME2(0) = SYSDATETIME();
        UPDATE dbo.HCIS_Psikotes_Ujian
-          SET mulai_pada = @sekarang, batas_selesai = DATEADD(SECOND, @durasi, @sekarang)
-        WHERE id = @id AND status = 'BERJALAN' AND mulai_pada IS NULL AND @sekarang < berlaku_sampai`,
+          SET MulaiPada = @sekarang, BatasSelesai = DATEADD(SECOND, @durasi, @sekarang)
+        WHERE Id = @id AND Status = 'BERJALAN' AND MulaiPada IS NULL AND @sekarang < BerlakuSampai`,
     );
   // Dijumlah karena batch berisi lebih dari satu pernyataan.
   return hasil.rowsAffected.reduce((a, b) => a + b, 0) === 1;
