@@ -1,0 +1,31 @@
+# Paket deploy dibuat dengan git archive (lihat DEPLOY.md).
+# Berkas bertanda export-ignore tetap ada di repo, tetapi TIDAK ikut ke paket deploy.
+
+# --- Berkas repo dan alat pengembang ---
+.gitignore                     export-ignore
+.gitattributes                 export-ignore
+.claude/                       export-ignore
+README.md                      export-ignore
+DEPLOY.md                      export-ignore
+materi_rahasia/                export-ignore
+
+# --- Backend: tes, skrip SQL, contoh .env, dan skrip yang tidak boleh jalan di server ---
+backend/README.md              export-ignore
+backend/.env.example           export-ignore
+backend/test/                  export-ignore
+backend/db/                    export-ignore
+# Membuat angka Koran baru = mengganti kunci. Tidak boleh ada di server.
+backend/scripts/buat-koran.ts  export-ignore
+# Membaca materi_rahasia/mentah, yang tidak ada di server.
+backend/scripts/impor-bank.ts  export-ignore
+backend/scripts/uji-api.ps1    export-ignore
+backend/scripts/uji-kelompok.ts export-ignore
+
+# --- Frontend: tes unit dan alat pengembang ---
+frontend/README.md             export-ignore
+frontend/.editorconfig         export-ignore
+frontend/.prettierrc           export-ignore
+frontend/.gitignore            export-ignore
+frontend/proxy.conf.json       export-ignore
+frontend/tsconfig.spec.json    export-ignore
+frontend/src/**/*.spec.ts      export-ignore

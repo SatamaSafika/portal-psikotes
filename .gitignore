@@ -19,3 +19,6 @@ coverage/
 *.log
 .DS_Store
 Thumbs.db
+# Dokumen internal: tetap di laptop pengembang, tidak di repo (keputusan pemilik proyek 16 November 2026)
+CLAUDE.md
+docs/
