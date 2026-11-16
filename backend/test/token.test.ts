@@ -89,8 +89,11 @@ test('undangan memuat setiap token dengan jadwal tesnya sendiri', () => {
   assert.equal(u.subjek, 'Undangan Psikotes');
   assert.ok(u.isi.includes('Halo Peserta Satu,'));
   assert.ok(u.isi.includes('https://psikotes.contoh.test/masuk'));
-  assert.ok(u.isi.includes('TIU 5 - Selasa, 10 November 2026, pukul 08:00-09:00\r\nToken: AAAA-BBBB-CCCC-DDDD-EEEE'));
-  assert.ok(u.isi.includes('Tes Koran - Rabu, 11 November 2026, pukul 13:00-14:00\r\nToken: FFFF-GGGG-HHHH-JJJJ-KKKK'));
+  // Nama tes disamarkan (Tes 1 = Koran, Tes 2 = TIU 5) dan diurutkan Tes 1, 2, 3.
+  assert.ok(u.isi.includes('Tes 2 - Selasa, 10 November 2026, pukul 08:00-09:00\r\nToken: AAAA-BBBB-CCCC-DDDD-EEEE'));
+  assert.ok(u.isi.includes('Tes 1 - Rabu, 11 November 2026, pukul 13:00-14:00\r\nToken: FFFF-GGGG-HHHH-JJJJ-KKKK'));
+  assert.ok(u.isi.indexOf('Tes 1 -') < u.isi.indexOf('Tes 2 -'));
+  assert.ok(!/TIU|Koran/.test(u.isi), 'nama jenis tes tidak boleh tampil ke peserta');
   assert.ok(!/\{[a-z_]+\}/.test(u.subjek + u.isi), 'masih ada penanda yang belum terisi');
 });
 

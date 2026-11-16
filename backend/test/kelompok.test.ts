@@ -104,7 +104,8 @@ test('email token kelompok berisi sesi, kuota, dan token tiap tes', () => {
   assert.equal(u.email, 'panitia@contoh.test');
   assert.ok(u.isi.includes('sesi Magang Contoh'));
   assert.ok(u.isi.includes('maksimal 40 orang'));
-  assert.ok(u.isi.includes('TIU 5 - Selasa, 10 November 2026, pukul 08:00-10:00\r\nToken: AAAAA-BBBBB'));
+  assert.ok(u.isi.includes('Tes 2 - Selasa, 10 November 2026, pukul 08:00-10:00\r\nToken: AAAAA-BBBBB'));
+  assert.ok(!/TIU|Koran/.test(u.isi), 'nama jenis tes tidak boleh tampil di email token kelompok');
   assert.ok(u.isi.includes('https://psikotes.contoh.test'));
   assert.ok(!/\{[a-z_]+\}/.test(u.subjek + u.isi));
 });

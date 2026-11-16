@@ -1,5 +1,5 @@
 {
-  "_catatan": "Template bawaan undangan email. Netral, tanpa nama dan logo perusahaan (CLAUDE.md aturan keras 10). HC dapat mengedit per sesi; suntingan disimpan di tabel sesi. Wajib memuat {daftar_token}, yang berisi nama tes, jadwal, dan token tiap tes. Penanda yang dikenal: {nama}, {tautan}, {daftar_token}.",
+  "_catatan": "Template bawaan undangan email. Netral, tanpa nama dan logo perusahaan (CLAUDE.md aturan keras 10). HC dapat mengedit per sesi; suntingan disimpan di tabel sesi. Wajib memuat {daftar_token}, yang berisi nama tes samaran (Tes 1 = Koran, Tes 2 = TIU 5, Tes 3 = TIU 6), jadwal, dan token tiap tes. Penanda yang dikenal: {nama}, {tautan}, {daftar_token}.",
   "subjek": "Undangan Psikotes",
   "isi": "Halo {nama},\n\nAnda diundang mengikuti psikotes. Setiap tes memiliki token dan jadwal sendiri:\n\n{daftar_token}\n\nPada jadwal tiap tes, buka {tautan} lalu masukkan alamat email ini dan token tes tersebut.\nSetiap token hanya bisa dipakai satu kali dan hanya berlaku pada jadwalnya. Jangan bagikan token kepada orang lain.\n"
 }

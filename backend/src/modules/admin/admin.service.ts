@@ -9,7 +9,11 @@ export const OPSI_ARGON2 = { type: argon2.argon2id } as const;
 
 /** Aturan username dan kata sandi, dipakai juga oleh skrip pembuat admin. */
 export const POLA_USERNAME = /^[A-Za-z0-9._-]{3,50}$/;
-export const PASSWORD_MIN = 12;
+/**
+ * Minimal 5 karakter: keputusan pemilik proyek 12 November 2026 (sebelumnya 12). Risiko: kata sandi pendek
+ * mudah dipecahkan bila hash bocor; batas gagal login hanya melindungi login lewat halaman. Tinjau sebelum produksi.
+ */
+export const PASSWORD_MIN = 5;
 /** Batas atas supaya kata sandi sangat panjang tidak membebani argon2. */
 export const PASSWORD_MAKS = 256;
 

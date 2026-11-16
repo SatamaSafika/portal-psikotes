@@ -26,7 +26,7 @@ Variabel yang dibaca kode:
 ## Perintah
 - `npm run dev`: jalankan API dengan muat ulang otomatis. Cek di http://localhost:3000/api/health
 - `npm run db:cek`: uji koneksi database (hanya SELECT). Mencetak nama database dan tabel berprefix `HCIS_Psikotes_`.
-- `npm run admin:buat`: buat akun admin HC. Kata sandi diketik di prompt tersembunyi (minimal 12 karakter), tidak pernah lewat argumen. Username yang sudah ada tidak ditimpa.
+- `npm run admin:buat`: buat akun admin HC. Kata sandi diketik di prompt tersembunyi (minimal 5 karakter, keputusan pemilik proyek 12 November 2026; tinjau sebelum produksi), tidak pernah lewat argumen. Username yang sudah ada tidak ditimpa.
 - `npm run bank:impor -- --periksa`: periksa bahan di `materi_rahasia/mentah` tanpa menulis apa pun.
 - `npm run bank:impor`: periksa lalu tulis `bank/v1/` (`soal.json`, `koran.json`, `gambar/`). Menolak bila `bank/v1` sudah ada. Pilihan: `--versi v2`, `--sumber <folder>`.
 - `npm run bank:periksa`: muat bank yang sudah terimpor lewat pembaca server, cetak jumlah dan sidik jari.
