@@ -107,3 +107,7 @@ Paket deploy dibuat dengan `git archive`. Berkas yang tidak ikut paket ditandai 
 - [backend/README.md](backend/README.md): variabel lingkungan, perintah, dan rute API.
 - [backend/db/README.md](backend/db/README.md): skrip database.
 - [frontend/README.md](frontend/README.md): struktur dan aturan tampilan.
+
+## Pengembang
+
+Satama Safika
