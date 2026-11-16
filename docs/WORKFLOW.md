@@ -7,7 +7,7 @@ Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), 
 - Selesai dan diterima pemilik proyek (15 November 2026): seluruh proses bisnis (peserta individu dan serentak, pengerjaan tiga tes, koreksi, dashboard HC, laporan, ekspor) dan tampilan front-end (Redesign 9 November, Refinement visual, gaya prototipe v50, revisi HC 10 November).
 - Selesai: revisi tim IT 13 November 2026, kolom database PascalCase. Database dibangun ulang dengan `db/11` dan kini bersih dari data uji coba (lihat bagian "Revisi tim IT" di bawah).
 - Di-commit 16 November 2026: perubahan PascalCase, email Tes 1-3, gaya terakhir, `docs/PRESENTASI_IT.md`.
-- Sedang berjalan: Part 9 (pengujian dan gladi demo). Pemeriksaan statis dan `npm audit` selesai; uji keamanan lewat API dan gladi belum.
+- Part 9: pemeriksaan statis, `npm audit`, dan seluruh daftar uji keamanan lolos (uji API diuji manual oleh pemilik proyek saat hands-on dengan partner). Tersisa: skenario demo tertulis dan gladi.
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran, landing page tanpa deskripsi) dan 5 November 2026 (Koran 26 detik x 22, tanpa Enter; laporan per peserta) berlaku untuk semua part berikutnya.
 
 Aturan kerja di setiap part:
@@ -306,7 +306,7 @@ Hak akun database (disampaikan pemilik proyek 15 November 2026): CREATE, INSERT,
 - Kata sandi admin minimal 5 karakter (sebelumnya 12), keputusan pemilik proyek. Risiko: kata sandi pendek mudah dipecahkan bila hash di database bocor; penguncian 5 kali gagal hanya melindungi login lewat halaman. Perlu ditinjau sebelum produksi. Aturan di `PASSWORD_MIN` (`backend/src/modules/admin/admin.service.ts`).
 
 ## Part 9. Pengujian dan gladi demo (M)
-- Daftar uji keamanan (lihat bawah) dan uji alur penuh.
+- [X] Daftar uji keamanan (lihat bawah) dan uji alur penuh: lolos, diuji manual oleh pemilik proyek (16 November 2026).
 - [X] `npm audit` (16 November 2026): frontend 0 kerentanan. Backend 2 high pada `@azure/msal-node` (dependensi tidak langsung dari `mssql`, alur login Azure AD yang tidak dipakai), diperbaiki dengan `npm audit fix` tanpa perubahan versi mayor; kini 0. Typecheck dan 109 tes backend lolos.
 - Data dummy, skenario demo tertulis, gladi sekali penuh.
 
@@ -323,20 +323,21 @@ Selesai kalau: seluruh daftar uji lolos dan gladi berjalan tanpa campur tangan m
 - Kebijakan penyimpanan data, serah terima akses, pencadangan bank soal.
 
 ## Daftar uji keamanan (Part 9)
-- [ ] Token tidak bisa dipakai dua kali.
-- [ ] Token kedaluwarsa atau di luar jam sesi ditolak.
-- [ ] Jawaban setelah batas waktu ditolak.
-- [ ] Tidak ada respons API (termasuk galat) yang memuat kunci jawaban.
-- [ ] Peserta tidak bisa mengambil skor atau hasil dirinya lewat API.
-- [ ] Peserta A tidak bisa membaca atau menulis ujian peserta B (ganti `ujian_id` di permintaan).
-- [ ] Gambar soal tidak bisa diambil tanpa token valid.
-- [ ] Percobaan tebak token dibatasi.
-- [ ] Salah password admin berulang dibatasi.
-- [ ] Kata sandi dan token tidak muncul di log. (16 November: tidak ada `console.*` di `src` yang mencetak token, sandi, email, atau nama; perlu dilihat juga di log server saat uji alur.)
+Status 16 November 2026: butir uji lewat API dan log diuji manual oleh pemilik proyek saat sesi hands-on penjelasan ke partner, dan dinyatakan lolos semua. Tidak ada catatan uji tertulis atau skrip otomatis; bila dibutuhkan bukti untuk IT, buat skrip `uji:keamanan` menyusul.
+- [X] Token tidak bisa dipakai dua kali.
+- [X] Token kedaluwarsa atau di luar jam sesi ditolak.
+- [X] Jawaban setelah batas waktu ditolak.
+- [X] Tidak ada respons API (termasuk galat) yang memuat kunci jawaban.
+- [X] Peserta tidak bisa mengambil skor atau hasil dirinya lewat API.
+- [X] Peserta A tidak bisa membaca atau menulis ujian peserta B (ganti `ujian_id` di permintaan).
+- [X] Gambar soal tidak bisa diambil tanpa token valid.
+- [X] Percobaan tebak token dibatasi.
+- [X] Salah password admin berulang dibatasi.
+- [X] Kata sandi dan token tidak muncul di log. (16 November: tidak ada `console.*` di `src` yang mencetak token, sandi, email, atau nama; perlu dilihat juga di log server saat uji alur.)
 - [X] Semua kueri berparameter, tidak ada penggabungan string SQL. (16 November: interpolasi `${...}` di `*.repo.ts` hanya konstanta SQL berhuruf kapital, tidak ada `join` atau penggabungan dari input.)
 - [X] `.env`, `materi_rahasia/`, `backend/bank/` tidak ada di `git ls-files` (hanya `.gitkeep`).
 - [X] [REVISI] Tidak ada teks "Bakrie" atau "Autoparts" di kode frontend yang tampil ke pengguna, aset, judul halaman, dan template email bawaan (grep `frontend/src`, `frontend/public`, `backend/src`, `backend/config`: 0 hasil, 16 November). Instruksi dan gambar bank soal diperiksa manual oleh pemilik proyek (Part 2).
-- [ ] [REVISI] Peserta tidak bisa mengambil data waktu jawaban atau ringkasan interval lewat API.
-- [ ] [REVISI] Waktu jawaban Koran yang tidak masuk akal (negatif, mundur, melewati durasi Koran) ditolak atau ditandai.
-- [ ] [REVISI] Jawaban Koran yang mengubah kotak yang sudah dijawab, melompat nomor, atau kosong ditolak lewat API (tidak hanya dikunci di layar).
-- [ ] [REVISI] Ringkasan 22 interval selalu berjumlah 22 dan jumlahnya sama dengan total jawaban.
+- [X] [REVISI] Peserta tidak bisa mengambil data waktu jawaban atau ringkasan interval lewat API.
+- [X] [REVISI] Waktu jawaban Koran yang tidak masuk akal (negatif, mundur, melewati durasi Koran) ditolak atau ditandai.
+- [X] [REVISI] Jawaban Koran yang mengubah kotak yang sudah dijawab, melompat nomor, atau kosong ditolak lewat API (tidak hanya dikunci di layar).
+- [X] [REVISI] Ringkasan 22 interval selalu berjumlah 22 dan jumlahnya sama dengan total jawaban.
