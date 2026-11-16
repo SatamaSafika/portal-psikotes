@@ -7,7 +7,8 @@ Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), 
 - Selesai dan diterima pemilik proyek (15 November 2026): seluruh proses bisnis (peserta individu dan serentak, pengerjaan tiga tes, koreksi, dashboard HC, laporan, ekspor) dan tampilan front-end (Redesign 9 November, Refinement visual, gaya prototipe v50, revisi HC 10 November).
 - Selesai: revisi tim IT 13 November 2026, kolom database PascalCase. Database dibangun ulang dengan `db/11` dan kini bersih dari data uji coba (lihat bagian "Revisi tim IT" di bawah).
 - Di-commit 16 November 2026: perubahan PascalCase, email Tes 1-3, gaya terakhir, `docs/PRESENTASI_IT.md`.
-- Part 9: pemeriksaan statis, `npm audit`, dan seluruh daftar uji keamanan lolos (uji API diuji manual oleh pemilik proyek saat hands-on dengan partner). Tersisa: skenario demo tertulis dan gladi.
+- Selesai 16 November 2026: Part 9 (pemeriksaan statis, `npm audit`, seluruh daftar uji keamanan, gladi demo dengan contoh pengerjaan oleh rekan; uji API dan gladi dijalankan manual oleh pemilik proyek).
+- Berikutnya: Part 10 bersama IT. Masih terbuka: board persetujuan Part 8c (pemilik proyek), hak UPDATE akun database (pastikan ke IT).
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran, landing page tanpa deskripsi) dan 5 November 2026 (Koran 26 detik x 22, tanpa Enter; laporan per peserta) berlaku untuk semua part berikutnya.
 
 Aturan kerja di setiap part:
@@ -308,7 +309,9 @@ Hak akun database (disampaikan pemilik proyek 15 November 2026): CREATE, INSERT,
 ## Part 9. Pengujian dan gladi demo (M)
 - [X] Daftar uji keamanan (lihat bawah) dan uji alur penuh: lolos, diuji manual oleh pemilik proyek (16 November 2026).
 - [X] `npm audit` (16 November 2026): frontend 0 kerentanan. Backend 2 high pada `@azure/msal-node` (dependensi tidak langsung dari `mssql`, alur login Azure AD yang tidak dipakai), diperbaiki dengan `npm audit fix` tanpa perubahan versi mayor; kini 0. Typecheck dan 109 tes backend lolos.
-- Data dummy, skenario demo tertulis, gladi sekali penuh.
+- [X] Data dummy, skenario demo, gladi sekali penuh: dijalankan pemilik proyek dengan contoh pengerjaan oleh rekan (16 November 2026), lolos. Skenario tidak ditulis sebagai dokumen terpisah di repo.
+
+Status: Part 9 selesai (16 November 2026).
 
 Selesai kalau: seluruh daftar uji lolos dan gladi berjalan tanpa campur tangan manual di basis data.
 
