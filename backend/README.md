@@ -132,7 +132,7 @@ Jumlah yang diharapkan diambil dari `config/tes.json`. Durasi dan aturan skor ad
 | `POST /api/admin/logout` | 204, sesi dihapus |
 | `GET /api/admin/saya` | 200 `{ username }` bila sesi sah, atau 401 |
 
-- Sesi disimpan sebagai hash SHA-256 di kolom `sesi_hash` tabel admin (skrip `db/04`). Satu sesi per admin: login baru mengganti sesi lama. Berakhir setelah 30 menit tanpa aktivitas atau 8 jam sejak login.
+- Sesi disimpan sebagai hash SHA-256 di kolom `SesiHash` tabel admin. Satu sesi per admin: login baru mengganti sesi lama. Berakhir setelah 30 menit tanpa aktivitas atau 8 jam sejak login.
 - Pesan login gagal selalu sama, baik akun tidak ada, salah kata sandi, nonaktif, maupun terkunci.
 - Batas laju: 300 permintaan per 15 menit per IP untuk `/api`, 10 percobaan login per 15 menit per IP.
 - `npm run build`, lalu `npm start`: build dan jalankan versi produksi.
@@ -154,4 +154,4 @@ bank/               bank soal dan kunci (diabaikan git)
 ```
 
 ## Catatan keamanan
-`npm audit` melaporkan kerentanan tinggi pada `@azure/msal-node` (lewat `mssql` → `tedious` → `@azure/identity`). Celahnya ada di alur login Azure AD, sedangkan proyek ini memakai login SQL. Tinjau ulang di Part 9 atau saat `mssql` merilis versi baru.
+`npm audit` (16 November 2026): 0 kerentanan. Kerentanan tinggi sebelumnya pada `@azure/msal-node` (lewat `mssql` → `tedious` → `@azure/identity`) sudah diperbaiki dengan `npm audit fix`.

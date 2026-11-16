@@ -1,7 +1,7 @@
 # Frontend (Angular)
 
-Angular 22, komponen standalone, sinyal, tanpa SSR. Butuh Node 24 LTS (lihat `docs/VERSI.md`).
-Acuan tampilan dan perilaku: `docs/prototipe/PROTOTIPE_SPEC.md`. Tanpa nama dan logo perusahaan (CLAUDE.md aturan keras 10).
+Angular 22, komponen standalone, sinyal, tanpa SSR. Butuh Node 24 LTS.
+Tampilan mengikuti prototipe UI v50. Semua teks dan aset yang tampil ke peserta dan admin bersifat netral, tanpa nama dan logo perusahaan.
 
 ## Menjalankan
 1. Backend berjalan di `http://localhost:3000` (`npm run dev` di folder `backend`).
@@ -23,7 +23,7 @@ src/styles/           _token (warna, bentuk, font), _dasar, _komponen, _peserta,
 ```
 
 ## Gaya tampilan (prototipe v50)
-- Warna, radius, bayangan, dan font hanya lewat variabel di `src/styles/_token.scss`. Beberapa warna lebih gelap dari prototipe supaya lolos kontras WCAG AA (alasan di komentar berkas itu dan di WORKFLOW).
+- Warna, radius, bayangan, dan font hanya lewat variabel di `src/styles/_token.scss`. Beberapa warna lebih gelap dari prototipe supaya lolos kontras WCAG AA (alasan di komentar berkas itu).
 - Halaman tes (`app-kerjakan`) tetap tenang: efek hover dan animasi dimatikan di `_tes.scss`. Jangan menambah efek di sana.
 - Efek gerak mati bila pengguna memilih `prefers-reduced-motion`.
 - Penjelasan panjang di dashboard HC memakai `<app-catatan>`; teksnya tetap ada dan bisa dibuka dengan keyboard.
