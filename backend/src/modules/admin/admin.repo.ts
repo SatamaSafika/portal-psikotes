@@ -1,4 +1,5 @@
 // Akses data akun admin. Hanya menyentuh dbo.HCIS_Psikotes_Admin, semua query berparameter.
+// Kolom database PascalCase (db/11); hasil query di-alias ke snake_case supaya tipe dan API tidak berubah.
 import sql from 'mssql';
 import { ambilPool } from '../../db/pool.js';
 
@@ -21,10 +22,10 @@ export async function cariPerUsername(username: string): Promise<BarisAdmin | nu
     .request()
     .input('username', sql.NVarChar(50), username)
     .query<BarisAdmin>(
-      `SELECT id, username, password_hash, aktif,
-              CAST(CASE WHEN terkunci_sampai > SYSDATETIME() THEN 1 ELSE 0 END AS BIT) AS terkunci
+      `SELECT Id AS id, Username AS username, PasswordHash AS password_hash, Aktif AS aktif,
+              CAST(CASE WHEN TerkunciSampai > SYSDATETIME() THEN 1 ELSE 0 END AS BIT) AS terkunci
          FROM dbo.HCIS_Psikotes_Admin
-        WHERE username = @username`,
+        WHERE Username = @username`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -42,11 +43,11 @@ export async function catatGagal(id: number, maksGagal: number, menit: number): 
     .input('menit', sql.Int, menit)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Admin
-          SET terkunci_sampai = CASE WHEN gagal_login + 1 >= @maks
-                                     THEN DATEADD(MINUTE, @menit, SYSDATETIME())
-                                     ELSE terkunci_sampai END,
-              gagal_login     = CASE WHEN gagal_login + 1 >= @maks THEN 0 ELSE gagal_login + 1 END
-        WHERE id = @id`,
+          SET TerkunciSampai = CASE WHEN GagalLogin + 1 >= @maks
+                                    THEN DATEADD(MINUTE, @menit, SYSDATETIME())
+                                    ELSE TerkunciSampai END,
+              GagalLogin     = CASE WHEN GagalLogin + 1 >= @maks THEN 0 ELSE GagalLogin + 1 END
+        WHERE Id = @id`,
     );
 }
 
@@ -62,15 +63,15 @@ export async function catatBerhasil(id: number, sesiHash: Buffer): Promise<boole
     .input('sesiHash', sql.VarBinary(32), sesiHash)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Admin
-          SET gagal_login = 0,
-              terkunci_sampai = NULL,
-              login_terakhir = SYSDATETIME(),
-              sesi_hash = @sesiHash,
-              sesi_dibuat = SYSDATETIME(),
-              sesi_aktif_terakhir = SYSDATETIME()
-        WHERE id = @id
-          AND aktif = 1
-          AND (terkunci_sampai IS NULL OR terkunci_sampai <= SYSDATETIME())`,
+          SET GagalLogin = 0,
+              TerkunciSampai = NULL,
+              LoginTerakhir = SYSDATETIME(),
+              SesiHash = @sesiHash,
+              SesiDibuat = SYSDATETIME(),
+              SesiAktifTerakhir = SYSDATETIME()
+        WHERE Id = @id
+          AND Aktif = 1
+          AND (TerkunciSampai IS NULL OR TerkunciSampai <= SYSDATETIME())`,
     );
   return hasil.rowsAffected[0] === 1;
 }
@@ -85,12 +86,12 @@ export async function pakaiSesi(sesiHash: Buffer, idleMenit: number, maksJam: nu
     .input('jam', sql.Int, maksJam)
     .query<AdminSesi>(
       `UPDATE dbo.HCIS_Psikotes_Admin
-          SET sesi_aktif_terakhir = SYSDATETIME()
-       OUTPUT inserted.id, inserted.username
-        WHERE sesi_hash = @sesiHash
-          AND aktif = 1
-          AND sesi_dibuat > DATEADD(HOUR, -@jam, SYSDATETIME())
-          AND sesi_aktif_terakhir > DATEADD(MINUTE, -@idle, SYSDATETIME())`,
+          SET SesiAktifTerakhir = SYSDATETIME()
+       OUTPUT inserted.Id AS id, inserted.Username AS username
+        WHERE SesiHash = @sesiHash
+          AND Aktif = 1
+          AND SesiDibuat > DATEADD(HOUR, -@jam, SYSDATETIME())
+          AND SesiAktifTerakhir > DATEADD(MINUTE, -@idle, SYSDATETIME())`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -102,8 +103,8 @@ export async function hapusSesi(sesiHash: Buffer): Promise<void> {
     .input('sesiHash', sql.VarBinary(32), sesiHash)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Admin
-          SET sesi_hash = NULL, sesi_dibuat = NULL, sesi_aktif_terakhir = NULL
-        WHERE sesi_hash = @sesiHash`,
+          SET SesiHash = NULL, SesiDibuat = NULL, SesiAktifTerakhir = NULL
+        WHERE SesiHash = @sesiHash`,
     );
 }
 
@@ -113,5 +114,5 @@ export async function tambahAdmin(username: string, passwordHash: string): Promi
     .request()
     .input('username', sql.NVarChar(50), username)
     .input('passwordHash', sql.NVarChar(255), passwordHash)
-    .query('INSERT INTO dbo.HCIS_Psikotes_Admin (username, password_hash) VALUES (@username, @passwordHash)');
+    .query('INSERT INTO dbo.HCIS_Psikotes_Admin (Username, PasswordHash) VALUES (@username, @passwordHash)');
 }

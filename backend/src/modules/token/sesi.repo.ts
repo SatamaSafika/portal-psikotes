@@ -1,6 +1,7 @@
 // Akses data sesi dan ujian untuk admin. Hanya menyentuh dbo.HCIS_Psikotes_Sesi dan dbo.HCIS_Psikotes_Ujian.
 // Semua query berparameter. Tanggal dan jam dikirim sebagai teks lalu di-CAST di SQL,
 // supaya tidak ada pergeseran zona waktu dari driver.
+// Kolom database PascalCase (db/11); hasil query di-alias ke snake_case supaya tipe dan API tidak berubah.
 import sql from 'mssql';
 import { ambilPool } from '../../db/pool.js';
 import type { JadwalTes } from './sesi.validasi.js';
@@ -70,9 +71,9 @@ export interface UjianAdmin {
 }
 
 // Kolom sesi sebagai teks: tanggal YYYY-MM-DD, jam HH:MM.
-const KOLOM_SESI = `s.id, s.nama_sesi, CONVERT(CHAR(10), s.tanggal, 23) AS tanggal,
-  CONVERT(CHAR(5), s.waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), s.waktu_tutup, 108) AS waktu_tutup,
-  s.daftar_tes, s.bank_versi, s.mode`;
+const KOLOM_SESI = `s.Id AS id, s.NamaSesi AS nama_sesi, CONVERT(CHAR(10), s.Tanggal, 23) AS tanggal,
+  CONVERT(CHAR(5), s.WaktuBuka, 108) AS waktu_buka, CONVERT(CHAR(5), s.WaktuTutup, 108) AS waktu_tutup,
+  s.DaftarTes AS daftar_tes, s.BankVersi AS bank_versi, s.Mode AS mode`;
 
 /** Kode galat SQL Server untuk pelanggaran UNIQUE. */
 export function galatUnik(galat: unknown): boolean {
@@ -95,15 +96,15 @@ async function sisipkanUjian(tx: sql.Transaction, sesiId: number, baris: BarisUj
       .input('hash', sql.Char(64), b.tokenHash)
       .query<{ id: number }>(
         `INSERT INTO dbo.HCIS_Psikotes_Ujian
-           (nama_sesi, jenis_tes, tanggal, waktu_buka, waktu_tutup, bank_versi, email, nama, token_hash, berlaku_sampai, sesi_id)
-         OUTPUT inserted.id
-         SELECT s.nama_sesi, @tes, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)),
-                s.bank_versi, @email, @nama, @hash,
+           (NamaSesi, JenisTes, Tanggal, WaktuBuka, WaktuTutup, BankVersi, Email, Nama, TokenHash, BerlakuSampai, SesiId)
+         OUTPUT inserted.Id AS id
+         SELECT s.NamaSesi, @tes, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)),
+                s.BankVersi, @email, @nama, @hash,
                 DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), CAST(@tutup AS TIME(0))),
                         CAST(CAST(@tanggal AS DATE) AS DATETIME2(0))),
-                s.id
+                s.Id
            FROM dbo.HCIS_Psikotes_Sesi s
-          WHERE s.id = @sesiId`,
+          WHERE s.Id = @sesiId`,
       );
     id.push(hasil.recordset[0].id);
   }
@@ -148,8 +149,8 @@ export function buatSesi(
       .input('admin', sql.Int, adminId)
       .query<{ id: number }>(
         `INSERT INTO dbo.HCIS_Psikotes_Sesi
-           (nama_sesi, tanggal, waktu_buka, waktu_tutup, daftar_tes, bank_versi, template_subjek, template_isi, dibuat_oleh)
-         OUTPUT inserted.id
+           (NamaSesi, Tanggal, WaktuBuka, WaktuTutup, DaftarTes, BankVersi, TemplateSubjek, TemplateIsi, DibuatOleh)
+         OUTPUT inserted.Id AS id
          SELECT @nama, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)), @tes, @bank, @subjek, @isi, @admin
           WHERE CAST(@tanggal AS DATE) >= CAST(SYSDATETIME() AS DATE)`,
       );
@@ -168,16 +169,16 @@ export async function daftarSesi(): Promise<(SesiRingkas & Record<string, number
   const hasil = await pool.request().query(
     // Individu: peserta = email berbeda. Kelompok: setiap catatan ujian adalah satu peserta (tanpa email).
     `SELECT ${KOLOM_SESI},
-            COUNT(DISTINCT u.email) + SUM(CASE WHEN u.kelompok_id IS NOT NULL THEN 1 ELSE 0 END) AS jumlah_peserta,
-            COUNT(u.id) AS jumlah_token,
-            SUM(CASE WHEN u.status = 'BELUM_DIPAKAI' THEN 1 ELSE 0 END) AS belum_dipakai,
-            SUM(CASE WHEN u.status = 'BERJALAN' THEN 1 ELSE 0 END) AS berjalan,
-            SUM(CASE WHEN u.status IN ('DIKIRIM', 'WAKTU_HABIS') THEN 1 ELSE 0 END) AS selesai,
-            SUM(CASE WHEN u.status = 'DICABUT' THEN 1 ELSE 0 END) AS dicabut
+            COUNT(DISTINCT u.Email) + SUM(CASE WHEN u.KelompokId IS NOT NULL THEN 1 ELSE 0 END) AS jumlah_peserta,
+            COUNT(u.Id) AS jumlah_token,
+            SUM(CASE WHEN u.Status = 'BELUM_DIPAKAI' THEN 1 ELSE 0 END) AS belum_dipakai,
+            SUM(CASE WHEN u.Status = 'BERJALAN' THEN 1 ELSE 0 END) AS berjalan,
+            SUM(CASE WHEN u.Status IN ('DIKIRIM', 'WAKTU_HABIS') THEN 1 ELSE 0 END) AS selesai,
+            SUM(CASE WHEN u.Status = 'DICABUT' THEN 1 ELSE 0 END) AS dicabut
        FROM dbo.HCIS_Psikotes_Sesi s
-       LEFT JOIN dbo.HCIS_Psikotes_Ujian u ON u.sesi_id = s.id
-      GROUP BY s.id, s.nama_sesi, s.tanggal, s.waktu_buka, s.waktu_tutup, s.daftar_tes, s.bank_versi, s.mode
-      ORDER BY s.tanggal DESC, s.id DESC`,
+       LEFT JOIN dbo.HCIS_Psikotes_Ujian u ON u.SesiId = s.Id
+      GROUP BY s.Id, s.NamaSesi, s.Tanggal, s.WaktuBuka, s.WaktuTutup, s.DaftarTes, s.BankVersi, s.Mode
+      ORDER BY s.Tanggal DESC, s.Id DESC`,
   );
   return hasil.recordset;
 }
@@ -188,7 +189,8 @@ export async function ambilSesi(id: number): Promise<SesiDetail | null> {
     .request()
     .input('id', sql.Int, id)
     .query<SesiDetail>(
-      `SELECT ${KOLOM_SESI}, s.template_subjek, s.template_isi, s.email_penerima FROM dbo.HCIS_Psikotes_Sesi s WHERE s.id = @id`,
+      `SELECT ${KOLOM_SESI}, s.TemplateSubjek AS template_subjek, s.TemplateIsi AS template_isi, s.EmailPenerima AS email_penerima
+         FROM dbo.HCIS_Psikotes_Sesi s WHERE s.Id = @id`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -199,18 +201,19 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
     .request()
     .input('id', sql.Int, sesiId)
     .query<UjianAdmin>(
-      `SELECT id AS ujian_id, email, kelompok_id, nama, jenis_tes,
-              CONVERT(CHAR(10), tanggal, 23) AS tanggal,
-              CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup,
-              status,
-              CONVERT(VARCHAR(19), mulai_pada, 120) AS mulai_pada,
-              CONVERT(VARCHAR(19), selesai_pada, 120) AS selesai_pada,
-              jumlah_benar, jumlah_salah, jumlah_dijawab, n_koran, kategori, skor_akhir,
-              ringkasan_interval, aturan_versi,
-              CONVERT(VARCHAR(19), undangan_dikirim_pada, 120) AS undangan_dikirim_pada
+      `SELECT Id AS ujian_id, Email AS email, KelompokId AS kelompok_id, Nama AS nama, JenisTes AS jenis_tes,
+              CONVERT(CHAR(10), Tanggal, 23) AS tanggal,
+              CONVERT(CHAR(5), WaktuBuka, 108) AS waktu_buka, CONVERT(CHAR(5), WaktuTutup, 108) AS waktu_tutup,
+              Status AS status,
+              CONVERT(VARCHAR(19), MulaiPada, 120) AS mulai_pada,
+              CONVERT(VARCHAR(19), SelesaiPada, 120) AS selesai_pada,
+              JumlahBenar AS jumlah_benar, JumlahSalah AS jumlah_salah, JumlahDijawab AS jumlah_dijawab,
+              NKoran AS n_koran, Kategori AS kategori, SkorAkhir AS skor_akhir,
+              RingkasanInterval AS ringkasan_interval, AturanVersi AS aturan_versi,
+              CONVERT(VARCHAR(19), UndanganDikirimPada, 120) AS undangan_dikirim_pada
          FROM dbo.HCIS_Psikotes_Ujian
-        WHERE sesi_id = @id
-        ORDER BY COALESCE(nama, email), email, CASE jenis_tes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
+        WHERE SesiId = @id
+        ORDER BY COALESCE(Nama, Email), Email, CASE JenisTes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
     );
   return hasil.recordset.map((u) => ({
     ...u,
@@ -225,7 +228,7 @@ export async function tandaiUndanganDikirim(sesiId: number, email: string): Prom
     .request()
     .input('sesiId', sql.Int, sesiId)
     .input('email', sql.NVarChar(150), email)
-    .query('UPDATE dbo.HCIS_Psikotes_Ujian SET undangan_dikirim_pada = SYSDATETIME() WHERE sesi_id = @sesiId AND email = @email');
+    .query('UPDATE dbo.HCIS_Psikotes_Ujian SET UndanganDikirimPada = SYSDATETIME() WHERE SesiId = @sesiId AND Email = @email');
   return hasil.rowsAffected[0];
 }
 
@@ -236,12 +239,12 @@ export async function simpanTemplate(id: number, t: Template): Promise<boolean> 
     .input('id', sql.Int, id)
     .input('subjek', sql.NVarChar(200), t.subjek)
     .input('isi', sql.NVarChar(4000), t.isi)
-    .query('UPDATE dbo.HCIS_Psikotes_Sesi SET template_subjek = @subjek, template_isi = @isi WHERE id = @id');
+    .query('UPDATE dbo.HCIS_Psikotes_Sesi SET TemplateSubjek = @subjek, TemplateIsi = @isi WHERE Id = @id');
   return hasil.rowsAffected[0] === 1;
 }
 
-const KOLOM_JADWAL = `jenis_tes AS tes, CONVERT(CHAR(10), tanggal, 23) AS tanggal,
-  CONVERT(CHAR(5), waktu_buka, 108) AS waktu_buka, CONVERT(CHAR(5), waktu_tutup, 108) AS waktu_tutup`;
+const KOLOM_JADWAL = `JenisTes AS tes, CONVERT(CHAR(10), Tanggal, 23) AS tanggal,
+  CONVERT(CHAR(5), WaktuBuka, 108) AS waktu_buka, CONVERT(CHAR(5), WaktuTutup, 108) AS waktu_tutup`;
 
 /**
  * Jadwal per tes sebuah sesi, dibaca dari token yang sudah ada (semua peserta sesi berjadwal sama).
@@ -252,7 +255,7 @@ export async function jadwalSesi(sesiId: number): Promise<JadwalTes[] | null> {
   const hasil = await pool
     .request()
     .input('sesiId', sql.Int, sesiId)
-    .query<JadwalTes>(`SELECT DISTINCT ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian WHERE sesi_id = @sesiId`);
+    .query<JadwalTes>(`SELECT DISTINCT ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian WHERE SesiId = @sesiId`);
   const jadwal = hasil.recordset;
   if (new Set(jadwal.map((j) => j.tes)).size !== jadwal.length) return null;
   return jadwal;
@@ -266,8 +269,8 @@ export async function ujianBelumDipakai(sesiId: number, email: string): Promise<
     .input('sesiId', sql.Int, sesiId)
     .input('email', sql.NVarChar(150), email)
     .query<JadwalTes & { id: number; nama: string | null }>(
-      `SELECT id, nama, ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian
-        WHERE sesi_id = @sesiId AND email = @email AND status = 'BELUM_DIPAKAI'`,
+      `SELECT Id AS id, Nama AS nama, ${KOLOM_JADWAL} FROM dbo.HCIS_Psikotes_Ujian
+        WHERE SesiId = @sesiId AND Email = @email AND Status = 'BELUM_DIPAKAI'`,
     );
   return hasil.recordset;
 }
@@ -285,7 +288,7 @@ export async function gantiToken(ganti: { id: number; tokenHash: string }[]): Pr
         const hasil = await new sql.Request(tx)
           .input('id', sql.Int, g.id)
           .input('hash', sql.Char(64), g.tokenHash)
-          .query(`UPDATE dbo.HCIS_Psikotes_Ujian SET token_hash = @hash WHERE id = @id AND status = 'BELUM_DIPAKAI'`);
+          .query(`UPDATE dbo.HCIS_Psikotes_Ujian SET TokenHash = @hash WHERE Id = @id AND Status = 'BELUM_DIPAKAI'`);
         if (hasil.rowsAffected[0] !== 1) throw new StatusBerubah();
       }
     });
@@ -304,8 +307,8 @@ export async function cabutUjian(id: number): Promise<boolean> {
     .input('id', sql.Int, id)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Ujian
-          SET status = 'DICABUT', sesi_peserta_hash = NULL, sesi_peserta_aktif = NULL
-        WHERE id = @id AND status IN ('BELUM_DIPAKAI', 'BERJALAN')`,
+          SET Status = 'DICABUT', SesiPesertaHash = NULL, SesiPesertaAktif = NULL
+        WHERE Id = @id AND Status IN ('BELUM_DIPAKAI', 'BERJALAN')`,
     );
   return hasil.rowsAffected[0] === 1;
 }

@@ -1,13 +1,14 @@
 // Akses data pengerjaan: jawaban, kirim, dan penutupan otomatis saat waktu habis.
 // Hanya menyentuh dbo.HCIS_Psikotes_Ujian dan dbo.HCIS_Psikotes_Jawaban. Semua query berparameter.
 // Waktu selalu menurut jam server database (SYSDATETIME).
+// Kolom database PascalCase (db/11); hasil query di-alias ke snake_case supaya tipe dan API tidak berubah.
 import sql from 'mssql';
 import { ambilPool } from '../../db/pool.js';
 import type { JawabanKoran, JawabanTiu, KonteksKoran } from './pengerjaan.validasi.js';
 
-/** Pengerjaan masih menerima jawaban: sudah mulai, BERJALAN, dan belum lewat batas_selesai + toleransi. */
-const MASIH_BERJALAN = `status = 'BERJALAN' AND mulai_pada IS NOT NULL
-  AND SYSDATETIME() <= DATEADD(SECOND, @toleransi, batas_selesai)`;
+/** Pengerjaan masih menerima jawaban: sudah mulai, BERJALAN, dan belum lewat BatasSelesai + toleransi. */
+const MASIH_BERJALAN = `Status = 'BERJALAN' AND MulaiPada IS NOT NULL
+  AND SYSDATETIME() <= DATEADD(SECOND, @toleransi, BatasSelesai)`;
 
 export interface KeadaanUjian {
   bank_versi: string;
@@ -23,11 +24,11 @@ export async function keadaanUjian(id: number, toleransiDetik: number): Promise<
     .input('id', sql.Int, id)
     .input('toleransi', sql.Int, toleransiDetik)
     .query<KeadaanUjian>(
-      `SELECT bank_versi,
-              CAST(CASE WHEN mulai_pada IS NULL THEN 0 ELSE 1 END AS BIT) AS sudah_mulai,
+      `SELECT BankVersi AS bank_versi,
+              CAST(CASE WHEN MulaiPada IS NULL THEN 0 ELSE 1 END AS BIT) AS sudah_mulai,
               CAST(CASE WHEN ${MASIH_BERJALAN} THEN 1 ELSE 0 END AS BIT) AS boleh_tulis
          FROM dbo.HCIS_Psikotes_Ujian
-        WHERE id = @id`,
+        WHERE Id = @id`,
     );
   return hasil.recordset[0] ?? null;
 }
@@ -39,7 +40,7 @@ export async function ambilJawaban(id: number): Promise<{ nomor: number; jawaban
     .request()
     .input('id', sql.Int, id)
     .query<{ nomor: number; jawaban: string | null }>(
-      'SELECT nomor_soal AS nomor, jawaban FROM dbo.HCIS_Psikotes_Jawaban WHERE ujian_id = @id ORDER BY nomor_soal',
+      'SELECT NomorSoal AS nomor, Jawaban AS jawaban FROM dbo.HCIS_Psikotes_Jawaban WHERE UjianId = @id ORDER BY NomorSoal',
     );
   return hasil.recordset;
 }
@@ -57,9 +58,9 @@ async function denganKunciUjian<T>(
       .input('id', sql.Int, id)
       .input('toleransi', sql.Int, toleransiDetik)
       .query<{ berjalan_ms: number }>(
-        `SELECT DATEDIFF(MILLISECOND, mulai_pada, SYSDATETIME()) AS berjalan_ms
+        `SELECT DATEDIFF(MILLISECOND, MulaiPada, SYSDATETIME()) AS berjalan_ms
            FROM dbo.HCIS_Psikotes_Ujian WITH (UPDLOCK, ROWLOCK)
-          WHERE id = @id AND ${MASIH_BERJALAN}`,
+          WHERE Id = @id AND ${MASIH_BERJALAN}`,
       );
     if (kunci.recordset.length === 0) {
       await tx.rollback();
@@ -83,10 +84,10 @@ export async function simpanTiu(id: number, toleransiDetik: number, jawaban: Jaw
         .input('nomor', sql.Int, j.nomor)
         .input('jawaban', sql.VarChar(5), j.jawaban)
         .query(
-          `UPDATE dbo.HCIS_Psikotes_Jawaban SET jawaban = @jawaban, dijawab_pada = SYSDATETIME()
-            WHERE ujian_id = @id AND nomor_soal = @nomor;
+          `UPDATE dbo.HCIS_Psikotes_Jawaban SET Jawaban = @jawaban, DijawabPada = SYSDATETIME()
+            WHERE UjianId = @id AND NomorSoal = @nomor;
            IF @@ROWCOUNT = 0
-             INSERT INTO dbo.HCIS_Psikotes_Jawaban (ujian_id, nomor_soal, jawaban) VALUES (@id, @nomor, @jawaban);`,
+             INSERT INTO dbo.HCIS_Psikotes_Jawaban (UjianId, NomorSoal, Jawaban) VALUES (@id, @nomor, @jawaban);`,
         );
     }
     return true;
@@ -118,8 +119,8 @@ export async function simpanKoran(
       const akhir = await new sql.Request(tx)
         .input('id', sql.Int, id)
         .query<{ nomor: number; waktu_ms: number | null }>(
-          `SELECT TOP 1 nomor_soal AS nomor, waktu_ms FROM dbo.HCIS_Psikotes_Jawaban
-            WHERE ujian_id = @id ORDER BY nomor_soal DESC`,
+          `SELECT TOP 1 NomorSoal AS nomor, WaktuMs AS waktu_ms FROM dbo.HCIS_Psikotes_Jawaban
+            WHERE UjianId = @id ORDER BY NomorSoal DESC`,
         );
       const t = akhir.recordset[0];
       const v = periksa({ terakhir: t ? { nomor: t.nomor, waktu_ms: t.waktu_ms ?? 0 } : null, berjalanMs });
@@ -130,7 +131,7 @@ export async function simpanKoran(
           .input('nomor', sql.Int, j.nomor)
           .input('jawaban', sql.VarChar(5), j.jawaban)
           .input('waktu', sql.Int, j.waktu_ms)
-          .query('INSERT INTO dbo.HCIS_Psikotes_Jawaban (ujian_id, nomor_soal, jawaban, waktu_ms) VALUES (@id, @nomor, @jawaban, @waktu)');
+          .query('INSERT INTO dbo.HCIS_Psikotes_Jawaban (UjianId, NomorSoal, Jawaban, WaktuMs) VALUES (@id, @nomor, @jawaban, @waktu)');
       }
       return v.jawaban[v.jawaban.length - 1].nomor;
     });
@@ -150,8 +151,8 @@ export async function kirim(id: number, toleransiDetik: number): Promise<boolean
     .input('toleransi', sql.Int, toleransiDetik)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Ujian
-          SET status = 'DIKIRIM', selesai_pada = SYSDATETIME(), sesi_peserta_hash = NULL, sesi_peserta_aktif = NULL
-        WHERE id = @id AND ${MASIH_BERJALAN}`,
+          SET Status = 'DIKIRIM', SelesaiPada = SYSDATETIME(), SesiPesertaHash = NULL, SesiPesertaAktif = NULL
+        WHERE Id = @id AND ${MASIH_BERJALAN}`,
     );
   return hasil.rowsAffected[0] === 1;
 }
@@ -168,13 +169,13 @@ export async function tutupOtomatis(toleransiDetik: number): Promise<{ waktu_hab
     .input('toleransi', sql.Int, toleransiDetik)
     .query(
       `UPDATE dbo.HCIS_Psikotes_Ujian
-          SET status = 'WAKTU_HABIS', selesai_pada = batas_selesai, sesi_peserta_hash = NULL, sesi_peserta_aktif = NULL
-        WHERE status = 'BERJALAN' AND mulai_pada IS NOT NULL
-          AND SYSDATETIME() > DATEADD(SECOND, @toleransi, batas_selesai);
+          SET Status = 'WAKTU_HABIS', SelesaiPada = BatasSelesai, SesiPesertaHash = NULL, SesiPesertaAktif = NULL
+        WHERE Status = 'BERJALAN' AND MulaiPada IS NOT NULL
+          AND SYSDATETIME() > DATEADD(SECOND, @toleransi, BatasSelesai);
        UPDATE dbo.HCIS_Psikotes_Ujian
-          SET status = 'KEDALUWARSA', sesi_peserta_hash = NULL, sesi_peserta_aktif = NULL
-        WHERE status IN ('BELUM_DIPAKAI', 'BERJALAN') AND mulai_pada IS NULL
-          AND SYSDATETIME() >= berlaku_sampai;`,
+          SET Status = 'KEDALUWARSA', SesiPesertaHash = NULL, SesiPesertaAktif = NULL
+        WHERE Status IN ('BELUM_DIPAKAI', 'BERJALAN') AND MulaiPada IS NULL
+          AND SYSDATETIME() >= BerlakuSampai;`,
     );
   return { waktu_habis: hasil.rowsAffected[0] ?? 0, kedaluwarsa: hasil.rowsAffected[1] ?? 0 };
 }
