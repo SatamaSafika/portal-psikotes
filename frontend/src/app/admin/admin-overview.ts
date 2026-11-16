@@ -21,9 +21,9 @@ const LABEL_JADWAL = { BELUM_MULAI: 'Belum mulai', BERJALAN: 'Berjalan', SELESAI
       <div class="kotak-galat" role="alert">{{ galat() }}</div>
     }
     @if (data(); as d) {
-      <!-- Tiga angka utama dalam satu strip kaca, dipisah garis tipis. Dihitung per orang, bukan per tes. -->
-      <section class="kaca strip-kpi" aria-label="Angka peserta">
-        <div class="kpi">
+      <!-- Tiga kartu KPI terpisah. Dihitung per orang, bukan per tes. -->
+      <section class="strip-kpi" aria-label="Angka peserta">
+        <div class="kpi kpi-utama">
           <span class="ubin-ikon kecil"><app-ikon nama="clock" [ukuran]="22" /></span>
           <div>
             <span class="kpi-label">Sedang mengerjakan</span>

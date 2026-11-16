@@ -20,7 +20,6 @@ import { AdminSesi } from './admin-sesi.service';
         <span class="merek merek-putih"><app-tanda-produk [putih]="true" />Portal Psikotes</span>
         <div class="panel-masuk-isi">
           <div class="panel-masuk-teks">
-            <span class="chip-panel">Dashboard HC</span>
             <p class="panel-masuk-judul">Dari token sampai laporan,<br /><span class="aksen-panel">semuanya terpantau.</span></p>
             <ol class="alur-panel" aria-label="Alur kerja">
               <li><span class="ikon-alur"><app-ikon nama="calendar-days" [ukuran]="18" /></span>Siapkan sesi</li>

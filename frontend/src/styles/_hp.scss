@@ -1,0 +1,282 @@
+// Penyempurnaan layar HP (lebar <= 640 px). Dimuat paling akhir supaya hanya menimpa aturan desktop di layar sempit.
+// Diaudit di 390 x 844 (emulasi perangkat sentuh). Logika dan alur tidak berubah.
+
+@media (max-width: 640px) {
+  // ---------- kerangka ----------
+
+  .isi-halaman {
+    padding: 20px 0 40px;
+  }
+
+  h1.judul {
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+  }
+
+  .kepala-isi {
+    min-height: 60px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  // Stepper: hanya langkah aktif, dengan keterangan "dari 6"; langkah lain disembunyikan agar tidak dua baris.
+  .stepper {
+    li:not(.aktif) {
+      display: none;
+    }
+
+    li.aktif::after {
+      content: ' dari 6';
+      font-weight: 400;
+    }
+  }
+
+  .kaki-isi {
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 14px;
+    padding-bottom: 18px;
+    font-size: 0.8rem;
+  }
+
+  .kartu,
+  .kartu-polos {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  // ---------- verifikasi ----------
+
+  .wadah-token > .ubin-ikon,
+  .wadah-identitas > .ubin-ikon {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    margin-bottom: 12px;
+  }
+
+  .kartu-verifikasi {
+    padding: 16px;
+  }
+
+  // Persetujuan di dalam kartu: tanpa bingkai ganda, supaya teks mendapat lebar penuh.
+  .persetujuan {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+
+    ol {
+      padding-left: 18px;
+    }
+  }
+
+  .kolom-verifikasi {
+    gap: 20px;
+  }
+
+  // ---------- instruksi ----------
+
+  ol.langkah > li {
+    padding: 12px 14px 12px 48px;
+
+    &::before {
+      left: 12px;
+      top: 12px;
+    }
+  }
+
+  .statistik > div {
+    padding: 12px 14px;
+  }
+
+  // ---------- latihan ----------
+
+  .judul-baris {
+    margin-bottom: 14px;
+  }
+
+  // Uji coba Koran: dua lajur berdampingan, masing-masing setengah layar.
+  .lajur-uji-coba {
+    flex-wrap: nowrap;
+    gap: 12px;
+
+    > .kartu-lajur {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 14px;
+    }
+  }
+
+  // ---------- tes TIU ----------
+
+  .kartu-soal {
+    padding: 16px;
+  }
+
+  .gambar-soal {
+    min-height: 0;
+    margin: 10px 0 14px;
+  }
+
+  .pilihan-grid {
+    gap: 6px;
+
+    .pilihan {
+      padding: 12px 4px;
+    }
+  }
+
+  // TIU 6: tabel butir mengikuti lebar kartu (sebelumnya min 320 px membuat halaman melebar).
+  .tabel-butir {
+    width: 100%;
+    min-width: 0;
+
+    th,
+    td {
+      padding: 6px 4px;
+    }
+  }
+
+  .grid-nomor {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+
+    &.empat-kolom {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 6px;
+    }
+
+    .nomor {
+      width: 100%;
+    }
+  }
+
+  .kepala-tes .merek {
+    font-size: 1rem;
+  }
+
+  .pil-waktu {
+    padding: 5px 12px;
+
+    strong {
+      font-size: 1.1rem;
+      margin-left: 6px;
+    }
+  }
+
+  // ---------- tes Koran ----------
+
+  // Empat lajur dalam grid 2 x 2 (bukan 3 + 1); kotak aktif tetap digulir ke tampilan.
+  .kertas-koran {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    justify-content: space-around;
+    gap: 20px 12px;
+    padding: 14px 10px;
+  }
+
+  .peringatan-koran {
+    flex-basis: 100%;
+    font-size: 0.82rem;
+  }
+
+  .info-halaman {
+    margin-left: 0;
+    font-size: 0.85rem;
+  }
+
+  // ---------- dashboard HC ----------
+
+  .kepala-admin-isi {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 4px 12px;
+
+    strong {
+      font-size: 1rem;
+    }
+  }
+
+  .tab-admin {
+    padding-top: 8px;
+
+    .wadah {
+      gap: 2px;
+    }
+
+    a {
+      padding: 8px 12px;
+      font-size: 0.88rem;
+    }
+  }
+
+  .kepala-halaman h1.judul {
+    font-size: 1.5rem;
+  }
+
+  // Tabel HC: digulir ke samping dengan lebar minimum, bukan kata terpotong per huruf.
+  .tabel-gulir {
+    margin: 0 -4px;
+    -webkit-overflow-scrolling: touch;
+
+    .tabel {
+      min-width: 600px;
+    }
+
+    .tabel td {
+      overflow-wrap: normal;
+    }
+  }
+
+  .kpi,
+  .ringkasan-angka,
+  .ringkasan-sebaran {
+    padding: 16px 18px;
+  }
+
+  .kpi strong {
+    font-size: 1.8rem;
+  }
+
+  .filter-hasil,
+  .kartu-tabel {
+    padding: 16px;
+  }
+
+  .aksi-ekspor {
+    width: 100%;
+
+    .tombol {
+      flex: 1 1 0;
+      padding: 8px 12px;
+    }
+  }
+
+  .kartu-pilih-sesi {
+    padding: 16px;
+  }
+
+  .pilih-sesi {
+    flex-wrap: wrap;
+    gap: 6px;
+
+    select {
+      flex-basis: 100%;
+    }
+  }
+
+  // Masuk admin: panel ilustrasi lebih ringkas di atas formulir.
+  .panel-masuk-isi {
+    padding-top: 8px;
+    gap: 16px;
+
+    .ilustrasi {
+      display: none;
+    }
+  }
+
+  .panel-masuk {
+    padding-bottom: 24px;
+  }
+}
