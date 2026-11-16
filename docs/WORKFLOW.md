@@ -8,7 +8,7 @@ Pembagian per bagian (part), bukan per hari. Ukuran: S (sekitar setengah hari), 
 - Selesai: revisi tim IT 13 November 2026, kolom database PascalCase. Database dibangun ulang dengan `db/11` dan kini bersih dari data uji coba (lihat bagian "Revisi tim IT" di bawah).
 - Di-commit 16 November 2026: perubahan PascalCase, email Tes 1-3, gaya terakhir, `docs/PRESENTASI_IT.md`.
 - Selesai 16 November 2026: Part 9 (pemeriksaan statis, `npm audit`, seluruh daftar uji keamanan, gladi demo dengan contoh pengerjaan oleh rekan; uji API dan gladi dijalankan manual oleh pemilik proyek).
-- Berikutnya: Part 10 bersama IT. Masih terbuka: board persetujuan Part 8c (pemilik proyek), hak UPDATE akun database (pastikan ke IT).
+- Berikutnya: Part 10 bersama IT, mulai dari presentasi `docs/RENCANA_PENGHAPUSAN_DATA.md`. Board persetujuan Part 8c disetujui dan hak UPDATE sudah didapat (16 November 2026).
 - Revisi HC 2 November 2026 (UI tanpa nama perusahaan, tracking Koran, landing page tanpa deskripsi) dan 5 November 2026 (Koran 26 detik x 22, tanpa Enter; laporan per peserta) berlaku untuk semua part berikutnya.
 
 Aturan kerja di setiap part:
@@ -218,7 +218,7 @@ Permintaan HC terkait legal (4 November 2026, disampaikan pemilik proyek; DDL `d
 - [x] Server mewajibkan `setuju: true` dengan versi teks yang berlaku (400 tanpa persetujuan, 409 bila teks sudah diperbarui), lalu menyimpan waktu dan versi bersama catatan ujian.
 - [x] Admin: kolom persetujuan di daftar peserta serentak dan di ekspor hasil.
 - [x] `PROTOTIPE_SPEC.md` bagian 6a (uraian layar persetujuan).
-- [ ] Board `Token.dc.html` dan tangkapan layar persetujuan (dikerjakan pemilik proyek).
+- [X] Board `Token.dc.html` dan tangkapan layar persetujuan (dikerjakan pemilik proyek, disetujui 16 November 2026).
 Perlu verifikasi HC/legal: (a) teks sudah final atau masih draf; (b) kata "proses rekrutmen" cocok untuk semua sesi serentak (misalnya tes di kampus); (c) bukti persetujuan ikut terhapus 4 bulan setelah tes atau perlu disimpan lebih lama.
 Selesai kalau: peserta tidak bisa masuk tanpa memilih Saya Setuju (juga lewat API langsung), dan setiap catatan ujian baru menyimpan waktu dan versi persetujuan.
 
@@ -300,7 +300,7 @@ Permintaan tim IT: nama tabel sudah benar, nama kolom diganti dari snake_case ke
 - [X] Commit perubahan PascalCase (kode repo, `db/11`, `db/README.md`): `391d75b`, ditambah `5ff8000` (email Tes 1-3, password minimal 5), `3b6e7fc` (gaya), `4f0590d` (bahan presentasi IT). `frontend/angular.json` (host tunnel sementara) sengaja tidak di-commit.
 
 Hak akun database (disampaikan pemilik proyek 15 November 2026): CREATE, INSERT, DROP, DELETE, SELECT.
-- **Perlu dipastikan: UPDATE.** UPDATE tidak disebut, padahal aplikasi memakainya terus: login admin (penguncian dan sesi), peserta masuk dan mulai, simpan jawaban TIU, kirim, penutupan otomatis tiap 15 detik, simpan hasil, cabut token, tambah kuota. Tanpa UPDATE, hampir semua alur gagal.
+- [X] UPDATE: sudah didapat (dikonfirmasi pemilik proyek 16 November 2026). Dipakai di login admin, masuk dan mulai, simpan jawaban TIU, kirim, penutupan otomatis, simpan hasil, cabut token, tambah kuota.
 - Catatan keamanan: rencana awal (Part 0) adalah akun aplikasi tanpa hak DDL. Bila akun yang sama dipakai aplikasi di produksi, CREATE dan DROP sebaiknya tidak ada pada akun itu (dipisah: akun aplikasi SELECT, INSERT, UPDATE, DELETE; DDL lewat akun pemilik proyek atau IT). Bahas dengan IT.
 
 ## Catatan keamanan (12 November 2026)
@@ -316,6 +316,7 @@ Status: Part 9 selesai (16 November 2026).
 Selesai kalau: seluruh daftar uji lolos dan gladi berjalan tanpa campur tangan manual di basis data.
 
 ## Part 10. Setelah demo (di luar sasaran minggu ini)
+- Rencana skrip penghapusan disusun di `docs/RENCANA_PENGHAPUSAN_DATA.md` (16 November 2026), menunggu keputusan tim IT (opsi penjadwalan, akun, log, cadangan) dan verifikasi HC. Skrip baru dibuat setelah disetujui.
 - Skrip penghapusan terjadwal (bersama IT), dihitung dari kolom `tanggal` (tanggal tes): baris `jawaban` lebih dari 3 bulan dihapus, baris `ujian` lebih dari 4 bulan dihapus seluruhnya (termasuk baris yang tokennya tidak pernah dipakai atau kedaluwarsa). Mode uji tanpa menghapus, log hanya jumlah baris (tanpa nama atau email), uji dulu pada data dummy. Setelah 3 bulan skor tidak bisa dihitung ulang dari jawaban mentah.
 - Tanyakan ke IT berapa lama cadangan (backup) database disimpan. Data yang sudah dihapus bisa bertahan di cadangan.
 - Pencarian identitas oleh admin HC hanya lewat dashboard, bukan kueri langsung ke database.
