@@ -20,7 +20,8 @@ describe('hasil per peserta', () => {
   const baris = (ujian_id: number, jenis_tes: JenisTes, ubah: Partial<BarisHasil>): BarisHasil => ({
     ujian_id, sesi_id: 1, nama_sesi: 'Sesi Uji', tanggal: '2026-11-10', jenis_tes, mode: 'KELOMPOK', email: null, nama: 'Peserta Satu',
     status: 'DIKIRIM', selesai_pada: null, jumlah_benar: 1, jumlah_salah: 0, jumlah_dijawab: 1, n_koran: null, kategori: 'Baik', skor_akhir: 4,
-    ringkasan_interval: null, persetujuan_pada: null, persetujuan_versi: null, ...ubah,
+    ringkasan_interval: null, persetujuan_pada: null, persetujuan_versi: null,
+    catatan_hc: null, catatan_hc_pada: null, catatan_hc_oleh: null, ...ubah,
   });
 
   it('serentak: nama sama di satu sesi jadi satu baris, urut baku, huruf besar dan spasi diabaikan', () => {
@@ -47,6 +48,25 @@ describe('hasil per peserta', () => {
       baris(3, 'TIU5', { ...individu, email: 'b@contoh.test' }),
     ]);
     expect(r.map((p) => p.tes.length)).toEqual([2, 1]);
+  });
+
+  it('serentak dengan email: nama sama tetapi email berbeda jadi dua peserta', () => {
+    const r = kelompokkanPeserta([
+      baris(1, 'TIU5', { email: 'satu@contoh.test' }),
+      baris(2, 'TIU6', { email: 'SATU@contoh.test' }),
+      baris(3, 'TIU5', { email: 'lain@contoh.test' }),
+    ]);
+    expect(r.map((p) => p.tes.length)).toEqual([2, 1]);
+    expect(r.every((p) => !p.nama_sama)).toBe(true);
+  });
+
+  it('catatan HC: yang terakhir disimpan dipakai', () => {
+    const r = kelompokkanPeserta([
+      baris(1, 'TIU5', { catatan_hc: 'lama', catatan_hc_pada: '2026-11-19 09:00:00', catatan_hc_oleh: 'admin.uji' }),
+      baris(2, 'TIU6', { catatan_hc: 'baru', catatan_hc_pada: '2026-11-19 10:30:00', catatan_hc_oleh: 'admin.uji' }),
+    ]);
+    expect(r[0].catatan).toEqual({ catatan_hc: 'baru', catatan_hc_pada: '2026-11-19 10:30:00', catatan_hc_oleh: 'admin.uji' });
+    expect(kelompokkanPeserta([baris(3, 'KORAN', {})])[0].catatan.catatan_hc).toBeNull();
   });
 
   it('tanggal tes berbeda dicatat urut; format tanggal Indonesia', () => {

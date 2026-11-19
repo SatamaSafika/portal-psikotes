@@ -51,7 +51,7 @@ app-laporan-peserta {
 // Identitas: di panel Review (sempit) satu pasang label-nilai per baris; saat cetak dua pasang per baris.
 .laporan-identitas {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: 4px 14px;
   background: var(--laporan-muda);
   border: 1px solid var(--laporan-garis);
@@ -66,7 +66,16 @@ app-laporan-peserta {
 
   dd {
     margin: 0;
+    min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  // Email selalu satu baris; sisanya dipotong dengan elipsis (revisi HC 19 November 2026).
+  dd.laporan-email {
+    overflow: hidden;
+    overflow-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 }
 
@@ -150,6 +159,23 @@ app-laporan-peserta {
   color: var(--teks-redup);
   font-size: 0.75rem;
   margin: 4px 0 0;
+}
+
+// Tombol Simpan catatan dan keterangan status (revisi HC 19 November 2026). Tidak ikut tercetak.
+.baris-simpan-catatan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 8px;
+
+  .laporan-catatan-kecil {
+    margin: 0;
+  }
+
+  .teks-galat {
+    color: var(--salah);
+  }
 }
 
 .laporan-isian {
@@ -271,7 +297,8 @@ app-laporan-peserta {
   }
 
   .laporan-identitas {
-    grid-template-columns: max-content 1fr max-content 1fr;
+    // minmax(0, 1fr): kolom isi boleh lebih sempit dari isinya, supaya email panjang terpotong, bukan melebarkan kolom.
+    grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
     gap: 1.5mm 6mm;
     padding: 4mm 5mm;
     margin: 0 0 4.5mm;

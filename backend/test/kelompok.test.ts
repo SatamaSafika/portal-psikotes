@@ -67,14 +67,19 @@ test('langkah 1 dan 2: tes pilihan wajib, kelompok wajib nama', () => {
   assert.deepEqual(validasiCekToken({ token: k, jenis_tes: 'TIU5' }, normalisasiTokenApaSaja)?.jenis, 'KELOMPOK');
   assert.equal(validasiCekToken({ token: k, jenis_tes: 'TIU7' }, normalisasiTokenApaSaja), null);
   assert.equal(validasiCekToken({ token: 'salah', jenis_tes: 'TIU5' }, normalisasiTokenApaSaja), null);
-  assert.deepEqual(validasiMasukKelompok({ token: k, jenis_tes: 'KORAN', nama: ' Budi  Santoso ' }, normalisasiTokenApaSaja), {
-    token: k.replace('-', ''),
-    jenis_tes: 'KORAN',
-    nama: 'Budi Santoso',
-  });
-  assert.equal(validasiMasukKelompok({ token: k, jenis_tes: 'KORAN' }, normalisasiTokenApaSaja), null);
+  assert.deepEqual(
+    validasiMasukKelompok({ token: k, jenis_tes: 'KORAN', nama: ' Budi  Santoso ', email: ' Budi@Contoh.TEST ' }, normalisasiTokenApaSaja),
+    { token: k.replace('-', ''), jenis_tes: 'KORAN', nama: 'Budi Santoso', email: 'budi@contoh.test' },
+  );
+  assert.equal(validasiMasukKelompok({ token: k, jenis_tes: 'KORAN', email: 'budi@contoh.test' }, normalisasiTokenApaSaja), null);
+  // Email wajib (revisi HC 19 November 2026) dan formatnya diperiksa.
+  assert.equal(validasiMasukKelompok({ token: k, jenis_tes: 'KORAN', nama: 'Budi' }, normalisasiTokenApaSaja), null);
+  assert.equal(validasiMasukKelompok({ token: k, jenis_tes: 'KORAN', nama: 'Budi', email: 'budi@' }, normalisasiTokenApaSaja), null);
   // Token individu tidak bisa dipakai di jalur kelompok.
-  assert.equal(validasiMasukKelompok({ token: buatTokenPeserta(), jenis_tes: 'KORAN', nama: 'Budi' }, normalisasiTokenApaSaja), null);
+  assert.equal(
+    validasiMasukKelompok({ token: buatTokenPeserta(), jenis_tes: 'KORAN', nama: 'Budi', email: 'budi@contoh.test' }, normalisasiTokenApaSaja),
+    null,
+  );
 });
 
 // ---------- template kelompok ----------

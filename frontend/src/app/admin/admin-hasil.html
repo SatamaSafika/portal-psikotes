@@ -46,7 +46,7 @@
         </div>
         <ul class="legenda-sebaran">
           @for (x of r.sebaran; track x.skor) {
-            <li [attr.data-skor]="x.skor">{{ x.label }} {{ x.jumlah }}</li>
+            <li [attr.data-skor]="x.skor">{{ x.label }} ({{ x.jumlah }})</li>
           }
         </ul>
       } @else {
@@ -203,7 +203,8 @@
           </div>
         </div>
         <app-laporan-peserta [peserta]="p" [intervalDetik]="intervalDetik()" [catatan]="catatanUntuk(p)" [bisaDiisi]="true"
-                             (ubahCatatan)="ubahCatatan(p, $event)" />
+                             [belumDisimpan]="belumDisimpan(p)" [menyimpan]="menyimpanCatatan()" [galatSimpan]="galatCatatan()"
+                             (ubahCatatan)="ubahCatatan(p, $event)" (simpanCatatan)="simpanCatatan(p)" />
       </aside>
     }
   </div>

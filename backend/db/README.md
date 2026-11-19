@@ -4,7 +4,7 @@ Database `BA` dipakai bersama proyek lain. Tabel proyek ini ada di skema `dbo` d
 
 | Tabel | Isi |
 | --- | --- |
-| `dbo.HCIS_Psikotes_Ujian` | sesi, peserta, token (hash), waktu, hasil |
+| `dbo.HCIS_Psikotes_Ujian` | sesi, peserta, token (hash dan terenkripsi sejak `db/12`), waktu, hasil |
 | `dbo.HCIS_Psikotes_Jawaban` | jawaban mentah per nomor soal |
 | `dbo.HCIS_Psikotes_Admin` | akun admin HC (hash password, hash sesi login) |
 | `dbo.HCIS_Psikotes_Sesi` | sesi tes, mode (individu/kelompok), template undangan email; sejak `db/09` juga email penerima token kelompok (data pribadi PIC, ikut retensi 4 bulan) |
@@ -27,9 +27,23 @@ Pengaman di skrip:
 - Bila satu langkah gagal, semuanya dibatalkan dan tabel lama kembali utuh.
 
 Setelah berhasil:
-1. Buat ulang akun admin: `npm run admin:buat`.
-2. Bila hak akun aplikasi diberikan per tabel, hak itu hilang bersama DROP TABLE. Minta IT memberi lagi SELECT, INSERT, UPDATE, DELETE pada kelima tabel.
-3. `npm run db:cek`.
+1. Jalankan `12_token_tampil_email_serentak.sql` (lihat di bawah).
+2. Buat ulang akun admin: `npm run admin:buat`.
+3. Bila hak akun aplikasi diberikan per tabel, hak itu hilang bersama DROP TABLE. Minta IT memberi lagi SELECT, INSERT, UPDATE, DELETE pada kelima tabel.
+4. `npm run db:cek`.
+
+## Perubahan setelah 11
+
+`12_token_tampil_email_serentak.sql` (revisi HC dan IT 19 November 2026). Jalankan sekali setelah `11`, baik di database yang sudah ada maupun database baru. Tanpa DROP TABLE dan tanpa menghapus data; aman dijalankan ulang; satu transaksi.
+- Kolom `TokenSandi VARCHAR(100) NULL` di `HCIS_Psikotes_Ujian` dan `HCIS_Psikotes_Kelompok`: token terenkripsi AES-256-GCM dengan kunci `TOKEN_KUNCI` di `backend/.env`, supaya admin HC selalu bisa melihat token (audit trail). Verifikasi token tetap lewat `TokenHash`. Token lama tetap NULL dan tampil "Tidak tersimpan".
+- `CK_HCIS_Psikotes_Ujian_Mode` diganti: baris serentak boleh berisi `Email` (wajib diisi peserta saat verifikasi, hanya pembeda nama yang sama, tidak terikat ke token).
+- `UX_HCIS_Psikotes_Ujian_Peserta` dibuat ulang dengan filter `KelompokId IS NULL`, karena email peserta serentak boleh sama.
+
+`13_catatan_hc.sql` (revisi HC 19 November 2026, menggantikan keputusan 5 November "catatan HC tidak disimpan"). Jalankan setelah `12`. Hanya ADD COLUMN di `HCIS_Psikotes_Ujian`: `CatatanHc NVARCHAR(2000)`, `CatatanHcPada DATETIME2(0)`, `CatatanHcOleh NVARCHAR(50)` (username admin). Catatan satu Laporan Peserta ditulis ke semua baris tes peserta itu di sesi yang sama. Termasuk data peserta, ikut retensi 4 bulan.
+
+Setelah 12 dan 13, pemeriksaan bagian 2 skrip 11 menghasilkan 79 kolom (bukan 74); CHECK tetap 10 dan indeks terfilter tetap 4.
+
+Penting: `TOKEN_KUNCI` tidak boleh diganti setelah dipakai. Token yang disandikan dengan kunci lama tidak bisa dibuka lagi (verifikasi peserta tidak terpengaruh, hanya tampilan di dashboard).
 
 ## Riwayat (snake_case, tidak dijalankan lagi)
 

@@ -1,6 +1,7 @@
 // Logika sesi dan undangan untuk admin, terpisah dari rute.
-// Token mentah hanya ada di hasil fungsi ini (sekali tampil). Database hanya menyimpan hash.
+// Database menyimpan hash token (untuk verifikasi) dan token terenkripsi (untuk ditampilkan ke admin, db/12).
 import type { KonfigurasiAplikasi } from '../../config/env.js';
+import { bukaToken, sandiToken } from '../../lib/sandi-token.js';
 import { muatTes } from '../../config/tes.js';
 import { muatBank } from '../tes/bank.js';
 import { daftarKelompokSesi } from './kelompok.repo.js';
@@ -45,7 +46,13 @@ function siapkanToken(peserta: PesertaMasukan[], jadwal: JadwalTes[]): PesertaBe
 
 function barisDari(siap: PesertaBertoken[]): repo.BarisUjianBaru[] {
   return siap.flatMap((p) =>
-    p.token.map(({ token, ...jadwal }) => ({ email: p.email, nama: p.nama, jadwal, tokenHash: hashDari(token) })),
+    p.token.map(({ token, ...jadwal }) => ({
+      email: p.email,
+      nama: p.nama,
+      jadwal,
+      tokenHash: hashDari(token),
+      tokenSandi: sandiToken(token),
+    })),
   );
 }
 
@@ -134,19 +141,28 @@ export async function tokenBaru(sesiId: number, email: string, konfig: Konfigura
     token: ujian.map(({ tes, tanggal, waktu_buka, waktu_tutup }) => ({ tes, tanggal, waktu_buka, waktu_tutup, token: buatTokenPeserta() })),
   };
   // Bila ada token yang baru saja dipakai di sela-sela, tidak ada yang diganti.
-  const ganti = siap.token.map((t, i) => ({ id: ujian[i].id, tokenHash: hashDari(t.token) }));
+  const ganti = siap.token.map((t, i) => ({ id: ujian[i].id, tokenHash: hashDari(t.token), tokenSandi: sandiToken(t.token) }));
   if (!(await repo.gantiToken(ganti))) {
     throw new GalatPermintaan(409, 'Status token berubah, muat ulang data sesi lalu coba lagi');
   }
   return susunUndangan([siap], ujian.map((u) => u.id), templateSesi(sesi), konfig)[0];
 }
 
+/**
+ * Token dibuka dari kolom terenkripsi supaya selalu tampil di dashboard (audit trail, revisi HC 19 November 2026).
+ * Null bila token dibuat sebelum fitur ini. Hanya rute admin yang memanggil ini.
+ */
+function denganToken<T extends { token_sandi: string | null }>(baris: T): Omit<T, 'token_sandi'> & { token: string | null } {
+  const { token_sandi, ...sisa } = baris;
+  return { ...sisa, token: bukaToken(token_sandi) };
+}
+
 export async function detailSesi(sesiId: number) {
   const sesi = await sesiAtauGalat(sesiId);
-  const ujian = await repo.daftarUjianSesi(sesiId);
+  const ujian = (await repo.daftarUjianSesi(sesiId)).map(denganToken);
   if (sesi.mode === 'KELOMPOK') {
     // Jadwal sesi serentak ada di token kelompok, bukan di catatan ujian (yang baru ada setelah peserta masuk).
-    const kelompok = await daftarKelompokSesi(sesiId);
+    const kelompok = (await daftarKelompokSesi(sesiId)).map(denganToken);
     return { ...sesi, jadwal: kelompok.map(({ tes, tanggal, waktu_buka, waktu_tutup }) => ({ tes, tanggal, waktu_buka, waktu_tutup })), kelompok, ujian };
   }
   return { ...sesi, jadwal: ((await repo.jadwalSesi(sesiId)) ?? []).sort(urutBaku), kelompok: [], ujian };

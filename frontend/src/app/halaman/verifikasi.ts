@@ -21,7 +21,8 @@ export function tampilToken(masukan: string): string {
 
 /**
  * Verifikasi dua langkah. Langkah 1: token saja; server memberi tahu mode tanpa memakai token.
- * Langkah 2: individu = nama dan email; serentak (kelompok) = nama saja. Tes yang dipilih ikut dikirim;
+ * Langkah 2: nama dan email. Individu: email harus sama dengan undangan. Serentak (kelompok): email wajib
+ * tetapi tidak terikat ke token, hanya pembeda peserta bernama sama (revisi HC 19 November 2026). Tes yang dipilih ikut dikirim;
  * token untuk tes lain ditolak dengan pesan yang sama.
  */
 @Component({
@@ -37,7 +38,7 @@ export function tampilToken(masukan: string): string {
           <h1 class="judul judul-verifikasi">Verifikasi token dan identitas</h1>
           <p class="teks-redup">
             @switch (mode()) {
-              @case ('KELOMPOK') { Token ini dipakai bersama satu kelompok. Tulis nama lengkap Anda dengan benar, karena hasil tes dicatat atas nama ini. }
+              @case ('KELOMPOK') { Token ini dipakai bersama satu kelompok. Tulis nama lengkap dan email Anda dengan benar, karena hasil tes dicatat atas nama dan email ini. }
               @case ('INDIVIDU') { Token ini khusus untuk Anda. Isi nama dan email yang sama dengan email undangan. }
               @default { Masukkan token dari tim HC atau pengawas tes. Token hanya berlaku pada jadwal sesi tes. }
             }
@@ -95,13 +96,12 @@ export function tampilToken(masukan: string): string {
                 <input name="nama" autocomplete="name" placeholder="Sesuai data pendaftaran"
                        [value]="nama()" (input)="nama.set(nilai($event))" />
               </label>
-              @if (mode() === 'INDIVIDU') {
-                <label class="isian">
-                  <span>Email</span>
-                  <input name="email" type="email" autocomplete="email" placeholder="nama@email.com"
-                         [value]="email()" (input)="email.set(nilai($event))" />
-                </label>
-              }
+              <!-- Individu: email harus sama dengan undangan. Serentak: email hanya pembeda nama yang sama (revisi HC 19 November 2026). -->
+              <label class="isian">
+                <span>Email</span>
+                <input name="email" type="email" autocomplete="email" placeholder="nama@email.com"
+                       [value]="email()" (input)="email.set(nilai($event))" />
+              </label>
               <div class="kotak-peringatan">
                 Setelah tes dimulai, waktu berjalan dan tidak dapat dihentikan. Pastikan koneksi internet stabil.
               </div>
@@ -204,16 +204,17 @@ export class Verifikasi implements OnInit {
       return;
     }
     const nama = this.nama().trim();
-    if (nama.length < 2 || (this.mode() === 'INDIVIDU' && !this.email().trim())) {
-      this.galat.set(this.mode() === 'INDIVIDU' ? 'Nama lengkap dan email wajib diisi.' : 'Nama lengkap wajib diisi (minimal 2 huruf).');
+    const email = this.email().trim();
+    if (nama.length < 2 || !email) {
+      this.galat.set('Nama lengkap (minimal 2 huruf) dan email wajib diisi.');
       return;
     }
     this.memproses.set(true);
     try {
       const jenis_tes = this.tes() as JenisTes;
       const setuju = { setuju: true as const, persetujuan_versi: p.versi };
-      if (this.mode() === 'KELOMPOK') await this.api.masukKelompok({ token: this.token().trim(), jenis_tes, nama, ...setuju });
-      else await this.api.masuk({ email: this.email().trim(), token: this.token().trim(), jenis_tes, nama, ...setuju });
+      if (this.mode() === 'KELOMPOK') await this.api.masukKelompok({ token: this.token().trim(), jenis_tes, nama, email, ...setuju });
+      else await this.api.masuk({ email, token: this.token().trim(), jenis_tes, nama, ...setuju });
       await this.pengerjaan.muatInfo();
       await this.router.navigateByUrl('/tes/instruksi');
     } catch (galat) {

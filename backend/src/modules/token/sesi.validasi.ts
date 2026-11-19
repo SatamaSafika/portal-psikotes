@@ -158,14 +158,25 @@ export function validasiCekToken(
 }
 
 /** Langkah 2 mode kelompok: token kelompok, tes yang dipilih, dan nama. */
+/**
+ * Email peserta serentak (revisi HC 19 November 2026): wajib, huruf kecil, pola sama dengan email individu.
+ * Hanya untuk membedakan peserta bernama sama; tidak terikat ke token dan boleh sama antarpeserta.
+ */
+export function validasiEmailPeserta(data: unknown): string | null {
+  const email = typeof data === 'string' ? data.trim().toLowerCase() : '';
+  return email.length <= 150 && POLA_EMAIL.test(email) ? email : null;
+}
+
 export function validasiMasukKelompok(
   data: unknown,
   normalisasi: (t: string) => { jenis: 'INDIVIDU' | 'KELOMPOK'; token: string } | null,
-): { token: string; jenis_tes: JenisTes; nama: string } | null {
+): { token: string; jenis_tes: JenisTes; nama: string; email: string } | null {
   const t = validasiCekToken(data, normalisasi);
-  const nama = validasiNama((data as Record<string, unknown> | null)?.nama);
-  if (!t || t.jenis !== 'KELOMPOK' || !nama) return null;
-  return { token: t.token, jenis_tes: t.jenis_tes, nama };
+  const d = data as Record<string, unknown> | null;
+  const nama = validasiNama(d?.nama);
+  const email = validasiEmailPeserta(d?.email);
+  if (!t || t.jenis !== 'KELOMPOK' || !nama || !email) return null;
+  return { token: t.token, jenis_tes: t.jenis_tes, nama, email };
 }
 
 export function validasiJadwal(data: unknown): { jadwal: JadwalTes[]; galat: string[] } {

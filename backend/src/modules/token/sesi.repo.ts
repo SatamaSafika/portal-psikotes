@@ -13,6 +13,8 @@ export interface BarisUjianBaru {
   nama: string | null;
   jadwal: JadwalTes;
   tokenHash: string;
+  /** Token terenkripsi (lib/sandi-token) untuk ditampilkan ke admin. */
+  tokenSandi: string;
 }
 
 /** Data baris sesi. tanggal dan waktu_* hanya ringkasan hari pertama; jadwal sebenarnya per token. */
@@ -68,6 +70,8 @@ export interface UjianAdmin {
   aturan_versi: string | null;
   /** Saat HC membuka undangan di aplikasi email (db/08). */
   undangan_dikirim_pada: string | null;
+  /** Token terenkripsi (db/12). Dibuka di service, tidak dikirim mentah ke browser. Null untuk token lama atau peserta serentak. */
+  token_sandi: string | null;
 }
 
 // Kolom sesi sebagai teks: tanggal YYYY-MM-DD, jam HH:MM.
@@ -94,12 +98,13 @@ async function sisipkanUjian(tx: sql.Transaction, sesiId: number, baris: BarisUj
       .input('email', sql.NVarChar(150), b.email)
       .input('nama', sql.NVarChar(100), b.nama)
       .input('hash', sql.Char(64), b.tokenHash)
+      .input('sandi', sql.VarChar(100), b.tokenSandi)
       .query<{ id: number }>(
         `INSERT INTO dbo.HCIS_Psikotes_Ujian
-           (NamaSesi, JenisTes, Tanggal, WaktuBuka, WaktuTutup, BankVersi, Email, Nama, TokenHash, BerlakuSampai, SesiId)
+           (NamaSesi, JenisTes, Tanggal, WaktuBuka, WaktuTutup, BankVersi, Email, Nama, TokenHash, TokenSandi, BerlakuSampai, SesiId)
          OUTPUT inserted.Id AS id
          SELECT s.NamaSesi, @tes, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)),
-                s.BankVersi, @email, @nama, @hash,
+                s.BankVersi, @email, @nama, @hash, @sandi,
                 DATEADD(SECOND, DATEDIFF(SECOND, CAST('00:00:00' AS TIME(0)), CAST(@tutup AS TIME(0))),
                         CAST(CAST(@tanggal AS DATE) AS DATETIME2(0))),
                 s.Id
@@ -167,9 +172,11 @@ export function tambahUjian(sesiId: number, baris: BarisUjianBaru[]): Promise<nu
 export async function daftarSesi(): Promise<(SesiRingkas & Record<string, number>)[]> {
   const pool = await ambilPool();
   const hasil = await pool.request().query(
-    // Individu: peserta = email berbeda. Kelompok: setiap catatan ujian adalah satu peserta (tanpa email).
+    // Individu: peserta = email berbeda. Kelompok: setiap catatan ujian adalah satu peserta
+    // (email serentak sejak db/12 tidak dihitung terpisah, karena boleh sama).
     `SELECT ${KOLOM_SESI},
-            COUNT(DISTINCT u.Email) + SUM(CASE WHEN u.KelompokId IS NOT NULL THEN 1 ELSE 0 END) AS jumlah_peserta,
+            COUNT(DISTINCT CASE WHEN u.KelompokId IS NULL THEN u.Email END)
+              + SUM(CASE WHEN u.KelompokId IS NOT NULL THEN 1 ELSE 0 END) AS jumlah_peserta,
             COUNT(u.Id) AS jumlah_token,
             SUM(CASE WHEN u.Status = 'BELUM_DIPAKAI' THEN 1 ELSE 0 END) AS belum_dipakai,
             SUM(CASE WHEN u.Status = 'BERJALAN' THEN 1 ELSE 0 END) AS berjalan,
@@ -210,7 +217,8 @@ export async function daftarUjianSesi(sesiId: number): Promise<UjianAdmin[]> {
               JumlahBenar AS jumlah_benar, JumlahSalah AS jumlah_salah, JumlahDijawab AS jumlah_dijawab,
               NKoran AS n_koran, Kategori AS kategori, SkorAkhir AS skor_akhir,
               RingkasanInterval AS ringkasan_interval, AturanVersi AS aturan_versi,
-              CONVERT(VARCHAR(19), UndanganDikirimPada, 120) AS undangan_dikirim_pada
+              CONVERT(VARCHAR(19), UndanganDikirimPada, 120) AS undangan_dikirim_pada,
+              TokenSandi AS token_sandi
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE SesiId = @id
         ORDER BY COALESCE(Nama, Email), Email, CASE JenisTes WHEN 'TIU5' THEN 1 WHEN 'TIU6' THEN 2 ELSE 3 END`,
@@ -281,14 +289,17 @@ class StatusBerubah extends Error {}
  * Mengganti hash token, semua atau tidak sama sekali. Hanya untuk token yang belum dipakai.
  * Mengembalikan false (dan membatalkan semua) bila salah satu sudah tidak BELUM_DIPAKAI.
  */
-export async function gantiToken(ganti: { id: number; tokenHash: string }[]): Promise<boolean> {
+export async function gantiToken(ganti: { id: number; tokenHash: string; tokenSandi: string }[]): Promise<boolean> {
   try {
     await dalamTransaksi(async (tx) => {
       for (const g of ganti) {
         const hasil = await new sql.Request(tx)
           .input('id', sql.Int, g.id)
           .input('hash', sql.Char(64), g.tokenHash)
-          .query(`UPDATE dbo.HCIS_Psikotes_Ujian SET TokenHash = @hash WHERE Id = @id AND Status = 'BELUM_DIPAKAI'`);
+          .input('sandi', sql.VarChar(100), g.tokenSandi)
+          .query(
+            `UPDATE dbo.HCIS_Psikotes_Ujian SET TokenHash = @hash, TokenSandi = @sandi WHERE Id = @id AND Status = 'BELUM_DIPAKAI'`,
+          );
         if (hasil.rowsAffected[0] !== 1) throw new StatusBerubah();
       }
     });

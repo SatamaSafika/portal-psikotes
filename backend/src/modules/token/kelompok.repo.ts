@@ -20,6 +20,8 @@ export interface KelompokAdmin extends JadwalTes {
   terpakai: number;
   status: StatusKelompok;
   email_dikirim_pada: string | null;
+  /** Token terenkripsi (db/12), dibuka di service. Null untuk token lama. */
+  token_sandi: string | null;
 }
 
 /** Status untuk dashboard, dihitung di SQL dengan jam server. */
@@ -31,7 +33,7 @@ const KOLOM_KELOMPOK = `k.Id AS kelompok_id, k.JenisTes AS tes, CONVERT(CHAR(10)
        WHEN SYSDATETIME() < ${BUKA_K} THEN 'BELUM_MULAI'
        WHEN k.Terpakai >= k.Kuota THEN 'PENUH'
        ELSE 'AKTIF' END AS status,
-  CONVERT(VARCHAR(19), k.EmailDikirimPada, 120) AS email_dikirim_pada`;
+  CONVERT(VARCHAR(19), k.EmailDikirimPada, 120) AS email_dikirim_pada, k.TokenSandi AS token_sandi`;
 
 /** Membuat sesi serentak dan satu token kelompok per tes, dalam satu transaksi. Null bila tanggal paling awal sudah lewat. */
 export async function buatSesiKelompok(
@@ -39,7 +41,7 @@ export async function buatSesiKelompok(
   template: Template,
   bankVersi: string,
   adminId: number | null,
-  token: { jadwal: JadwalTes; tokenHash: string }[],
+  token: { jadwal: JadwalTes; tokenHash: string; tokenSandi: string }[],
 ): Promise<{ sesiId: number; kelompokId: number[] } | null> {
   const tx = new sql.Transaction(await ambilPool());
   await tx.begin();
@@ -75,14 +77,15 @@ export async function buatSesiKelompok(
         .input('sesiId', sql.Int, sesiId)
         .input('tes', sql.VarChar(10), t.jadwal.tes)
         .input('hash', sql.Char(64), t.tokenHash)
+        .input('sandi', sql.VarChar(100), t.tokenSandi)
         .input('kuota', sql.Int, sesi.kuota)
         .input('tanggal', sql.VarChar(10), t.jadwal.tanggal)
         .input('buka', sql.VarChar(5), t.jadwal.waktu_buka)
         .input('tutup', sql.VarChar(5), t.jadwal.waktu_tutup)
         .query<{ id: number }>(
-          `INSERT INTO dbo.HCIS_Psikotes_Kelompok (SesiId, JenisTes, TokenHash, Kuota, Tanggal, WaktuBuka, WaktuTutup)
+          `INSERT INTO dbo.HCIS_Psikotes_Kelompok (SesiId, JenisTes, TokenHash, TokenSandi, Kuota, Tanggal, WaktuBuka, WaktuTutup)
            OUTPUT inserted.Id AS id
-           VALUES (@sesiId, @tes, @hash, @kuota, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)))`,
+           VALUES (@sesiId, @tes, @hash, @sandi, @kuota, CAST(@tanggal AS DATE), CAST(@buka AS TIME(0)), CAST(@tutup AS TIME(0)))`,
         );
       kelompokId.push(k.recordset[0].id);
     }
@@ -140,13 +143,14 @@ export async function tambahKuota(id: number, kuotaMaks: number): Promise<boolea
 }
 
 /** Ganti hash token. Kuota, terpakai, dan peserta yang sudah masuk tidak berubah. False bila dicabut. */
-export async function gantiTokenKelompok(id: number, tokenHash: string): Promise<boolean> {
+export async function gantiTokenKelompok(id: number, tokenHash: string, tokenSandi: string): Promise<boolean> {
   const pool = await ambilPool();
   const hasil = await pool
     .request()
     .input('id', sql.Int, id)
     .input('hash', sql.Char(64), tokenHash)
-    .query('UPDATE dbo.HCIS_Psikotes_Kelompok SET TokenHash = @hash WHERE Id = @id AND DicabutPada IS NULL');
+    .input('sandi', sql.VarChar(100), tokenSandi)
+    .query('UPDATE dbo.HCIS_Psikotes_Kelompok SET TokenHash = @hash, TokenSandi = @sandi WHERE Id = @id AND DicabutPada IS NULL');
   return hasil.rowsAffected[0] === 1;
 }
 
@@ -173,6 +177,8 @@ export async function tandaiEmailDikirim(sesiId: number): Promise<number> {
 export interface PesertaKelompok {
   ujian_id: number;
   nama: string;
+  /** Email yang diisi peserta saat verifikasi (db/12). Null untuk peserta sebelum fitur ini. Tidak terikat ke token. */
+  email: string | null;
   masuk_pada: string;
   status: string;
   /** Ada peserta lain di token ini dengan nama sama (tidak ditolak, hanya ditandai). */
@@ -189,7 +195,7 @@ export async function pesertaKelompok(kelompokId: number): Promise<PesertaKelomp
     .request()
     .input('id', sql.Int, kelompokId)
     .query<PesertaKelompok>(
-      `SELECT Id AS ujian_id, Nama AS nama, CONVERT(VARCHAR(19), DibuatPada, 120) AS masuk_pada, Status AS status,
+      `SELECT Id AS ujian_id, Nama AS nama, Email AS email, CONVERT(VARCHAR(19), DibuatPada, 120) AS masuk_pada, Status AS status,
               CAST(CASE WHEN COUNT(*) OVER (PARTITION BY LOWER(LTRIM(RTRIM(Nama)))) > 1 THEN 1 ELSE 0 END AS BIT) AS nama_kembar,
               CONVERT(VARCHAR(19), PersetujuanPada, 120) AS persetujuan_pada, PersetujuanVersi AS persetujuan_versi
          FROM dbo.HCIS_Psikotes_Ujian
@@ -231,6 +237,7 @@ export async function klaimKelompok(
   tokenHash: string,
   jenis: JenisTes,
   nama: string,
+  email: string,
   sesiHash: Buffer,
   persetujuanVersi: string,
 ): Promise<{ id: number; jenis_tes: JenisTes } | null> {
@@ -241,6 +248,7 @@ export async function klaimKelompok(
     .input('hash', sql.Char(64), tokenHash)
     .input('jenis', sql.VarChar(10), jenis)
     .input('nama', sql.NVarChar(100), nama)
+    .input('email', sql.NVarChar(150), email)
     .input('sesiHash', sql.VarBinary(32), sesiHash)
     .query<{ id: number; jenis_tes: JenisTes }>(
       `SET XACT_ABORT ON;
@@ -259,7 +267,7 @@ export async function klaimKelompok(
          (NamaSesi, JenisTes, Tanggal, WaktuBuka, WaktuTutup, BankVersi, Email, Nama, TokenHash, Status,
           BerlakuSampai, SesiId, KelompokId, SesiPesertaHash, SesiPesertaAktif, PersetujuanPada, PersetujuanVersi)
        OUTPUT inserted.Id AS id, inserted.JenisTes AS jenis_tes
-       SELECT s.NamaSesi, k.JenisTes, k.Tanggal, k.WaktuBuka, k.WaktuTutup, s.BankVersi, NULL, @nama, NULL, 'BERJALAN',
+       SELECT s.NamaSesi, k.JenisTes, k.Tanggal, k.WaktuBuka, k.WaktuTutup, s.BankVersi, @email, @nama, NULL, 'BERJALAN',
               ${TUTUP_K}, s.Id, k.Id, @sesiHash, SYSDATETIME(), SYSDATETIME(), @versi
          FROM dbo.HCIS_Psikotes_Kelompok k
          JOIN dbo.HCIS_Psikotes_Sesi s ON s.Id = k.SesiId

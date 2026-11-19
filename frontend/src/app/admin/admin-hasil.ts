@@ -75,7 +75,7 @@ export class AdminHasil implements OnInit {
       hasil: tes.length,
       jenis: jenis.join(', '),
       sebaran,
-      uraian: sebaran.map((x) => `${x.label} ${x.jumlah}`).join(', '),
+      uraian: sebaran.map((x) => `${x.label} (${x.jumlah})`).join(', '),
       dinilai: sebaran.reduce((n, x) => n + x.jumlah, 0),
     };
   });
@@ -87,8 +87,13 @@ export class AdminHasil implements OnInit {
   // ----- Review dan cetak -----
   private readonly reviewKunci = signal<string | null>(null);
   protected readonly review = computed(() => this.peserta().find((p) => p.kunci === this.reviewKunci()) ?? null);
-  /** Catatan HC per peserta, hanya di memori (tidak disimpan). */
+  /**
+   * Draf catatan HC per peserta yang sedang diketik. Yang tersimpan ada di data hasil (db/13, revisi HC 19 November 2026);
+   * draf hilang setelah disimpan atau halaman dimuat ulang.
+   */
   private readonly catatan = signal<ReadonlyMap<string, string>>(new Map());
+  protected readonly menyimpanCatatan = signal(false);
+  protected readonly galatCatatan = signal('');
   /** Laporan yang dirender di area cetak. */
   protected readonly cetakan = signal<PesertaHasil[]>([]);
 
@@ -144,19 +149,61 @@ export class AdminHasil implements OnInit {
   }
 
   protected bukaReview(p: PesertaHasil): void {
+    if (!this.bolehTinggalkanReview()) return;
+    this.galatCatatan.set('');
     this.reviewKunci.set(p.kunci);
   }
 
   protected tutupReview(): void {
+    if (!this.bolehTinggalkanReview()) return;
     this.reviewKunci.set(null);
   }
 
+  /** Peringatan bila catatan peserta yang sedang di-Review belum disimpan. Draf yang ditinggalkan dibuang. */
+  private bolehTinggalkanReview(): boolean {
+    const p = this.review();
+    if (!p || !this.belumDisimpan(p)) return true;
+    if (!confirm('Catatan HC belum disimpan. Tutup tanpa menyimpan?')) return false;
+    this.buangDraf(p);
+    return true;
+  }
+
+  /** Draf bila ada, selain itu catatan yang tersimpan. Dipakai di Review dan saat mencetak. */
   protected catatanUntuk(p: PesertaHasil): string {
-    return this.catatan().get(p.kunci) ?? '';
+    return this.catatan().get(p.kunci) ?? p.catatan.catatan_hc ?? '';
+  }
+
+  protected belumDisimpan(p: PesertaHasil): boolean {
+    const draf = this.catatan().get(p.kunci);
+    return draf !== undefined && draf.trim() !== (p.catatan.catatan_hc ?? '');
   }
 
   protected ubahCatatan(p: PesertaHasil, teks: string): void {
     this.catatan.update((c) => new Map(c).set(p.kunci, teks));
+  }
+
+  private buangDraf(p: PesertaHasil): void {
+    this.catatan.update((c) => {
+      const baru = new Map(c);
+      baru.delete(p.kunci);
+      return baru;
+    });
+  }
+
+  /** Simpan ke semua tes peserta di laporan ini, lalu perbarui data hasil di halaman tanpa memuat ulang. */
+  protected async simpanCatatan(p: PesertaHasil): Promise<void> {
+    this.menyimpanCatatan.set(true);
+    this.galatCatatan.set('');
+    try {
+      const id = p.tes.map((t) => t.ujian_id);
+      const tersimpan = await this.api.simpanCatatan(id, this.catatanUntuk(p));
+      this.hasil.update((daftar) => daftar.map((b) => (id.includes(b.ujian_id) ? { ...b, ...tersimpan } : b)));
+      this.buangDraf(p);
+    } catch (galat) {
+      this.galatCatatan.set(pesanGalat(galat));
+    } finally {
+      this.menyimpanCatatan.set(false);
+    }
   }
 
   /** Dialog cetak browser setelah laporan dirender; pilih "Simpan sebagai PDF" untuk berkas PDF. Satu peserta per halaman. */

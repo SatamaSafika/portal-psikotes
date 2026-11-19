@@ -25,6 +25,10 @@ export const LABEL_TES_PESERTA: Record<JenisTes, string> = {
 
 export const BUTIR_PER_SOAL_TIU6 = 5;
 
+/** Catatan tebal di bawah instruksi TIU 6 (permintaan HC, 19 November 2026). Instruksi utamanya dari bank soal. */
+export const CATATAN_ALAS_TIU6 =
+  'Guntingan bangun datar yang diarsir/berwarna gelap merupakan alas dari bangun ruang tersebut.';
+
 /** GET /api/peserta/saya */
 export interface InfoUjian {
   jenis_tes: JenisTes;

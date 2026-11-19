@@ -197,6 +197,36 @@
   }
 }
 
+// Tombol undangan di tabel: oranye solid dengan efek sama seperti .tombol-utama (Lanjut), ukuran tetap kecil
+// (permintaan pemilik proyek 19 November 2026).
+.tombol-aksi-sorot {
+  background: var(--oranye-aksi);
+  border-color: var(--oranye-aksi);
+  color: #fff;
+  box-shadow: var(--bayangan-oranye);
+  transition:
+    transform 0.2s var(--pantul),
+    box-shadow 0.2s,
+    background-color 0.15s,
+    border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: var(--oranye-aksi-hover);
+    border-color: var(--oranye-aksi-hover);
+    color: #fff;
+    box-shadow: var(--bayangan-oranye-hover);
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+  }
+
+  &:focus-visible {
+    background: var(--oranye-aksi-hover);
+  }
+}
+
 .tombol-penuh {
   width: 100%;
 }
@@ -697,22 +727,30 @@ ol.langkah {
   }
 }
 
+// Lima kategori dalam satu baris (revisi HC 19 November 2026). Di layar HP boleh membungkus (_hp.scss).
+// Lebar kartu berubah mengikuti layar, jadi ukuran huruf mengikuti lebar kartu (container query, kartu = .ringkasan-sebaran):
+// teks kelima kategori sekitar 30em ditambah sekitar 90px untuk titik warna dan jarak, dibatasi 0.6rem sampai 0.78rem.
 .legenda-sebaran {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 4px 8px;
   margin: 10px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 0.78rem;
+  font-size: clamp(0.6rem, calc((100cqi - 90px) / 31), 0.78rem);
   color: var(--teks);
+
+  li {
+    white-space: nowrap;
+  }
 
   li::before {
     content: '';
     display: inline-block;
     width: 8px;
     height: 8px;
-    margin-right: 6px;
+    margin-right: 4px;
     border-radius: 50%;
     background: var(--warna);
   }

@@ -5,15 +5,16 @@ import type { BarisHasil, PesertaHasil } from './admin-model';
 import { GrafikInterval } from './grafik-interval';
 
 const JUDUL_TES: Record<JenisTes, string> = {
-  TIU5: 'Tes Intelegensi Umum 5 (TIU 5)',
-  TIU6: 'Tes Intelegensi Umum 6 (TIU 6)',
+  TIU5: 'Tes Intelegensi Umum (TIU 5)',
+  TIU6: 'Tes Intelegensi Umum (TIU 6)',
   KORAN: 'Tes Koran / Kraepelin',
 };
 
 /**
  * Laporan Peserta: dokumen individual untuk Review dan cetak. Memuat identitas, hasil tiap tes yang selesai,
  * grafik Koran, dan catatan HC. Kolom N Koran tidak ditampilkan (revisi HC 10 November 2026; N tetap di Excel).
- * Format mengikuti contoh dokumen dari pemilik proyek (11 November 2026). Catatan tidak disimpan: ikut tercetak lalu hilang saat halaman dimuat ulang.
+ * Format mengikuti contoh dokumen dari pemilik proyek (11 November 2026). Catatan HC disimpan di database lewat tombol
+ * Simpan catatan (revisi HC 19 November 2026, menggantikan keputusan 5 November) dan ikut tercetak.
  * Tanpa kunci jawaban. Hanya untuk admin HC.
  */
 @Component({
@@ -29,7 +30,8 @@ const JUDUL_TES: Record<JenisTes, string> = {
       <dl class="laporan-identitas">
         <dt>Nama Peserta</dt><dd>{{ p.nama }}</dd>
         @if (p.email) {
-          <dt>Email</dt><dd>{{ p.email }}</dd>
+          <!-- Satu baris; email yang terlalu panjang dipotong (revisi HC 19 November 2026). Alamat lengkap ada di title dan Excel. -->
+          <dt>Email</dt><dd class="laporan-email" [attr.title]="p.email">{{ p.email }}</dd>
         }
         <dt>Sesi</dt><dd>{{ p.nama_sesi }}</dd>
         <dt>Tanggal Tes</dt><dd>{{ tanggal() }}</dd>
@@ -64,9 +66,23 @@ const JUDUL_TES: Record<JenisTes, string> = {
       <section class="laporan-bagian">
         <h3>Catatan / Komentar HC</h3>
         @if (bisaDiisi()) {
-          <textarea class="laporan-isian tanpa-cetak" rows="4" aria-label="Catatan atau komentar HC"
+          <textarea class="laporan-isian tanpa-cetak" rows="4" maxlength="2000" aria-label="Catatan atau komentar HC"
                     [value]="catatan()" (input)="ubahCatatan.emit(nilai($event))"></textarea>
-          <p class="laporan-catatan-kecil tanpa-cetak">Catatan ikut tercetak, tetapi tidak disimpan di sistem.</p>
+          <div class="baris-simpan-catatan tanpa-cetak">
+            <button type="button" class="tombol-aksi tombol-aksi-sorot" [disabled]="!belumDisimpan() || menyimpan()"
+                    (click)="simpanCatatan.emit()">{{ menyimpan() ? 'Menyimpan...' : 'Simpan catatan' }}</button>
+            <span class="laporan-catatan-kecil" role="status">
+              @if (galatSimpan()) {
+                <span class="teks-galat">{{ galatSimpan() }}</span>
+              } @else if (belumDisimpan()) {
+                Belum disimpan.
+              } @else if (p.catatan.catatan_hc_pada; as w) {
+                Tersimpan {{ waktuSimpan(w) }} oleh {{ p.catatan.catatan_hc_oleh }}.
+              } @else {
+                Catatan disimpan di sistem dan ikut tercetak.
+              }
+            </span>
+          </div>
         }
         <div class="laporan-catatan-cetak" [class.hanya-cetak]="bisaDiisi()">
           @if (catatan().trim()) {
@@ -87,7 +103,17 @@ export class LaporanPeserta {
   readonly catatan = input('');
   /** true di Review (ada kotak isian), false di salinan untuk cetak. */
   readonly bisaDiisi = input(false);
+  /** Draf berbeda dari catatan yang tersimpan. */
+  readonly belumDisimpan = input(false);
+  readonly menyimpan = input(false);
+  readonly galatSimpan = input('');
   readonly ubahCatatan = output<string>();
+  readonly simpanCatatan = output<void>();
+
+  /** "2026-11-19 10:32:05" menjadi "19 November 2026 10:32". */
+  protected waktuSimpan(w: string): string {
+    return `${formatTanggal(w.slice(0, 10))} ${w.slice(11, 16)}`;
+  }
 
   protected readonly judul = JUDUL_TES;
   protected readonly tanggal = computed(() => this.peserta().tanggal.map(formatTanggal).join(', '));

@@ -1,6 +1,7 @@
 // Logika sesi serentak (token kelompok) untuk admin, terpisah dari rute.
-// Token mentah hanya ada di hasil fungsi ini (sekali tampil). Database hanya menyimpan hash.
+// Database menyimpan hash token (untuk verifikasi) dan token terenkripsi (untuk ditampilkan ke admin, db/12).
 import type { KonfigurasiAplikasi } from '../../config/env.js';
+import { sandiToken } from '../../lib/sandi-token.js';
 import { muatTes } from '../../config/tes.js';
 import { muatBank } from '../tes/bank.js';
 import * as repo from './kelompok.repo.js';
@@ -36,7 +37,7 @@ export async function buatSesiKelompok(
       tpl,
       bankVersi,
       adminId,
-      token.map((t) => ({ jadwal: t.jadwal, tokenHash: hashDari(t.token) })),
+      token.map((t) => ({ jadwal: t.jadwal, tokenHash: hashDari(t.token), tokenSandi: sandiToken(t.token) })),
     );
   } catch (galat) {
     if (galatUnik(galat)) throw new GalatPermintaan(409, 'Sesi dengan nama dan tanggal ini sudah ada');
@@ -66,8 +67,8 @@ export async function tokenBaruKelompok(
   const k = await repo.ambilKelompok(kelompokId);
   if (!k) throw new GalatPermintaan(404, 'Token kelompok tidak ditemukan');
   const token = buatTokenKelompok();
-  if (!(await repo.gantiTokenKelompok(kelompokId, hashDari(token)))) {
-    throw new GalatPermintaan(409, 'Token kelompok sudah dicabut');
+  if (!(await repo.gantiTokenKelompok(kelompokId, hashDari(token), sandiToken(token)))) {
+    throw new GalatPermintaan(409, 'Token kelompok sudah dibatalkan');
   }
   const baru: TokenKelompokBaru = {
     tes: k.tes,

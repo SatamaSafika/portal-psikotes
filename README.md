@@ -1,76 +1,113 @@
 # Portal Psikotes
 
-Portal web tes psikotes (TIU 5, TIU 6, Tes Koran/Kraepelin) untuk kebutuhan HC PT Bakrie Autoparts. Peserta mengerjakan tes, sistem menyimpan jawaban mentah, lalu menilai otomatis memakai kunci jawaban dan aturan kategori dari HC.
+Aplikasi web untuk menyelenggarakan psikotes daring: Tes Intelegensi Umum (TIU 5 dan TIU 6) serta Tes Koran (Kraepelin). Peserta mengerjakan tes dengan token, server menilai otomatis, dan admin HC memantau, meninjau, serta mengekspor hasil dari satu dashboard.
 
-Pemilik proyek: Satama Safika, BA Intern. Permintaan dari departemen HC.
+> Repositori privat untuk penggunaan internal. Soal, kunci jawaban, kredensial, dan data peserta tidak pernah disimpan di repositori ini.
 
-## Status (28 Oktober 2026)
+## Fitur
 
-On Progress.
+**Portal peserta**
+- Masuk dengan token, dalam dua mode:
+  - Individu: token sekali pakai per tes, terikat email.
+  - Serentak: satu token kelompok per tes dengan kuota, peserta cukup mengisi nama.
+- Persetujuan peserta sebelum tes dimulai. Waktu dan versi teks persetujuan dicatat.
+- Instruksi dan soal latihan dengan umpan balik untuk setiap tes.
+- Timer dari server, simpan otomatis, dan kirim otomatis saat waktu habis.
+- TIU 5 dan TIU 6: urutan soal acak per peserta. Soal boleh dilewati dan jawaban boleh diubah sebelum dikirim.
+- Tes Koran: 13 halaman x 4 lajur. Setiap angka langsung terkunci, dikerjakan berurutan, dan urutannya ditegakkan di server.
+- Peserta tidak pernah melihat skor.
 
-Selesai:
-- Diskusi dan analisis kebutuhan bersama HC.
-- Dokumen acuan kebutuhan platform.
-- Prototipe UI lo-fi 12 layar (9 layar portal peserta, 3 layar dashboard HC).
-- Pemilihan stack: Angular + TypeScript, Express + TypeScript, SQL Server 2024 perusahaan.
-- Konfirmasi HC: tanpa penalti, durasi 10 menit per tes, jumlah soal, masa simpan 3 bulan.
-- Rancangan database: skrip `backend/db/` (tabel `ujian`, `jawaban`, `admin`).
-- Kerangka backend dan cek koneksi database.
+**Dashboard HC**
+- Overview: jumlah peserta sedang mengerjakan, selesai hari ini, dan total selesai.
+- Pembuatan sesi dengan jadwal per tes, undangan email dari template yang bisa disunting, pencabutan token, dan pengelolaan kuota.
+- Hasil per peserta: skor mentah, kategori, dan skor akhir. Tes Koran dilengkapi grafik kinerja per interval 26 detik.
+- Laporan Peserta siap cetak (A4), detail jawaban per nomor, ekspor Excel (`.xlsx`), dan ekspor PDF.
 
-Berikutnya:
-- Konfirmasi rumus kategori dan skor akhir ke HC.
-- Part 1: fondasi backend (koneksi pooling, keamanan, login admin).
+## Teknologi
 
-## Stack
-
-| Bagian | Teknologi |
+| Lapisan | Teknologi |
 | --- | --- |
-| Frontend | Angular, TypeScript (Ionic hanya bila diwajibkan tim IT) |
-| Backend | Express, TypeScript |
-| Database | SQL Server 2024 milik perusahaan (database `BA` bersama, tabel `dbo.HCIS_Psikotes_*`). Kredensial hanya di `backend/.env` |
-| Login admin | Username dan password dari daftar admin terdaftar |
-| Login peserta | Token sekali pakai |
+| Frontend | Angular 22 (komponen standalone, signals), TypeScript, SCSS, Vitest |
+| Backend | Node.js 24 LTS, Express 5, TypeScript |
+| Database | Microsoft SQL Server, driver `mssql` dengan kueri berparameter |
+| Keamanan | argon2id (sandi admin), Helmet, pembatasan laju, cookie sesi `HttpOnly` dan `SameSite=Strict` |
 
-Versi yang dipakai adalah versi stabil terbaru. Untuk Node, pakai rilis LTS aktif. Catat nomor versi terpasang di `docs/VERSI.md` setelah instalasi, lalu samakan dengan tim IT.
-
-## Struktur folder
+## Struktur repositori
 
 ```
-frontend/            aplikasi Angular
-backend/             API Express + TypeScript
-  src/modules/       token, tes, skoring, hasil, admin
-  db/                skrip SQL tabel HCIS_Psikotes_*
-  config/            konfigurasi tes dan skoring
-  bank/              bank soal dan kunci, diabaikan git
-docs/                catatan teknis dan pertanyaan ke IT
-materi_rahasia/      lokal saja, diabaikan git (soal, kunci, data peserta)
+backend/
+  src/modules/     token, tes, skoring, hasil, admin
+  config/          aturan tes, skoring, retensi, template email, teks persetujuan
+  db/              skrip SQL tabel (dijalankan manual oleh pengelola database)
+  scripts/         skrip operasional: buat admin, cek koneksi, impor dan periksa bank soal, hitung ulang
+  test/            tes otomatis (data dummy)
+  bank/            bank soal dan kunci (tidak dilacak git)
+frontend/
+  src/app/         halaman peserta, Tes Koran, dashboard HC (dimuat terpisah)
+  src/styles/      token desain dan gaya per area
+DEPLOY.md          panduan paket deploy dan server
 ```
 
-## Menjalankan backend
+## Memulai (pengembangan)
 
-```
+Prasyarat:
+- Node.js 24 LTS.
+- Akses ke SQL Server dengan tabel yang sudah dibuat (lihat [backend/db/README.md](backend/db/README.md)).
+- Bank soal di `backend/bank/v1/`, yang diperoleh dari pemilik proyek.
+
+```bash
+# Backend: http://localhost:3000/api/health
 cd backend
 npm install
-copy .env.example .env
+cp .env.example .env      # isi koneksi database; jangan di-commit
+npm run db:cek            # uji koneksi
+npm run admin:buat        # akun admin HC pertama
 npm run dev
+
+# Frontend: http://localhost:4200 (admin di /admin)
+cd frontend
+npm install
+npm start
 ```
 
-Cek di browser: http://localhost:3000/api/health
+## Pengujian
 
-Uji koneksi database: `npm run db:cek`. Rincian ada di `backend/README.md` dan `backend/db/README.md`.
+```bash
+cd backend  && npm test   # skoring, token, pengerjaan, koreksi, hasil, sesi serentak
+cd frontend && npm test   # timer, antrean simpan, navigasi, Tes Koran, ekspor Excel
+```
 
-## Menjalankan frontend
+## Konfigurasi
 
-Lihat `frontend/README.md`.
+Aturan bisnis disimpan sebagai konfigurasi di `backend/config/`, bukan ditulis langsung di kode:
+
+| Berkas | Isi |
+| --- | --- |
+| `skoring.json` | Durasi tes, ambang kategori dan skor akhir, interval Tes Koran, masa simpan data |
+| `tes.json` | Jumlah soal, susunan Tes Koran, versi bank aktif, toleransi waktu |
+| `undangan.json`, `undangan-kelompok.json` | Template email bawaan |
+| `persetujuan.json` | Teks persetujuan peserta beserta versinya |
+
+Perubahan aturan skoring dapat diterapkan ulang ke hasil lama dengan `npm run hasil:hitung-ulang`, karena jawaban mentah disimpan.
 
 ## Keamanan dan data
 
-- Repositori harus Private.
-- Soal, kunci jawaban, dan data peserta tidak disimpan di repositori. Taruh di `materi_rahasia/` lokal.
-- Selama pengembangan hanya data dummy. Data asli menunggu server dan persetujuan IT dan HC.
-- Kunci jawaban dan timer dikerjakan di server, tidak dikirim ke browser.
-- Rumus skoring disimpan sebagai konfigurasi, tidak ditulis keras di kode, karena menunggu konfirmasi HC.
+- Kunci jawaban, penilaian, dan perhitungan waktu hanya ada di server. Kunci tidak pernah dikirim ke browser.
+- Token disimpan sebagai hash. Token mentah hanya tampil sekali saat dibuat.
+- Tidak ada pendaftaran mandiri admin. Login admin dibatasi percobaannya dan dikunci sementara setelah gagal berulang.
+- Masa simpan data: jawaban mentah 3 bulan, seluruh data peserta 4 bulan setelah tanggal tes.
+- Berkas rahasia (`backend/.env`, `backend/bank/`, `materi_rahasia/`) diabaikan git dan dipindahkan secara manual.
 
-## Pertanyaan terbuka
+## Deploy
 
-Lihat `docs/PERTANYAAN_IT.md` dan daftar konfirmasi HC di CLAUDE.md.
+Paket deploy dibuat dengan `git archive`. Berkas yang tidak ikut paket ditandai di `.gitattributes`. Isi paket, berkas yang disalin manual, variabel lingkungan, dan pengaturan web server ada di [DEPLOY.md](DEPLOY.md).
+
+## Dokumentasi lanjutan
+
+- [backend/README.md](backend/README.md): variabel lingkungan, perintah, dan rute API.
+- [backend/db/README.md](backend/db/README.md): skrip database.
+- [frontend/README.md](frontend/README.md): struktur dan aturan tampilan.
+
+## Pengembang
+
+Satama Safika
