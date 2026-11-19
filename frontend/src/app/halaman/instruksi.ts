@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { pesanGalat } from '../core/api.service';
-import { LABEL_TES_PESERTA } from '../core/model';
+import { CATATAN_ALAS_TIU6, LABEL_TES_PESERTA } from '../core/model';
 import { PengerjaanService } from '../core/pengerjaan.service';
 import { formatDurasi } from '../core/waktu';
 import { KakiPortal } from '../tata-letak/kaki-portal';
@@ -30,18 +30,19 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
               </div>
             }
             @if (instruksi()) {
-              <p class="instruksi">{{ instruksi() }}</p>
+              <!-- Satu baris: .instruksi memakai pre-wrap, spasi template akan ikut tampil. -->
+              <p class="instruksi">{{ instruksi() }}@if (info()?.jenis_tes === 'TIU6') {<strong> {{ catatanAlasTiu6 }}</strong>}</p>
             }
             @if (galat()) {
               <div class="kotak-galat" role="alert">{{ galat() }}</div>
             }
             @if (info()?.jenis_tes === 'KORAN') {
               <p>
-                Anda akan diberi daftar penjumlahan dua angka. Kerjakan secepat dan seteliti mungkin, dan jawablah
+                Anda akan diberi daftar penjumlahan dua angka. Kerjakan secepat, seteliti mungkin, dan jawablah
                 sebanyak-banyaknya dengan tepat dalam waktu yang tersedia.
               </p>
               <ol class="langkah">
-                <li>Jumlahkan dua angka yang mengapit kotak, lalu tulis angka terakhir dari hasilnya.</li>
+                <li>Jumlahkan dua angka yang mengapit kotak, lalu tulis angka terakhir dari hasilnya di kotak kosong yang tersedia.</li>
                 <li>Kerjakan berurutan dari atas ke bawah. Kotak tidak dapat dilewati dan Anda tidak dapat kembali ke halaman sebelumnya.</li>
                 <li><strong>Satu angka yang Anda ketik langsung terkunci dan tidak dapat diubah.</strong> Kursor pindah otomatis ke kotak berikutnya, tanpa menekan Enter. Ketik angka terakhirnya saja: untuk hasil 12, ketik 2.</li>
                 <li>Setelah kotak terakhir di satu halaman terisi, halaman berikutnya terbuka otomatis.</li>
@@ -77,6 +78,7 @@ export class Instruksi implements OnInit {
   private readonly router = inject(Router);
   protected readonly info = this.pengerjaan.info;
   protected readonly instruksi = signal<string | null>(null);
+  protected readonly catatanAlasTiu6 = CATATAN_ALAS_TIU6;
   protected readonly galat = signal('');
 
   protected readonly labelTes = computed(() => {

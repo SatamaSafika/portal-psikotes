@@ -20,7 +20,8 @@
       @if (item(); as l) {
         <div class="kartu">
           @if (instruksi()) {
-            <p class="instruksi" [class.instruksi-tiu6]="jenis() === 'TIU6'">{{ instruksi() }}</p>
+            <!-- Satu baris: .instruksi memakai pre-wrap, spasi template akan ikut tampil. -->
+            <p class="instruksi" [class.instruksi-tiu6]="jenis() === 'TIU6'">{{ instruksi() }}@if (jenis() === 'TIU6') {<strong> {{ catatanAlasTiu6 }}</strong>}</p>
           }
           <div class="gambar-soal">
             <img [src]="gambar(l.gambar)" alt="Gambar soal latihan {{ l.nomor }}" />
