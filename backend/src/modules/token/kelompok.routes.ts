@@ -59,7 +59,7 @@ export function ruteKelompokAdmin(konfig: KonfigurasiAplikasi): Router {
   rute.post('/kelompok/:id/tambah-kuota', wajibAdmin, async (req, res) => {
     const id = idDari(req);
     if (id === null || !(await repo.tambahKuota(id, KUOTA_MAKS))) {
-      res.status(409).json({ pesan: `Kuota tidak bisa ditambah: token dicabut, tidak ditemukan, atau sudah ${KUOTA_MAKS}` });
+      res.status(409).json({ pesan: `Kuota tidak bisa ditambah: token dibatalkan, tidak ditemukan, atau sudah ${KUOTA_MAKS}` });
       return;
     }
     const k = await repo.ambilKelompok(id);
@@ -82,7 +82,7 @@ export function ruteKelompokAdmin(konfig: KonfigurasiAplikasi): Router {
   rute.post('/kelompok/:id/cabut', wajibAdmin, async (req, res) => {
     const id = idDari(req);
     if (id === null || !(await repo.cabutKelompok(id))) {
-      res.status(404).json({ pesan: 'Token kelompok tidak ditemukan atau sudah dicabut' });
+      res.status(404).json({ pesan: 'Token kelompok tidak ditemukan atau sudah dibatalkan' });
       return;
     }
     res.status(204).end();

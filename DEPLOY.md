@@ -42,6 +42,7 @@ SQL Server, database BA, tabel dbo.HCIS_Psikotes_* (5 tabel)
 - Frontend dan API berada di **satu domain**. Cookie sesi memakai `SameSite=Strict`, `HttpOnly`, path `/api`, dan `Secure` di produksi.
 - API menjalankan pekerjaan latar setiap 15 detik di prosesnya sendiri: menutup ujian yang waktunya habis, menandai token kedaluwarsa, dan menghitung hasil yang tertunda. Tidak perlu penjadwal terpisah untuk ini.
 - Kunci jawaban dan penilaian hanya ada di server API, dan tidak pernah dikirim ke browser.
+- Token peserta disimpan dua kali: hash SHA-256 untuk verifikasi, dan salinan terenkripsi AES-256-GCM (kunci `TOKEN_KUNCI`) yang hanya dibuka untuk dashboard admin HC (audit trail).
 
 ## 2. Prasyarat
 
@@ -147,6 +148,7 @@ Berkas ini tidak ada di repo maupun paket, dan **tidak boleh dikirim lewat git, 
 | `DB_TRUST_CERT` | | `false` | `false`. Isi `true` hanya bila SQL Server memakai sertifikat self-signed |
 | `NODE_ENV` | ya | | `production`: cookie hanya lewat HTTPS, durasi uji dimatikan |
 | `PORT` | | `3000` | Port API, hanya diakses web server lokal |
+| `TOKEN_KUNCI` | ya | | Kunci enkripsi token (32 byte, base64) agar token selalu tampil di dashboard HC. Buat sekali: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Simpan di brankas kredensial; **jangan diganti** setelah dipakai, karena token lama tidak bisa ditampilkan lagi. Bila kosong, API menolak berjalan |
 | `CORS_ORIGIN` | ya | `http://localhost:4200` | Alamat publik portal, misalnya `https://psikotes.contoh.id`. Boleh beberapa, dipisah koma |
 | `PORTAL_URL` | ya | `http://localhost:4200` | Alamat publik portal untuk tautan di email undangan. Harus diawali `https://` |
 | `TRUST_PROXY` | ya | `false` | `1` bila ada satu reverse proxy (IIS atau nginx) di depan API. Tambah sesuai jumlah proxy atau load balancer. Tanpa ini, batas percobaan per IP menganggap semua peserta datang dari satu IP |
@@ -163,8 +165,10 @@ Dikerjakan pengelola database, satu kali, sebelum aplikasi dijalankan.
 1. **Buat tabel.** Jalankan `backend/db/11_bangun_ulang_pascalcase.sql` dari repo (tidak ada di paket) lewat SSMS, di database `BA`.
    - Skrip membuat 5 tabel, 10 CHECK constraint, dan 4 indeks terfilter, semuanya berprefix `HCIS_Psikotes_`.
    - Bila tabel sudah ada, skrip **menghapus dan membangun ulang** tabel. Itu hanya berjalan setelah `@konfirmasi = N'HAPUS'` diisi.
-   - Bagian 2 skrip berisi kueri pemeriksaan: 5 tabel, 74 kolom, 10 CHECK, 4 indeks terfilter.
+   - Bagian 2 skrip berisi kueri pemeriksaan: 5 tabel, 74 kolom, 10 CHECK, 4 indeks terfilter (79 kolom setelah langkah 1a).
    - Database yang sekarang sudah memiliki tabel ini. Langkah ini hanya untuk database baru.
+
+   1a. **Perubahan 19 November 2026.** Jalankan `backend/db/12_token_tampil_email_serentak.sql`, baik di database yang sudah ada maupun yang baru (setelah 11). Skrip menambah kolom `TokenSandi` (token terenkripsi untuk audit trail) dan mengizinkan email pada peserta serentak. Lalu jalankan `backend/db/13_catatan_hc.sql` (kolom catatan HC pada Laporan Peserta). Keduanya tanpa DROP TABLE dan tanpa menghapus data, satu transaksi, aman dijalankan ulang.
 2. **Hak akun aplikasi:** SELECT, INSERT, UPDATE, DELETE pada:
    - `dbo.HCIS_Psikotes_Admin`
    - `dbo.HCIS_Psikotes_Sesi`
@@ -419,7 +423,8 @@ Data uji dari pemeriksaan ini dibersihkan sebelum go-live.
 
 **Aplikasi**
 - [ ] Web server meneruskan `/api/`, dan fallback ke `index.html` berjalan.
-- [ ] `.env` lengkap: `NODE_ENV=production`, `CORS_ORIGIN`, `PORTAL_URL`, `TRUST_PROXY`, dan `DURASI_UJI_DETIK` kosong.
+- [ ] `.env` lengkap: `NODE_ENV=production`, `TOKEN_KUNCI` (salinannya di brankas kredensial), `CORS_ORIGIN`, `PORTAL_URL`, `TRUST_PROXY`, dan `DURASI_UJI_DETIK` kosong.
+- [ ] Skrip `db/12` dan `db/13` sudah dijalankan (kolom `TokenSandi` dan `CatatanHc` ada).
 - [ ] `bank/v1/` terpasang, `periksa-bank.js` lolos, dan cadangan bank tersimpan terpisah.
 - [ ] Hak baca `.env` dan `bank/` hanya untuk akun layanan.
 

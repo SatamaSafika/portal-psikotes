@@ -9,6 +9,7 @@ import 'dotenv/config';
 import { randomBytes } from 'node:crypto';
 import { muatTes } from '../src/config/tes.js';
 import { tutupPool } from '../src/db/pool.js';
+import { sandiToken } from '../src/lib/sandi-token.js';
 import * as repo from '../src/modules/token/kelompok.repo.js';
 import { muatPersetujuan } from '../src/modules/token/persetujuan.js';
 import { buatTokenKelompok, hashTokenPeserta, normalisasiTokenApaSaja } from '../src/modules/token/token.js';
@@ -28,7 +29,7 @@ const tgl = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const hashDari = (t: string): string => hashTokenPeserta(normalisasiTokenApaSaja(t)!.token);
 const klaim = (token: string, jenis: 'TIU5' | 'TIU6', nama: string) =>
-  repo.klaimKelompok(hashDari(token), jenis, nama, randomBytes(32), muatPersetujuan().versi);
+  repo.klaimKelompok(hashDari(token), jenis, nama, 'peserta@contoh.test', randomBytes(32), muatPersetujuan().versi);
 
 async function postToken(token: string): Promise<number> {
   const r = await fetch(`${API}/api/peserta/token`, {
@@ -66,8 +67,8 @@ async function main(): Promise<void> {
     muatTes().bank_aktif,
     null,
     [
-      { jadwal: jadwal[0], tokenHash: hashDari(tokenTiu5) },
-      { jadwal: jadwal[1], tokenHash: hashDari(tokenTiu6) },
+      { jadwal: jadwal[0], tokenHash: hashDari(tokenTiu5), tokenSandi: sandiToken(tokenTiu5) },
+      { jadwal: jadwal[1], tokenHash: hashDari(tokenTiu6), tokenSandi: sandiToken(tokenTiu6) },
     ],
   );
   if (!sesi) throw new Error('Sesi uji tidak terbentuk');
@@ -105,7 +106,7 @@ async function main(): Promise<void> {
   // 4. Token baru: token lama tidak berlaku, kuota dan peserta tidak berubah.
   const sebelum = await repo.ambilKelompok(idTiu5);
   const tokenBaru = buatTokenKelompok();
-  await repo.gantiTokenKelompok(idTiu5, hashDari(tokenBaru));
+  await repo.gantiTokenKelompok(idTiu5, hashDari(tokenBaru), sandiToken(tokenBaru));
   await repo.tambahKuota(idTiu5, 1000);
   const sesudah = await repo.ambilKelompok(idTiu5);
   periksa('token baru: token lama ditolak', !(await repo.cekTokenKelompok(hashDari(tokenTiu5), 'TIU5')));

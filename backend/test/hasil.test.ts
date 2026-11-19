@@ -1,7 +1,33 @@
 // Data DUMMY.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { validasiFilterHasil } from '../src/modules/hasil/hasil.validasi.js';
+import { CATATAN_MAKS, validasiCatatan, validasiFilterHasil } from '../src/modules/hasil/hasil.validasi.js';
+
+test('catatan HC: dirapikan, kosong menjadi null, id ganda digabung', () => {
+  assert.deepEqual(validasiCatatan({ ujian_id: [3, 5, 3], catatan: '  Baris 1\nBaris 2  ' }), {
+    ujianId: [3, 5],
+    catatan: 'Baris 1\nBaris 2',
+  });
+  assert.deepEqual(validasiCatatan({ ujian_id: [7], catatan: '   ' }), { ujianId: [7], catatan: null });
+  assert.ok(validasiCatatan({ ujian_id: [7], catatan: 'x'.repeat(CATATAN_MAKS) }));
+});
+
+test('catatan HC: bentuk salah ditolak', () => {
+  for (const salah of [
+    null,
+    {},
+    { ujian_id: [], catatan: 'a' },
+    { ujian_id: [1, 2, 3, 4], catatan: 'a' },
+    { ujian_id: [0], catatan: 'a' },
+    { ujian_id: ['1'], catatan: 'a' },
+    { ujian_id: [1.5], catatan: 'a' },
+    { ujian_id: [1] },
+    { ujian_id: [1], catatan: 5 },
+    { ujian_id: [1], catatan: 'x'.repeat(CATATAN_MAKS + 1) },
+  ]) {
+    assert.equal(validasiCatatan(salah), null, JSON.stringify(salah)?.slice(0, 60));
+  }
+});
 import { tandaiJawaban } from '../src/modules/skoring/koreksi.js';
 
 test('filter hasil: kosong berarti tidak disaring', () => {

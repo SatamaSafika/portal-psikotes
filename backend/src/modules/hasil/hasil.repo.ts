@@ -147,6 +147,43 @@ export interface BarisHasil {
   /** Bukti persetujuan peserta (db/10); null untuk ujian sebelum fitur ini. */
   persetujuan_pada: string | null;
   persetujuan_versi: string | null;
+  /** Catatan / komentar HC pada Laporan Peserta (db/13), sama untuk semua tes peserta itu di sesi yang sama. */
+  catatan_hc: string | null;
+  catatan_hc_pada: string | null;
+  catatan_hc_oleh: string | null;
+}
+
+/**
+ * Simpan catatan HC ke semua baris tes satu laporan, semua atau tidak sama sekali. Hanya ujian yang sudah selesai
+ * dan berada dalam satu sesi yang sama; bila tidak, tidak ada yang diubah dan hasilnya null.
+ */
+export async function simpanCatatan(
+  ujianId: number[],
+  catatan: string | null,
+  oleh: string,
+): Promise<{ catatan_hc_pada: string; catatan_hc_oleh: string } | null> {
+  const pool = await ambilPool();
+  const req = pool.request().input('catatan', sql.NVarChar(2000), catatan).input('oleh', sql.NVarChar(50), oleh);
+  ujianId.forEach((id, i) => req.input(`id${i}`, sql.Int, id));
+  const daftar = ujianId.map((_, i) => `@id${i}`).join(', ');
+  const hasil = await req.query<{ catatan_hc_pada: string }>(
+    `SET XACT_ABORT ON;
+     BEGIN TRANSACTION;
+     DECLARE @sah INT = (SELECT COUNT(*) FROM dbo.HCIS_Psikotes_Ujian WHERE Id IN (${daftar}) AND ${SELESAI});
+     DECLARE @sesi INT = (SELECT COUNT(DISTINCT COALESCE(SesiId, -1)) FROM dbo.HCIS_Psikotes_Ujian WHERE Id IN (${daftar}));
+     IF @sah <> ${ujianId.length} OR @sesi <> 1
+     BEGIN
+       ROLLBACK TRANSACTION;
+       RETURN;
+     END;
+     DECLARE @pada DATETIME2(0) = SYSDATETIME();
+     UPDATE dbo.HCIS_Psikotes_Ujian SET CatatanHc = @catatan, CatatanHcPada = @pada, CatatanHcOleh = @oleh
+      WHERE Id IN (${daftar});
+     COMMIT TRANSACTION;
+     SELECT CONVERT(VARCHAR(19), @pada, 120) AS catatan_hc_pada;`,
+  );
+  const pada = hasil.recordset?.[0]?.catatan_hc_pada;
+  return pada ? { catatan_hc_pada: pada, catatan_hc_oleh: oleh } : null;
 }
 
 /** Batas baris supaya laporan per peserta tidak kehilangan tes pada pemakaian normal; rute memberi tahu bila terpotong. */
@@ -167,7 +204,8 @@ export async function daftarHasil(f: { jenis: JenisTes | null; sesiId: number | 
               Email AS email, Nama AS nama, Status AS status, CONVERT(VARCHAR(19), SelesaiPada, 120) AS selesai_pada,
               JumlahBenar AS jumlah_benar, JumlahSalah AS jumlah_salah, JumlahDijawab AS jumlah_dijawab,
               NKoran AS n_koran, Kategori AS kategori, SkorAkhir AS skor_akhir, RingkasanInterval AS ringkasan_interval,
-              CONVERT(VARCHAR(19), PersetujuanPada, 120) AS persetujuan_pada, PersetujuanVersi AS persetujuan_versi
+              CONVERT(VARCHAR(19), PersetujuanPada, 120) AS persetujuan_pada, PersetujuanVersi AS persetujuan_versi,
+              CatatanHc AS catatan_hc, CONVERT(VARCHAR(19), CatatanHcPada, 120) AS catatan_hc_pada, CatatanHcOleh AS catatan_hc_oleh
          FROM dbo.HCIS_Psikotes_Ujian
         WHERE ${SELESAI}
           AND (@jenis IS NULL OR JenisTes = @jenis)

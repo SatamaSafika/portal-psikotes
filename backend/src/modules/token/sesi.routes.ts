@@ -144,7 +144,7 @@ export function ruteSesiAdmin(konfig: KonfigurasiAplikasi): Router {
   rute.post('/ujian/:id/cabut', wajibAdmin, async (req, res) => {
     const id = idDari(req);
     if (id === null || !(await repo.cabutUjian(id))) {
-      res.status(404).json({ pesan: 'Token tidak ditemukan, sudah selesai, atau sudah dicabut' });
+      res.status(404).json({ pesan: 'Token tidak ditemukan, sudah selesai, atau sudah dibatalkan' });
       return;
     }
     res.status(204).end();

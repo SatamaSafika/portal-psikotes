@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import type { JenisTes } from '../core/model';
 import type {
   BarisHasil,
+  CatatanHc,
   DetailSesi,
   EmailKelompok,
   JadwalTes,
@@ -106,5 +107,9 @@ export class ApiAdmin {
   }
   jawabanUjian(ujianId: number): Promise<{ jenis_tes: JenisTes; jawaban: JawabanNomor[] }> {
     return this.get(`/ujian/${ujianId}/jawaban`);
+  }
+  /** Simpan catatan HC ke semua tes satu Laporan Peserta. Teks kosong menghapus catatan. */
+  simpanCatatan(ujianId: number[], catatan: string): Promise<CatatanHc> {
+    return this.post('/hasil/catatan', { ujian_id: ujianId, catatan });
   }
 }

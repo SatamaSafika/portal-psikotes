@@ -235,6 +235,13 @@
     padding: 16px 18px;
   }
 
+  .legenda-sebaran {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px 12px;
+    font-size: 0.72rem;
+  }
+
   .kpi strong {
     font-size: 1.8rem;
   }

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Catatan } from '../bersama/catatan';
 import { pesanGalat } from '../core/api.service';
-import { DAFTAR_TES, LABEL_TES, type JenisTes } from '../core/model';
+import { DAFTAR_TES, DAFTAR_TES_PESERTA, LABEL_TES, type JenisTes } from '../core/model';
 import { KUOTA_MAKS, jadwalSingkat, persenKuota, uraiEmail, uraiKuota, uraiPeserta } from './admin-alat';
 import { ApiAdmin } from './admin-api.service';
 import {
@@ -60,7 +60,8 @@ export class AdminToken implements OnInit {
   private readonly api = inject(ApiAdmin);
   private readonly sesiAdmin = inject(AdminSesi);
 
-  protected readonly daftarTes = DAFTAR_TES;
+  /** Urutan di formulir buat sesi: Koran, TIU 5, TIU 6, sama dengan urutan peserta (revisi HC 19 November 2026). */
+  protected readonly daftarTes = DAFTAR_TES_PESERTA;
   protected readonly label = LABEL_TES;
   protected readonly labelStatus = LABEL_STATUS;
   protected readonly labelKelompok = LABEL_STATUS_KELOMPOK;
@@ -345,7 +346,7 @@ export class AdminToken implements OnInit {
   }
 
   protected async cabut(ujianId: number, siapa: string, tes: JenisTes): Promise<void> {
-    if (!confirm(`Cabut token ${LABEL_TES[tes]} untuk ${siapa}? Token tidak bisa dipakai lagi.`)) return;
+    if (!confirm(`Batalkan token ${LABEL_TES[tes]} untuk ${siapa}? Token tidak bisa dipakai lagi.`)) return;
     try {
       await this.api.cabut(ujianId);
       await this.muatDetail();
@@ -411,7 +412,7 @@ export class AdminToken implements OnInit {
 
   protected async cabutKelompok(k: KelompokAdmin): Promise<void> {
     const ok = confirm(
-      `Cabut token ${LABEL_TES[k.tes]}? Peserta baru tidak bisa masuk lagi. Peserta yang sudah masuk tetap dapat menyelesaikan tes.`,
+      `Batalkan token ${LABEL_TES[k.tes]}? Peserta baru tidak bisa masuk lagi. Peserta yang sudah masuk tetap dapat menyelesaikan tes.`,
     );
     if (!ok) return;
     this.galat.set('');

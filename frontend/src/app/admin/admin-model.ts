@@ -36,7 +36,7 @@ export interface JadwalTes {
 
 export interface UjianAdmin {
   ujian_id: number;
-  /** null untuk peserta sesi serentak (masuk dengan nama saja). */
+  /** Individu: email undangan. Serentak: email dari peserta, null untuk catatan sebelum revisi HC 19 November 2026. */
   email: string | null;
   kelompok_id: number | null;
   nama: string | null;
@@ -56,6 +56,8 @@ export interface UjianAdmin {
   ringkasan_interval: Interval[] | null;
   aturan_versi: string | null;
   undangan_dikirim_pada: string | null;
+  /** Token individu, selalu tampil untuk audit trail (revisi HC 19 November 2026). Null bila dibuat sebelum fitur ini. */
+  token: string | null;
 }
 
 export interface DetailSesi extends SesiRingkas {
@@ -77,6 +79,8 @@ export interface KelompokAdmin extends JadwalTes {
   terpakai: number;
   status: StatusKelompok;
   email_dikirim_pada: string | null;
+  /** Token kelompok, selalu tampil untuk audit trail (revisi HC 19 November 2026). Null bila dibuat sebelum fitur ini. */
+  token: string | null;
 }
 
 export const LABEL_STATUS_KELOMPOK: Record<StatusKelompok, string> = {
@@ -84,7 +88,7 @@ export const LABEL_STATUS_KELOMPOK: Record<StatusKelompok, string> = {
   AKTIF: 'Aktif',
   PENUH: 'Kuota penuh',
   SELESAI: 'Jadwal selesai',
-  DICABUT: 'Dicabut',
+  DICABUT: 'Dibatalkan',
 };
 
 export interface TokenKelompokBaru extends JadwalTes {
@@ -105,6 +109,8 @@ export interface EmailKelompok {
 export interface PesertaKelompok {
   ujian_id: number;
   nama: string;
+  /** Email dari peserta saat verifikasi. Null untuk peserta sebelum revisi HC 19 November 2026. */
+  email: string | null;
   masuk_pada: string;
   status: string;
   /** Ada peserta lain di token ini dengan nama sama (tidak ditolak, hanya ditandai). */
@@ -174,6 +180,17 @@ export interface BarisHasil {
   /** Bukti persetujuan; null untuk ujian sebelum fitur persetujuan. */
   persetujuan_pada: string | null;
   persetujuan_versi: string | null;
+  /** Catatan / komentar HC (revisi HC 19 November 2026), sama untuk semua tes peserta di laporan yang sama. */
+  catatan_hc: string | null;
+  catatan_hc_pada: string | null;
+  catatan_hc_oleh: string | null;
+}
+
+/** Catatan HC yang tersimpan beserta waktu dan admin penyimpannya. */
+export interface CatatanHc {
+  catatan_hc: string | null;
+  catatan_hc_pada: string | null;
+  catatan_hc_oleh: string | null;
 }
 
 /** Satu baris tabel hasil: semua tes seorang peserta dalam satu sesi. */
@@ -190,6 +207,8 @@ export interface PesertaHasil {
   tes: BarisHasil[];
   /** Ada catatan lain dengan nama sama untuk tes yang sama di sesi ini, jadi tidak digabung otomatis. */
   nama_sama: boolean;
+  /** Catatan HC tersimpan terbaru di antara tes peserta ini. */
+  catatan: CatatanHc;
 }
 
 export interface JawabanNomor {
@@ -205,6 +224,6 @@ export const LABEL_STATUS: Record<string, string> = {
   BERJALAN: 'Sedang dikerjakan',
   DIKIRIM: 'Selesai',
   WAKTU_HABIS: 'Selesai (waktu habis)',
-  DICABUT: 'Dicabut',
+  DICABUT: 'Dibatalkan',
   KEDALUWARSA: 'Kedaluwarsa',
 };

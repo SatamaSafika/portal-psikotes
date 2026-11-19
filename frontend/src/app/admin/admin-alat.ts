@@ -1,6 +1,6 @@
 // Logika murni dashboard HC: daftar peserta dari teks, skala grafik 22 interval, dan CSV untuk Excel.
 import { DAFTAR_TES, LABEL_TES } from '../core/model';
-import type { BarisHasil, Interval, PesertaHasil } from './admin-model';
+import type { BarisHasil, CatatanHc, Interval, PesertaHasil } from './admin-model';
 
 // ---------- daftar peserta ----------
 
@@ -76,19 +76,34 @@ function buatPeserta(kunci: string, tes: BarisHasil[], namaSama: boolean): Peser
     tanggal: [...new Set(tes.map((t) => t.tanggal))].sort(),
     tes: [...tes].sort((x, y) => DAFTAR_TES.indexOf(x.jenis_tes) - DAFTAR_TES.indexOf(y.jenis_tes)),
     nama_sama: namaSama,
+    catatan: catatanTerbaru(tes),
+  };
+}
+
+/** Catatan HC disimpan ke semua tes satu laporan; ambil yang paling akhir disimpan (format waktu YYYY-MM-DD HH:MM:SS). */
+function catatanTerbaru(tes: BarisHasil[]): CatatanHc {
+  const terbaru = tes
+    .filter((t) => t.catatan_hc_pada)
+    .sort((a, b) => (a.catatan_hc_pada! < b.catatan_hc_pada! ? 1 : -1))[0];
+  return {
+    catatan_hc: terbaru?.catatan_hc ?? null,
+    catatan_hc_pada: terbaru?.catatan_hc_pada ?? null,
+    catatan_hc_oleh: terbaru?.catatan_hc_oleh ?? null,
   };
 }
 
 /**
- * Satu baris per peserta per sesi. Individu dikenali dari email. Serentak tidak punya email, jadi dikenali dari nama:
- * bila nama yang sama punya dua catatan untuk tes yang sama, mereka bisa dua orang berbeda, jadi tidak digabung supaya
+ * Satu baris per peserta per sesi. Individu dikenali dari email. Serentak dikenali dari nama dan email
+ * (email wajib sejak revisi HC 19 November 2026, boleh sama antarpeserta; catatan lama tanpa email hanya dari nama).
+ * Bila satu kunci punya dua catatan untuk tes yang sama, mereka bisa dua orang berbeda, jadi tidak digabung supaya
  * hasilnya tidak tercampur di laporan (HC memperbaikinya lewat Ubah nama). Urutan mengikuti urutan baris dari server.
  */
 export function kelompokkanPeserta(baris: BarisHasil[]): PesertaHasil[] {
   const per = new Map<string, BarisHasil[]>();
   for (const b of baris) {
     const sesi = b.sesi_id ?? b.nama_sesi;
-    const kunci = b.email ? `i|${sesi}|${b.email.toLowerCase()}` : `k|${sesi}|${normalNama(b.nama)}`;
+    const email = (b.email ?? '').toLowerCase();
+    const kunci = b.mode === 'KELOMPOK' ? `k|${sesi}|${normalNama(b.nama)}|${email}` : `i|${sesi}|${email}`;
     per.set(kunci, [...(per.get(kunci) ?? []), b]);
   }
   const hasil: PesertaHasil[] = [];

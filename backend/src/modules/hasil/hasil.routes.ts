@@ -3,11 +3,11 @@
 import { Router, type Request } from 'express';
 import { muatSkoring } from '../../config/skoring.js';
 import { muatTes } from '../../config/tes.js';
-import { wajibAdmin } from '../admin/wajib-admin.js';
+import { adminAktif, wajibAdmin } from '../admin/wajib-admin.js';
 import { kunciUntuk, tandaiJawaban } from '../skoring/koreksi.js';
 import { muatBank } from '../tes/bank.js';
 import * as repo from './hasil.repo.js';
-import { validasiFilterHasil } from './hasil.validasi.js';
+import { CATATAN_MAKS, validasiCatatan, validasiFilterHasil } from './hasil.validasi.js';
 
 function idDari(req: Request): number | null {
   const id = String(req.params.id ?? '');
@@ -30,6 +30,21 @@ export function ruteHasilAdmin(): Router {
     const hasil = await repo.daftarHasil(f);
     // Panjang interval dari skoring.json untuk label grafik dan tabel Koran.
     res.json({ hasil, interval_detik: muatSkoring().KORAN.interval_detik, terpotong: hasil.length === repo.BATAS_HASIL });
+  });
+
+  // Catatan / komentar HC pada Laporan Peserta (revisi HC 19 November 2026): disimpan ke semua tes peserta di laporan itu.
+  rute.post('/hasil/catatan', wajibAdmin, async (req, res) => {
+    const m = validasiCatatan(req.body);
+    if (!m) {
+      res.status(400).json({ pesan: `Catatan tidak valid (maksimal ${CATATAN_MAKS} karakter)` });
+      return;
+    }
+    const hasil = await repo.simpanCatatan(m.ujianId, m.catatan, adminAktif(res).username);
+    if (!hasil) {
+      res.status(409).json({ pesan: 'Data peserta berubah atau belum selesai. Muat ulang halaman lalu coba lagi.' });
+      return;
+    }
+    res.json({ catatan_hc: m.catatan, ...hasil });
   });
 
   // Jawaban per nomor dengan tanda benar/salah. Kunci tidak dikirim (CLAUDE.md aturan keras 3).

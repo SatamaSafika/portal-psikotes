@@ -41,7 +41,7 @@ export class ApiPeserta {
   }
 
   /** Langkah 2 kelompok: token, nama, dan persetujuan (klaim kuota di server). */
-  masukKelompok(data: { token: string; jenis_tes: JenisTes; nama: string } & DataSetuju): Promise<{ jenis_tes: JenisTes }> {
+  masukKelompok(data: { token: string; jenis_tes: JenisTes; nama: string; email: string } & DataSetuju): Promise<{ jenis_tes: JenisTes }> {
     return firstValueFrom(this.http.post<{ jenis_tes: JenisTes }>(`${DASAR}/masuk-kelompok`, data));
   }
 

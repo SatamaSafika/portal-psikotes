@@ -127,7 +127,10 @@
                 @for (k of d.kelompok; track k.kelompok_id) {
                   <tr [class.terpilih]="kelompokDipilih()?.kelompok_id === k.kelompok_id">
                     <td><strong>{{ label[k.tes] }}</strong></td>
-                    <td class="token">{{ tokenKelompok(k.kelompok_id) ?? '••••' }}</td>
+                    <td class="token">
+                      @if (k.token ?? tokenKelompok(k.kelompok_id); as t) { {{ t }} }
+                      @else { <span class="teks-redup teks-kecil" title="Dibuat sebelum token disimpan untuk audit trail">Tidak tersimpan</span> }
+                    </td>
                     <td>{{ jadwalSingkat(k.tanggal, k.waktu_buka, k.waktu_tutup) }}</td>
                     <td>
                       <div>{{ k.terpakai }} dari {{ k.kuota }}</div>
@@ -141,7 +144,7 @@
                       @if (k.status !== 'DICABUT' && k.status !== 'SELESAI') {
                         <button type="button" class="tombol-tautan" [disabled]="k.kuota >= kuotaMaks" (click)="tambahKuota(k)">Tambah kuota</button>
                         <button type="button" class="tombol-tautan" (click)="tokenBaruKelompok(k)">Token baru</button>
-                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabutKelompok(k)">Cabut</button>
+                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabutKelompok(k)">Batalkan</button>
                       }
                     </td>
                   </tr>
@@ -151,7 +154,7 @@
           </div>
           <app-catatan class="catatan-bawah">
             Tambah kuota: +1 kursi. Token baru: token lama langsung tidak berlaku, kuota dan peserta tetap.
-            Cabut: menolak peserta baru saja. Nilai token hanya terlihat sesaat setelah dibuat.
+            Batalkan: menolak peserta baru saja. Token selalu tampil untuk audit trail.
           </app-catatan>
         </div>
 
@@ -163,7 +166,7 @@
             </div>
             <div class="tabel-gulir">
               <table class="tabel tabel-rapat-hc">
-                <thead><tr><th>Nama</th><th>Masuk</th><th>Persetujuan</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Nama</th><th>Email</th><th>Masuk</th><th>Persetujuan</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   @for (p of pesertaKelompok(); track p.ujian_id) {
                     <tr>
@@ -178,6 +181,7 @@
                           }
                         }
                       </td>
+                      <td>{{ p.email ?? '—' }}</td>
                       <td>{{ p.masuk_pada.slice(11, 16) }}</td>
                       <td [attr.title]="p.persetujuan_versi ? 'Versi teks ' + p.persetujuan_versi : null">
                         {{ p.persetujuan_pada ? 'Setuju ' + p.persetujuan_pada.slice(11, 16) : '—' }}
@@ -193,12 +197,14 @@
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="5" class="teks-redup">Belum ada peserta yang masuk dengan token ini.</td></tr>
+                    <tr><td colspan="6" class="teks-redup">Belum ada peserta yang masuk dengan token ini.</td></tr>
                   }
                 </tbody>
               </table>
             </div>
-            <app-catatan class="catatan-bawah">Nama sama hanya ditandai, tidak digabung. Gunakan Ubah nama untuk salah ketik.</app-catatan>
+            <app-catatan class="catatan-bawah">
+              Nama sama hanya ditandai, tidak digabung; email membantu membedakannya. Gunakan Ubah nama untuk salah ketik.
+            </app-catatan>
           </div>
         }
       } @else {
@@ -206,7 +212,8 @@
         <div class="kartu">
           <div class="kepala-kartu">
             <h2 class="judul-kartu">Undangan peserta</h2>
-            @if (belumTerkirim().length > 0) {
+            <!-- Hanya bila 2 atau lebih belum dikirim; untuk satu undangan cukup tombol di barisnya. -->
+            @if (belumTerkirim().length > 1) {
               <button type="button" class="tombol tombol-navy" (click)="kirimBerikutnya()">
                 Buka undangan berikutnya ({{ belumTerkirim().length }} tersisa)
               </button>
@@ -230,9 +237,9 @@
                     </td>
                     <td class="sel-aksi">
                       @if (b.siapKirim) {
-                        <button type="button" class="tombol-aksi" (click)="kirim(b)">{{ b.dikirimPada ? 'Buka lagi' : 'Kirim undangan' }}</button>
+                        <button type="button" class="tombol-aksi tombol-aksi-sorot" (click)="kirim(b)">{{ b.dikirimPada ? 'Buka lagi' : 'Kirim undangan' }}</button>
                       } @else if (b.adaBelumDipakai) {
-                        <button type="button" class="tombol-aksi" (click)="kirim(b)">Buat token baru dan kirim</button>
+                        <button type="button" class="tombol-aksi tombol-aksi-sorot" (click)="kirim(b)">Buat token baru dan kirim</button>
                       } @else {
                         <span class="teks-redup teks-kecil">Tidak ada token aktif</span>
                       }
@@ -256,14 +263,17 @@
               <tbody>
                 @for (u of d.ujian; track u.ujian_id) {
                   <tr>
-                    <td class="token">{{ tokenDari(u.ujian_id) ?? '••••' }}</td>
+                    <td class="token">
+                      @if (u.token ?? tokenDari(u.ujian_id); as t) { {{ t }} }
+                      @else { <span class="teks-redup teks-kecil" title="Dibuat sebelum token disimpan untuk audit trail">Tidak tersimpan</span> }
+                    </td>
                     <td>{{ u.nama ?? u.email }}</td>
                     <td>{{ label[u.jenis_tes] }}</td>
                     <td>{{ jadwalSingkat(u.tanggal, u.waktu_buka, u.waktu_tutup) }}</td>
                     <td><span [class]="'lencana ' + u.status">{{ labelStatus[u.status] ?? u.status }}</span></td>
                     <td class="sel-aksi">
                       @if (bisaDicabut(u.status)) {
-                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabut(u.ujian_id, u.email ?? u.nama ?? '', u.jenis_tes)">Cabut</button>
+                        <button type="button" class="tombol-tautan tautan-bahaya" (click)="cabut(u.ujian_id, u.email ?? u.nama ?? '', u.jenis_tes)">Batalkan</button>
                       }
                     </td>
                   </tr>
@@ -271,7 +281,7 @@
               </tbody>
             </table>
           </div>
-          <app-catatan class="catatan-bawah">Nilai token hanya terlihat sesaat setelah dibuat.</app-catatan>
+          <app-catatan class="catatan-bawah">Token selalu tampil untuk audit trail, termasuk token yang sudah dipakai atau dibatalkan.</app-catatan>
         </div>
       }
     }
@@ -296,7 +306,7 @@
           @if (d.mode === 'KELOMPOK') {
             @let e = memoriKelompok().email;
             <div class="baris-tombol">
-              <button type="button" class="tombol tombol-navy" [disabled]="!e" (click)="kirimEmailKelompok()">
+              <button type="button" class="tombol tombol-utama" [disabled]="!e" (click)="kirimEmailKelompok()">
                 Kirim email token ke penerima
               </button>
               @if (emailKelompokDikirim(); as w) {

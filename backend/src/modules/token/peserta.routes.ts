@@ -10,7 +10,7 @@ import { muatTes } from '../../config/tes.js';
 import { jumlahNomor } from '../tes/pengerjaan.validasi.js';
 import { cekTokenIndividu, cekTokenKelompok, klaimKelompok } from './kelompok.repo.js';
 import { cekPersetujuan, muatPersetujuan } from './persetujuan.js';
-import { validasiCekToken, validasiMasuk, validasiMasukKelompok } from './sesi.validasi.js';
+import { validasiCekToken, validasiEmailPeserta, validasiMasuk, validasiMasukKelompok } from './sesi.validasi.js';
 import type { JenisTes } from './undangan.js';
 import { hashTokenPeserta, normalisasiToken, normalisasiTokenApaSaja } from './token.js';
 import { COOKIE_PESERTA, COOKIE_PESERTA_MAKS_MS, ujianAktif, wajibPeserta } from './wajib-peserta.js';
@@ -46,6 +46,7 @@ const batasToken = rateLimit({
 const GAGAL_TOKEN = 'Token tidak dapat digunakan. Periksa kembali token Anda atau hubungi pengawas atau tim HC.';
 
 const WAJIB_SETUJU = 'Tes tidak dapat dilanjutkan tanpa persetujuan. Hubungi pengawas atau tim HC.';
+const EMAIL_TIDAK_SAH = 'Email wajib diisi dengan format yang benar, contoh nama@email.com.';
 const PERSETUJUAN_BERUBAH = 'Teks persetujuan telah diperbarui. Muat ulang halaman, baca kembali, lalu setujui.';
 
 /**
@@ -109,13 +110,18 @@ export function rutePeserta(konfig: KonfigurasiAplikasi): Router {
     }
     const versi = persetujuanDari(req, res);
     if (versi === null) return;
+    // Email salah format dibalas pesan sendiri (bukan pesan token), supaya peserta tahu yang perlu diperbaiki.
+    if (!validasiEmailPeserta((req.body as Record<string, unknown> | null)?.email)) {
+      res.status(400).json({ pesan: EMAIL_TIDAK_SAH });
+      return;
+    }
     const m = validasiMasukKelompok(req.body, normalisasiTokenApaSaja);
     if (!m) {
       res.status(401).json({ pesan: GAGAL_TOKEN });
       return;
     }
     const sesi = buatTokenSesi();
-    const ujian = await klaimKelompok(hashTokenPeserta(m.token), m.jenis_tes, m.nama, hashTokenSesi(sesi), versi);
+    const ujian = await klaimKelompok(hashTokenPeserta(m.token), m.jenis_tes, m.nama, m.email, hashTokenSesi(sesi), versi);
     if (!ujian) {
       res.status(401).json({ pesan: GAGAL_TOKEN });
       return;

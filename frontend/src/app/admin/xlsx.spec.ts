@@ -90,7 +90,8 @@ describe('isi laporan Excel', () => {
     ujian_id, sesi_id: 1, nama_sesi: 'Sesi Uji', tanggal: '2026-11-10', jenis_tes, mode: 'INDIVIDU', email: 'satu@contoh.test',
     nama: 'Peserta Satu', status: 'DIKIRIM', selesai_pada: '2026-11-10 09:00:00', jumlah_benar: 22, jumlah_salah: 8,
     jumlah_dijawab: 30, n_koran: null, kategori: 'Baik', skor_akhir: 4, ringkasan_interval: null,
-    persetujuan_pada: '2026-11-10 08:50:00', persetujuan_versi: '2026-11-04', ...ubah,
+    persetujuan_pada: '2026-11-10 08:50:00', persetujuan_versi: '2026-11-04',
+    catatan_hc: null, catatan_hc_pada: null, catatan_hc_oleh: null, ...ubah,
   });
   const peserta = kelompokkanPeserta([
     baris(1, 'TIU5', {}),

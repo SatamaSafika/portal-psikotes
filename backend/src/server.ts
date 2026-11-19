@@ -4,12 +4,15 @@ import { durasiUji } from './config/durasi.js';
 import { muatSkoring } from './config/skoring.js';
 import { muatTes } from './config/tes.js';
 import { tutupPool } from './db/pool.js';
+import { kunciToken } from './lib/sandi-token.js';
 import { hitungTertunda } from './modules/hasil/hasil.service.js';
 import { tutupOtomatis } from './modules/tes/pengerjaan.repo.js';
 
 // Konfigurasi tes dan skoring diperiksa saat mulai: server tidak jalan bila tidak valid.
 muatTes();
 muatSkoring();
+// Kunci enkripsi token (TOKEN_KUNCI) wajib ada, supaya token yang dibuat selalu bisa ditampilkan ke admin.
+kunciToken();
 const uji = durasiUji();
 if (uji !== null) console.warn(`PERINGATAN: DURASI_UJI_DETIK aktif, semua tes berdurasi ${uji} detik (hanya untuk pengujian).`);
 
