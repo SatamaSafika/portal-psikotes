@@ -69,7 +69,10 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "allowedHosts": [
+              "york-poet-paris-starring.trycloudflare.com"
+            ]
           },
           "configurations": {
             "production": {

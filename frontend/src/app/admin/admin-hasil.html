@@ -119,7 +119,7 @@
                         <li>
                           <span class="hasil-kode">{{ singkat[t.jenis_tes] }}</span>
                           <span class="hasil-kategori" [attr.data-skor]="t.skor_akhir">{{ t.kategori ?? 'Belum dihitung' }}</span>
-                          <span class="hasil-skor" [attr.aria-label]="'Skor akhir ' + (t.skor_akhir ?? '-')">{{ t.skor_akhir ?? '—' }}</span>
+                          <span class="hasil-skor" [attr.aria-label]="'Skor akhir ' + (t.skor_akhir ?? '-')">({{ t.skor_akhir ?? '—' }})</span>
                         </li>
                       }
                     </ul>
