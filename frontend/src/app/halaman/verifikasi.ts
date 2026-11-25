@@ -57,7 +57,7 @@ export function tampilToken(masukan: string): string {
               }
               <div class="baris-tombol">
                 <button class="tombol tombol-utama" type="submit" [disabled]="memproses()">{{ memproses() ? 'Memeriksa...' : 'Lanjut' }}</button>
-                <a class="tombol-tautan" routerLink="/">Kembali</a>
+                <a class="tombol-tautan" routerLink="/operator">Kembali</a>
               </div>
             </form>
           } @else {
@@ -112,7 +112,7 @@ export function tampilToken(masukan: string): string {
                 <button class="tombol tombol-utama" type="submit" [disabled]="memproses() || setuju() !== true">
                   {{ memproses() ? 'Memeriksa...' : 'Verifikasi dan lanjut' }}
                 </button>
-                <a class="tombol-tautan" routerLink="/">Kembali</a>
+                <a class="tombol-tautan" routerLink="/operator">Kembali</a>
               </div>
               </div>
               </div>
@@ -150,7 +150,7 @@ export class Verifikasi implements OnInit {
 
   async ngOnInit(): Promise<void> {
     if (!DAFTAR_TES.includes(this.tes() as JenisTes)) {
-      await this.router.navigateByUrl('/');
+      await this.router.navigateByUrl('/operator');
       return;
     }
     // Sudah masuk untuk tes ini (mis. kembali ke halaman ini atau refresh): lanjutkan saja.

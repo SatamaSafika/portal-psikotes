@@ -39,6 +39,7 @@
               "@fontsource/raleway/latin-600.css",
               "@fontsource/raleway/latin-700.css",
               "@fontsource/raleway/latin-800.css",
+              "@fontsource/raleway/latin-900.css",
               "src/styles.scss"
             ]
           },
@@ -70,9 +71,7 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "allowedHosts": [
-              "york-poet-paris-starring.trycloudflare.com"
-            ]
+            "allowedHosts": ["negotiations-sort-biology-county.trycloudflare.com"]
           },
           "configurations": {
             "production": {

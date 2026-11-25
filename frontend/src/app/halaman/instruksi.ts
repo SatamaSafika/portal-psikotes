@@ -52,7 +52,7 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
               </ol>
               <div class="baris-tombol">
                 <a class="tombol tombol-utama" routerLink="/tes/latihan">Saya sudah membaca, lihat contoh</a>
-                <a class="tombol-tautan" routerLink="/">Kembali</a>
+                <a class="tombol-tautan" routerLink="/operator">Kembali</a>
               </div>
             } @else {
             <ol class="langkah">
@@ -63,7 +63,7 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
             </ol>
             <div class="baris-tombol">
               <a class="tombol tombol-utama" routerLink="/tes/latihan">Saya sudah membaca, mulai latihan</a>
-              <a class="tombol-tautan" routerLink="/">Kembali</a>
+              <a class="tombol-tautan" routerLink="/operator">Kembali</a>
             </div>
             }
           </div>

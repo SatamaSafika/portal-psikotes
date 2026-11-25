@@ -19,7 +19,7 @@ import { KepalaPortal } from '../tata-letak/kepala-portal';
             <p class="kotak-peringatan">Waktu pengerjaan habis. Jawaban Anda telah dikirim otomatis.</p>
           }
           <p class="teks-redup teks-selesai">Jawaban Anda telah tersimpan. Terima kasih telah mengikuti tes. Tim HC akan menindaklanjuti hasilnya.</p>
-          <a class="tombol tombol-garis" routerLink="/">Kembali ke halaman utama</a>
+          <a class="tombol tombol-garis" routerLink="/operator">Kembali ke halaman utama</a>
         </div>
       </main>
       <app-kaki-portal />

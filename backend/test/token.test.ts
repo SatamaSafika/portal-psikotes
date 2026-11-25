@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ringkasJadwal, validasiMasuk, validasiPeserta, validasiSesi } from '../src/modules/token/sesi.validasi.js';
 import { buatTokenPeserta, hashTokenPeserta, normalisasiToken } from '../src/modules/token/token.js';
-import { formatTanggal, isiUndangan, MAILTO_MAKS, templateBawaan, validasiTemplate } from '../src/modules/token/undangan.js';
+import { formatTanggal, isiUndangan, MAILTO_MAKS, tautanPortal, templateBawaan, validasiTemplate } from '../src/modules/token/undangan.js';
 
 // ---------- token ----------
 
@@ -88,13 +88,22 @@ test('undangan memuat setiap token dengan jadwal tesnya sendiri', () => {
   const u = isiUndangan(templateBawaan(), DATA);
   assert.equal(u.subjek, 'Undangan Psikotes');
   assert.ok(u.isi.includes('Halo Peserta Satu,'));
-  assert.ok(u.isi.includes('https://psikotes.contoh.test/masuk'));
+  assert.ok(u.isi.includes('buka https://psikotes.contoh.test/operator lalu'));
   // Nama tes disamarkan (Tes 1 = Koran, Tes 2 = TIU 5) dan diurutkan Tes 1, 2, 3.
   assert.ok(u.isi.includes('Tes 2 - Selasa, 10 November 2026, pukul 08:00-09:00\r\nToken: AAAA-BBBB-CCCC-DDDD-EEEE'));
   assert.ok(u.isi.includes('Tes 1 - Rabu, 11 November 2026, pukul 13:00-14:00\r\nToken: FFFF-GGGG-HHHH-JJJJ-KKKK'));
   assert.ok(u.isi.indexOf('Tes 1 -') < u.isi.indexOf('Tes 2 -'));
   assert.ok(!/TIU|Koran/.test(u.isi), 'nama jenis tes tidak boleh tampil ke peserta');
   assert.ok(!/\{[a-z_]+\}/.test(u.subjek + u.isi), 'masih ada penanda yang belum terisi');
+});
+
+test('tautan mengikuti tes di token', () => {
+  const url = 'https://psikotes.contoh.test';
+  for (const tes of ['KORAN', 'TIU5', 'TIU6']) assert.equal(tautanPortal(url, [{ tes }]), `${url}/operator`);
+  assert.equal(tautanPortal(url, [{ tes: 'KORAN' }, { tes: 'TIU5' }, { tes: 'TIU6' }]), `${url}/operator`);
+  // Jenis yang belum ada, dan campuran dengan tes yang sudah punya halaman.
+  assert.equal(tautanPortal(url, [{ tes: 'LAIN' }]), `${url}/belum-tersedia`);
+  assert.equal(tautanPortal(url, [{ tes: 'LAIN' }, { tes: 'TIU5' }]), `${url}/operator`);
 });
 
 test('nama kosong diganti "Peserta"', () => {

@@ -132,10 +132,19 @@ export function daftarToken(token: TokenBerjadwal[]): string {
     .join('\n\n');
 }
 
+/**
+ * Halaman portal untuk penanda {tautan}, mengikuti tes di token: ada tes di halaman pilih tes, ke halaman itu;
+ * selain itu ke halaman "Belum tersedia". Jenis tes baru yang belum punya halaman otomatis masuk cabang kedua.
+ */
+export function tautanPortal(portalUrl: string, token: readonly { tes: string }[]): string {
+  const adaHalaman = token.some((x) => (URUTAN_PESERTA as string[]).includes(x.tes));
+  return `${portalUrl}${adaHalaman ? '/operator' : '/belum-tersedia'}`;
+}
+
 export function isiUndangan(template: Template, data: DataUndangan): Undangan {
   const nilai: Record<(typeof PENANDA)[number], string> = {
     nama: data.nama?.trim() || 'Peserta',
-    tautan: `${data.portalUrl}/masuk`,
+    tautan: tautanPortal(data.portalUrl, data.token),
     daftar_token: daftarToken(data.token),
   };
   // Satu kali lewat, jadi nilai yang kebetulan berisi "{...}" tidak diganti lagi.
@@ -166,8 +175,7 @@ export function isiEmailKelompok(template: Template, data: DataEmailKelompok): U
   const nilai: Record<(typeof PENANDA_KELOMPOK)[number], string> = {
     nama_sesi: data.namaSesi,
     kuota: String(data.kuota),
-    // Peserta memilih tes di halaman awal, lalu memasukkan token.
-    tautan: data.portalUrl,
+    tautan: tautanPortal(data.portalUrl, data.token),
     daftar_token: daftarToken(data.token),
   };
   const ganti = (teks: string): string =>
